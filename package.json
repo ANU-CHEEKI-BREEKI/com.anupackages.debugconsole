@@ -1,0 +1,29 @@
+{
+  "name": "com.anupackages.debugconsole",
+  "version": "1.0.1",
+  "displayName": "ANU Ingame debug console",
+  "description": "Provides easy way to create and invoke debug commands in game console",
+  "keywords": [
+    "unity3d",
+    "upm",
+    "console",
+    "debug"
+  ],
+  "dependencies": {
+    "com.unity.textmeshpro": "3.0.0",
+    "com.anupackages.ndesk-options": "1.0.1"
+  },
+  "author": {
+    "name": "ANU CHEEKI BREEKI",
+    "url": "https://github.com/ANU-CHEEKI-BREEKI"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/issues"
+  },
+  "homepage": "https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole#readme"
+}
