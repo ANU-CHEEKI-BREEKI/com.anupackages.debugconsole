@@ -11,7 +11,7 @@
   ],
   "dependencies": {
     "com.unity.textmeshpro": "3.0.0",
-    "com.anupackages.ndesk-options": "1.0.1"
+    "com.anupackages.ndesk-options": "1.0.2"
   },
   "author": {
     "name": "ANU CHEEKI BREEKI",
