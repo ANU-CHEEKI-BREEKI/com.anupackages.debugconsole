@@ -374,7 +374,7 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
                 if (names.Length == 1)
                     return base.GetSuggestions(input);
 
-                var command = _commandsContainer.Commands.FirstOrDefault(c => c.Value.Name == names.First()).Value;
+                var command = _commandsContainer.Commands.FirstOrDefault(c => c.Value.Name == names.FirstOrDefault()).Value;
                 if (command != null)
                 {
                     var last = names.Last();
@@ -418,25 +418,6 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
             protected override string GetFilteringName(string item) => item;
             protected override string GetFullSuggestedText(Suggestion item, string fullInput) => item.Source as string + " ";
         }
-
-        [DebugCommand]
-        private static void TestCommand(
-            [OptDesc("first arg")]
-            [OptVal(10, 20)]
-            [OptAltNames("a1")]
-            int arg1,
-            [OptAltNames("a2")]
-            float arg2 = 0f,
-            string arg3 = "lol",
-            [OptionValues(EnumValues.Value1, EnumValues.FooName)]
-            EnumValues enumValue1 = EnumValues.FooName,
-            [OptDesc("multiple values description")]
-            [OptAltNames("e2","en2")]
-            EnumValues enumValue2 = EnumValues.FooName,
-            bool kek = false
-        )
-        { }
-        private enum EnumValues { Value1, FooName, ThirdSting }
 
         private class ComandParameterNameSuggestionContext : ASuggestionContext<Option>
         {
