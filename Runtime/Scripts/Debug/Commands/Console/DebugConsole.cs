@@ -101,6 +101,13 @@ namespace IngameDebug.Commands.Console
 
             ExecuteCommand("clear");
             ExecuteCommand("help");
+
+            LoadCommandsHistory(_commandsHistory);
+        }
+
+        private void OnApplicationQuit()
+        {
+            SaveCommandsHistory(_commandsHistory);
         }
 
         private void ExecuteCommand(string commandLine)
@@ -384,6 +391,37 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
 
             protected override string GetDisplayName(string item) => item;
             protected override string GetFilteringName(string item) => item;
+        }
+
+        private const string PrefsHistoryKey = nameof(CommandLineHistory) + "-save";
+
+        private void SaveCommandsHistory(CommandLineHistory history)
+        {
+            var list = history.Commands.ToList();
+            var json = JsonUtility.ToJson(new SerializedCommandsHistory()
+            {
+                _list = list
+            });
+            PlayerPrefs.SetString(PrefsHistoryKey, json);
+        }
+
+        private void LoadCommandsHistory(CommandLineHistory history)
+        {
+            var list = JsonUtility.FromJson<SerializedCommandsHistory>(
+                PlayerPrefs.GetString(PrefsHistoryKey)
+            )?._list;
+            history.Clear();
+
+            if (list != null)
+            {
+                foreach (var command in list)
+                    history.Record(command);
+            }
+        }
+
+        private class SerializedCommandsHistory
+        {
+            public List<string> _list;
         }
     }
 }
