@@ -18,16 +18,18 @@ namespace IngameDebug.Commands
 
         private bool _printHelp = false;
 
-        private OptionSet Options
+        private readonly Dictionary<Option, AvailableValuesHint> _valueHints = new Dictionary<Option, AvailableValuesHint>();
+
+        public OptionSet Options
         {
             get
             {
                 if (_options == null)
                 {
-                    _options = CreateOptions();
+                    _options = CreateOptions(_valueHints);
                     // add help if already not defined
                     if (!_options.Contains("help"))
-                        _options.Add("help", "see this command help", v => _printHelp = v != null);
+                        _options.Add("help|?|h", "see this command help", v => _printHelp = v != null);
                 }
                 return _options;
             }
@@ -46,7 +48,33 @@ namespace IngameDebug.Commands
                 writer.WriteLine(Description);
 
                 writer.WriteLine("Options:");
-                _options.WriteOptionDescriptions(writer);
+
+                foreach (var opt in Options)
+                {
+                    writer.Write("    --");
+                    writer.Write(string.Join("|", opt.GetNames()));
+
+                    var val = "=VALUE";
+                    if (InternalValueHints.ContainsKey(opt))
+                        val = "=" + string.Join("|", InternalValueHints[opt]);
+
+                    switch (opt.OptionValueType)
+                    {
+                        case OptionValueType.None:
+                            break;
+                        case OptionValueType.Optional:
+                            writer.Write("[");
+                            writer.Write(val);
+                            writer.Write("]");
+                            break;
+                        case OptionValueType.Required:
+                            writer.Write(val);
+                            break;
+                    }
+
+                    writer.Write("    ");
+                    writer.WriteLine(opt.Description);
+                }
 
                 Logger.Log(writer.ToString());
             }
@@ -72,6 +100,9 @@ namespace IngameDebug.Commands
             }
         }
 
+        protected Dictionary<Option, AvailableValuesHint> InternalValueHints => _valueHints;
+        public IReadOnlyDictionary<Option, AvailableValuesHint> ValueHints => _valueHints;
+
         public void Execute(string args = null)
         {
             var options = Options;
@@ -92,7 +123,7 @@ namespace IngameDebug.Commands
                         builder.Append("    ");
                         builder.AppendLine(item);
                     }
-                     builder.AppendLine("maybe you forgot type -- before option?:");
+                    builder.AppendLine("maybe you forgot type -- before option?:");
                     Logger.LogWarning(builder.ToString());
                 }
                 else
@@ -125,7 +156,13 @@ namespace IngameDebug.Commands
             }
         }
 
-        protected abstract OptionSet CreateOptions();
+        protected abstract OptionSet CreateOptions(Dictionary<Option, AvailableValuesHint> valueHints);
         protected abstract void OnParsed();
+    }
+
+    public class AvailableValuesHint : List<string>
+    {
+        public AvailableValuesHint() { }
+        public AvailableValuesHint(IEnumerable<string> items) : base(items) { }
     }
 }

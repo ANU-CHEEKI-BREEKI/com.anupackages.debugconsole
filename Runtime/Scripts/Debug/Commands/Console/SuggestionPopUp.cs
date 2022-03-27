@@ -22,14 +22,19 @@ namespace IngameDebug.Commands.Console
     // something like this
     public class Suggestion
     {
-        public Suggestion(string displayValue, object source)
+        private readonly Func<Suggestion, string, string> _apply;
+
+        public Suggestion(string displayValue, object source, Func<Suggestion, string, string> apply)
         {
+            _apply = apply ?? throw new ArgumentNullException(nameof(apply));
             DisplayValue = displayValue;
             Source = source;
         }
 
         public object Source { get; }
         public string DisplayValue { get; }
+
+        public string ApplySuggestion(string fullInput) => _apply.Invoke(this, fullInput);
     }
 
     //TODO: suggestion presenter
@@ -158,9 +163,8 @@ namespace IngameDebug.Commands.Console
 
         private void RegeneratePresenters()
         {
-            foreach (var child in _parent.OfType<Transform>().ToList())
-                _suggestionsPool.Return(child);
-
+            foreach (var p in _presenters.Values)
+                _suggestionsPool.Return(p);
             _presenters.Clear();
 
             foreach (var suggestion in _suggestions)
@@ -169,6 +173,7 @@ namespace IngameDebug.Commands.Console
                     .GetOrCreate()
                     .GetComponent<SuggestionPresenter>();
                 suggestionPresenter.transform.SetParent(_parent);
+                suggestionPresenter.transform.SetAsLastSibling();
 
                 suggestionPresenter.Present(
                     suggestion,

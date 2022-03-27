@@ -66,6 +66,11 @@ namespace IngameDebug.Commands.Console
             _currentNode = null;
         }
 
+        public void Clear()
+        {
+            _commands.Clear();
+            Reset();
+        }
         
     }
 }
