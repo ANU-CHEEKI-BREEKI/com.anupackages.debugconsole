@@ -163,9 +163,8 @@ namespace IngameDebug.Commands.Console
 
         private void RegeneratePresenters()
         {
-            foreach (var child in _parent.OfType<Transform>().ToList())
-                _suggestionsPool.Return(child);
-
+            foreach (var p in _presenters.Values)
+                _suggestionsPool.Return(p);
             _presenters.Clear();
 
             foreach (var suggestion in _suggestions)
@@ -174,6 +173,7 @@ namespace IngameDebug.Commands.Console
                     .GetOrCreate()
                     .GetComponent<SuggestionPresenter>();
                 suggestionPresenter.transform.SetParent(_parent);
+                suggestionPresenter.transform.SetAsLastSibling();
 
                 suggestionPresenter.Present(
                     suggestion,
