@@ -8,6 +8,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using IngameDebug.Utils;
+using System.Text.RegularExpressions;
 
 namespace IngameDebug.Commands.Console
 {
@@ -85,16 +86,10 @@ namespace IngameDebug.Commands.Console
 
             _suggestions.Choosen += s =>
             {
-                if (s.Source is ADebugCommand command)
-                    _input.text = command.Name;
-                else if (s.Source is string str)
-                    _input.text = str;
-
-                _input.text += " ";
+                _input.text = s.ApplySuggestion(_input.text);
 
                 _input.caretPosition = _input.text.Length;
                 _input.ActivateInputField();
-
             };
 
             _suggestions.Hided += () => SuggestionsContext = _commandsContext;
@@ -334,7 +329,8 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
                 )
                 .Select(c => new Suggestion(
                     GetDisplayName(c),
-                    c
+                    c,
+                    GetFullSuggestedText
                 ));
             }
 
@@ -344,6 +340,7 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
 
             protected abstract string GetDisplayName(T item);
             protected abstract string GetFilteringName(T item);
+            protected abstract string GetFullSuggestedText(Suggestion item, string fullInput);
 
             private protected IOrderedEnumerable<T> FilterItems(IEnumerable<T> items, string input, Func<T, string> filteredStringGetter)
             {
@@ -366,14 +363,42 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
 
             protected override IEnumerable<ADebugCommand> Collection => _commandsContainer.Commands.Values;
 
-            // public override IEnumerable<Suggestion> GetSuggestions(string input)
-            // {
-            //     var commandName = ExtractCommandName(input);
-            //     var thereIsOnlyName = commandName == input;
-            // }
-
             protected override string GetDisplayName(ADebugCommand item) => $"{item.Name} [{item.OptionsHint}]";
             protected override string GetFilteringName(ADebugCommand item) => item.Name;
+            protected override string GetFullSuggestedText(Suggestion item, string fullInput) => (item.Source as ADebugCommand).Name + " ";
+
+            public override IEnumerable<Suggestion> GetSuggestions(string input)
+            {
+                input = input.Trim(' ');
+                var names = input.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                if (names.Length == 1)
+                    return base.GetSuggestions(input);
+
+                var command = _commandsContainer.Commands.FirstOrDefault(c => c.Value.Name == names.First()).Value;
+                if (command != null)
+                {
+                    var last = names.Last();
+                    var options = last.Split(new string[] { "=" }, StringSplitOptions.RemoveEmptyEntries);
+
+                    if (last.Contains('='))
+                        options = options.Append("").ToArray();
+
+                    var optionName = options.First().TrimStart('-').Trim(' ');
+                    if (options.Length == 1)
+                    {
+                        if (options.First().StartsWith("--"))
+                            return new ComandParameterNameSuggestionContext(command).GetSuggestions(optionName);
+                    }
+                    else
+                    {
+                        var param = command.Options.FirstOrDefault(o => Array.IndexOf(o.GetNames(), optionName) > -1);
+                        if (param != null)
+                            return new ComandParameterValueSuggestionContext(command, param).GetSuggestions(options.Last().Trim(' '));
+                    }
+                }
+
+                return base.GetSuggestions(input);
+            }
         }
 
         private class HistorySuggestionsContext : ASuggestionContext<string>
@@ -391,6 +416,70 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
 
             protected override string GetDisplayName(string item) => item;
             protected override string GetFilteringName(string item) => item;
+            protected override string GetFullSuggestedText(Suggestion item, string fullInput) => item.Source as string + " ";
+        }
+
+        private class ComandParameterNameSuggestionContext : ASuggestionContext<Option>
+        {
+            private readonly ADebugCommand _command;
+
+            public ComandParameterNameSuggestionContext(ADebugCommand command)
+            {
+                _command = command;
+            }
+
+            public override string Title => _command.Name;
+
+            protected override IEnumerable<Option> Collection => _command.Options;
+
+            protected override string GetDisplayName(Option item) => string.Join("|", item.GetNames());
+            protected override string GetFilteringName(Option item) => item.GetNames().First();
+
+            protected override string GetFullSuggestedText(Suggestion item, string fullInput)
+            {
+                var paramStr = " --";
+                var last = fullInput.LastIndexOf(paramStr);
+                if (last > -1)
+                    fullInput = fullInput.Substring(0, last);
+                return fullInput + paramStr + (item.Source as Option).GetNames().First();
+            }
+        }
+
+        private class ComandParameterValueSuggestionContext : ASuggestionContext<string>
+        {
+            private readonly ADebugCommand _command;
+            private readonly Option _option;
+
+            public ComandParameterValueSuggestionContext(ADebugCommand command, Option option)
+            {
+                _option = option;
+                _command = command;
+            }
+
+            public override string Title => _command.Name;
+
+            protected override IEnumerable<string> Collection
+            {
+                get
+                {
+                    if (_command.ValueHints.ContainsKey(_option))
+                        return _command.ValueHints[_option];
+                    else
+                        return Array.Empty<string>();
+                }
+            }
+
+            protected override string GetDisplayName(string item) => item;
+            protected override string GetFilteringName(string item) => item;
+
+            protected override string GetFullSuggestedText(Suggestion item, string fullInput)
+            {
+                var paramStr = "=";
+                var last = fullInput.LastIndexOf(paramStr);
+                if (last > -1)
+                    fullInput = fullInput.Substring(0, last);
+                return fullInput + paramStr + item.Source as string + " ";
+            }
         }
 
         private const string PrefsHistoryKey = nameof(CommandLineHistory) + "-save";

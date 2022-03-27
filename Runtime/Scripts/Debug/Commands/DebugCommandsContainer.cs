@@ -36,7 +36,7 @@ namespace IngameDebug.Commands
             // add predefined debug commands from any other assembly/namespace/etc
             return new List<ADebugCommand>()
             {
-                new LambdaCommand("time", "", () =>
+                new LambdaCommand("time", "", optionValuesHint =>
                 {
                     var set = new OptionSet();
                     set.Add<float>("scale=", scale => Time.timeScale = Mathf.Max(0, scale) );

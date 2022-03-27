@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -62,7 +63,7 @@ namespace IngameDebug.Commands.Implementations
             ResetParametersValues();
         }
 
-        protected override OptionSet CreateOptions()
+        protected override OptionSet CreateOptions(Dictionary<Option, AvailableValuesHint> valueHints)
         {
             var options = new OptionSet();
 
@@ -75,6 +76,11 @@ namespace IngameDebug.Commands.Implementations
                 var isFlag = parameter.ParameterType == typeof(bool);
 
                 var optionName = parameter.Name;
+
+                var altNames = parameter.GetCustomAttribute<OptionAlternativeNamesAttribute>();
+                if (altNames != null)
+                    optionName = string.Join("|", altNames.AlternativeNames.Prepend(optionName));
+
                 if (!isFlag)
                     optionName += isOptional ? ":" : "=";
 
@@ -105,6 +111,19 @@ namespace IngameDebug.Commands.Implementations
                         }
                     }
                 );
+                var valAsKey = optionName.Split(new string[] { "|" }, StringSplitOptions.RemoveEmptyEntries);
+                var opt = options[valAsKey.Last().TrimEnd('=', ':')];
+
+                IEnumerable<string> hints = null;
+
+                var values = parameter.GetCustomAttribute<OptionValuesAttribute>();
+                if (values != null)
+                    hints = values.AvailableValues.Select(v => v.ToString());
+                else if (parameter.ParameterType.IsEnum)
+                    hints = Enum.GetNames(parameter.ParameterType);
+
+                if (hints != null)
+                    valueHints[opt] = new AvailableValuesHint(hints);
             }
 
             if (!options.Any())
