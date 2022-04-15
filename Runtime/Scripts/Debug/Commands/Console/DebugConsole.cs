@@ -107,22 +107,22 @@ namespace IngameDebug.Commands.Console
             SaveCommandsHistory(_commandsHistory);
         }
 
-        private void ExecuteCommand(string commandLine)
+        public static void ExecuteCommand(string commandLine)
         {
             try
             {
-                _input.text = "";
-                _commandsHistory.Record(commandLine);
-                this.Log("> " + commandLine);
+                Instance._input.text = "";
+                Instance._commandsHistory.Record(commandLine);
+                Instance.Log("> " + commandLine);
 
                 if (Router != null)
                     Router.SendCommand(commandLine);
                 else
-                    ExecuteCommandInternal(commandLine);
+                    Instance.ExecuteCommandInternal(commandLine);
             }
             finally
             {
-                _input.ActivateInputField();
+                Instance._input.ActivateInputField();
             }
         }
 
