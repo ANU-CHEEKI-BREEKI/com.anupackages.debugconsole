@@ -33,7 +33,6 @@ namespace IngameDebug.Commands.Console
         private const float _colsoleInputHeightPercentage = 0.1f;
         private const float _padding = 10f;
 
-
         private CommandLineHistory _commandsHistory = new CommandLineHistory();
 
         private ISuggestionsContext _suggestionsContext;
@@ -41,9 +40,8 @@ namespace IngameDebug.Commands.Console
         private HistorySuggestionsContext _historyContext;
 
         public static bool IsOpened => Instance._content.activeInHierarchy;
-
-        public ICommandsRouter Router { get; set; } = null;
-        public ILogger Logger { get; set; } = new UnityLogger();
+        public static ICommandsRouter Router { get; set; } = null;
+        public static ILogger Logger { get; set; } = new UnityLogger();
 
         private ISuggestionsContext SuggestionsContext
         {
@@ -286,31 +284,31 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
                 _suggestions.Hide();
         }
 
-        public void ClearLog()
+        private void ClearLog()
         {
             _consoleLog.text = "";
             _scroll.verticalScrollbar.value = 0f;
         }
 
-        public void Log(string message, object context = null)
+        private void Log(string message, object context = null)
         {
             Logger?.Log(message, context == null ? this : context);
             AppendLine(message);
         }
 
-        public void LogWarning(string message, object context = null)
+        private void LogWarning(string message, object context = null)
         {
             Logger?.LogWarning(message, context == null ? this : context);
             AppendLine(message, _warnings);
         }
 
-        public void LogError(string message, object context = null)
+        private void LogError(string message, object context = null)
         {
             Logger?.LogError(message, context == null ? this : context);
             AppendLine(message, _errors);
         }
 
-        public void LogException(Exception excepion, object context = null)
+        private void LogException(Exception excepion, object context = null)
         {
             Logger?.LogException(excepion, context == null ? this : context);
             AppendLine(excepion.ToString(), _exceptions);
