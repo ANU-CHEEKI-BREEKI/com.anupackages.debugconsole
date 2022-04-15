@@ -33,13 +33,17 @@ namespace IngameDebug.Commands.Console
         private const float _colsoleInputHeightPercentage = 0.1f;
         private const float _padding = 10f;
 
-        private ILogger Logger = new UnityLogger();
 
         private CommandLineHistory _commandsHistory = new CommandLineHistory();
 
         private ISuggestionsContext _suggestionsContext;
         private CommandsSuggestionsContext _commandsContext;
         private HistorySuggestionsContext _historyContext;
+
+        public static bool IsOpened => Instance._content.activeInHierarchy;
+
+        public ICommandsRouter Router { get; set; } = null;
+        public ILogger Logger { get; set; } = new UnityLogger();
 
         private ISuggestionsContext SuggestionsContext
         {
@@ -113,31 +117,39 @@ namespace IngameDebug.Commands.Console
                 _commandsHistory.Record(commandLine);
                 this.Log("> " + commandLine);
 
-                var commandName = ExtractCommandName(commandLine);
-
-                if (!_commandsContainer.Commands.ContainsKey(commandName))
-                {
-                    this.LogError($"There is no command with name \"{commandName}\". Enter \"help\" to see command usage.");
-                    return;
-                }
-
-                var command = _commandsContainer.Commands[commandName];
-
-                // remove command name from commanr line input
-                if (commandLine != null)
-                {
-                    var nameIndex = commandLine.IndexOf(command.Name);
-                    commandLine = commandLine
-                        .Remove(0, command.Name.Length)
-                        .Trim();
-                }
-
-                command.Execute(commandLine);
+                if (Router != null)
+                    Router.SendCommand(commandLine);
+                else
+                    ExecuteCommandInternal(commandLine);
             }
             finally
             {
                 _input.ActivateInputField();
             }
+        }
+
+        private void ExecuteCommandInternal(string commandLine)
+        {
+            var commandName = ExtractCommandName(commandLine);
+
+            if (!_commandsContainer.Commands.ContainsKey(commandName))
+            {
+                this.LogError($"There is no command with name \"{commandName}\". Enter \"help\" to see command usage.");
+                return;
+            }
+
+            var command = _commandsContainer.Commands[commandName];
+
+            // remove command name from commanr line input
+            if (commandLine != null)
+            {
+                var nameIndex = commandLine.IndexOf(command.Name);
+                commandLine = commandLine
+                    .Remove(0, command.Name.Length)
+                    .Trim();
+            }
+
+            command.Execute(commandLine);
         }
 
         private static string ExtractCommandName(string commandLine)
@@ -282,25 +294,25 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
 
         public void Log(string message, object context = null)
         {
-            Logger.Log(message, context == null ? this : context);
+            Logger?.Log(message, context == null ? this : context);
             AppendLine(message);
         }
 
         public void LogWarning(string message, object context = null)
         {
-            Logger.LogWarning(message, context == null ? this : context);
+            Logger?.LogWarning(message, context == null ? this : context);
             AppendLine(message, _warnings);
         }
 
         public void LogError(string message, object context = null)
         {
-            Logger.LogError(message, context == null ? this : context);
+            Logger?.LogError(message, context == null ? this : context);
             AppendLine(message, _errors);
         }
 
         public void LogException(Exception excepion, object context = null)
         {
-            Logger.LogException(excepion, context == null ? this : context);
+            Logger?.LogException(excepion, context == null ? this : context);
             AppendLine(excepion.ToString(), _exceptions);
         }
 
@@ -512,5 +524,10 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
         {
             public List<string> _list;
         }
+    }
+
+    public interface ICommandsRouter
+    {
+        void SendCommand(string command);
     }
 }
