@@ -290,25 +290,25 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
             _scroll.verticalScrollbar.value = 0f;
         }
 
-        private void Log(string message, object context = null)
+        public void Log(string message, object context = null)
         {
             Logger?.Log(message, context == null ? this : context);
             AppendLine(message);
         }
 
-        private void LogWarning(string message, object context = null)
+        public void LogWarning(string message, object context = null)
         {
             Logger?.LogWarning(message, context == null ? this : context);
             AppendLine(message, _warnings);
         }
 
-        private void LogError(string message, object context = null)
+        public void LogError(string message, object context = null)
         {
             Logger?.LogError(message, context == null ? this : context);
             AppendLine(message, _errors);
         }
 
-        private void LogException(Exception excepion, object context = null)
+        public void LogException(Exception excepion, object context = null)
         {
             Logger?.LogException(excepion, context == null ? this : context);
             AppendLine(excepion.ToString(), _exceptions);
