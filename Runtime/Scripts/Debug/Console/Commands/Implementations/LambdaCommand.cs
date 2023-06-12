@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using NDesk.Options;
 
-namespace IngameDebug.Commands.Implementations
+namespace ANU.IngameDebug.Console.Commands.Implementations
 {
     public class LambdaCommand : ADebugCommand
     {

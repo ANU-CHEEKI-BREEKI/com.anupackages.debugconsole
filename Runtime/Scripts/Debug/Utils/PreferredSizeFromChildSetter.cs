@@ -1,15 +1,15 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace IngameDebug
+namespace ANU.IngameDebug.Utils.UI
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(LayoutElement))]
-    public class PreferedSieFromChildSetter : MonoBehaviour
+    public class PreferredSizeFromChildSetter : MonoBehaviour
     {
         [SerializeField] private RectTransform _child;
         [SerializeField] private bool _preferedHeight = true;
-        [SerializeField] private bool _preferedWidth = true;
+        [SerializeField] private bool _preferredWidth = true;
 
         private LayoutElement _element;
 
@@ -22,7 +22,7 @@ namespace IngameDebug
         {
             if (_preferedHeight)
                 _element.preferredHeight = LayoutUtility.GetPreferredHeight(_child);
-            if (_preferedWidth)
+            if (_preferredWidth)
                 _element.preferredWidth = LayoutUtility.GetPreferredWidth(_child);
         }
     }

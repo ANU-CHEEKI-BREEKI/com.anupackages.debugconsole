@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using NDesk.Options;
-using IngameDebug.Utils;
+using ANU.IngameDebug.Utils;
 
-namespace IngameDebug.Commands
+namespace ANU.IngameDebug.Console.Commands
 {
     public abstract class ADebugCommand
     {

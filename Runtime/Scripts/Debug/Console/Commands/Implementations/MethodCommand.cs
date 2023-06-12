@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Text;
 using NDesk.Options;
 
-namespace IngameDebug.Commands.Implementations
+namespace ANU.IngameDebug.Console.Commands.Implementations
 {
     public class MethodCommand : ADebugCommand
     {

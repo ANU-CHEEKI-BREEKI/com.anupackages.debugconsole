@@ -1,6 +1,6 @@
 using System;
 
-namespace IngameDebug.Commands
+namespace ANU.IngameDebug.Console
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class DebugCommandAttribute : Attribute

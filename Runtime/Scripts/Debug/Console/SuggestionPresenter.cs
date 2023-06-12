@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace IngameDebug.Commands.Console
+namespace ANU.IngameDebug.Console
 {
     public class SuggestionPresenter : MonoBehaviour
     {

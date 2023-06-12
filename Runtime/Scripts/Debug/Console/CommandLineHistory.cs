@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using IngameDebug.Utils;
+using ANU.IngameDebug.Utils;
 
-namespace IngameDebug.Commands.Console
+namespace ANU.IngameDebug.Console
 {
     public class CommandLineHistory
     {

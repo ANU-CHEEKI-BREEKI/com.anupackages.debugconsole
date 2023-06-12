@@ -5,10 +5,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using IngameDebug.Pooling;
-using IngameDebug.Utils;
+using ANU.IngameDebug.Pooling;
+using ANU.IngameDebug.Utils;
 
-namespace IngameDebug.Commands.Console
+namespace ANU.IngameDebug.Console
 {
     //TODO: add suggestions class to contain any value
     // or make generic?
@@ -57,7 +57,7 @@ namespace IngameDebug.Commands.Console
         private LinkedListNode<Suggestion> _current;
 
         public event Action<Suggestion> SelectionChanged;
-        public event Action<Suggestion> Choosen;
+        public event Action<Suggestion> Chosen;
         public event Action Shown;
         public event Action Hided;
 
@@ -180,7 +180,7 @@ namespace IngameDebug.Commands.Console
                     () =>
                     {
                         Deselect();
-                        Choosen?.Invoke(suggestion);
+                        Chosen?.Invoke(suggestion);
                     },
                     () => SelectionChanged?.Invoke(Selected)
                 );

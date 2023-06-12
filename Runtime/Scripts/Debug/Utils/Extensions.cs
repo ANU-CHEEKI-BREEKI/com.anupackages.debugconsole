@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace IngameDebug.Utils
+namespace ANU.IngameDebug.Utils
 {
     public static class Extensions
     {

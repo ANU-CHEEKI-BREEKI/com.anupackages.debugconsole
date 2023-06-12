@@ -2,11 +2,12 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using IngameDebug.Commands.Implementations;
+using ANU.IngameDebug.Console;
+using ANU.IngameDebug.Console.Commands.Implementations;
 using NDesk.Options;
 using UnityEngine;
 
-namespace IngameDebug.Commands.Console
+namespace ANU.IngameDebug.Console
 {
     public class AttributeCommandsInitializer : MonoBehaviour
     {

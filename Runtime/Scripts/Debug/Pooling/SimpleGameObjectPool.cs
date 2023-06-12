@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace IngameDebug.Pooling
+namespace ANU.IngameDebug.Pooling
 {
     public class SimpleGameObjectPool
     {
