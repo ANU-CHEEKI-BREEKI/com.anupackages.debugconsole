@@ -10,6 +10,7 @@ using ANU.IngameDebug.Utils;
 using System.Text.RegularExpressions;
 using ANU.IngameDebug.Console.Commands;
 using ANU.IngameDebug.Console.Commands.Implementations;
+using System.Reflection;
 
 namespace ANU.IngameDebug.Console
 {
@@ -67,17 +68,78 @@ namespace ANU.IngameDebug.Console
             }
         }
 
-        /// <summary>
-        /// Throws an exception if any command with the same name already registered
-        /// </summary>
-        /// <param name="commands"></param>
         public static void RegisterCommands(params ADebugCommand[] commands)
         {
             foreach (var command in commands)
+                RegisterCommand(command);
+        }
+
+        public static void RegisterCommand(ADebugCommand command)
+        {
+            _commands[command.Name] = command;
+            command.Logger = _commandsLogger;
+        }
+
+        public static void RegisterCommand(string name, string description, Action command, Action<ICommandMetaData[]> metaDataCustomize = null)
+            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
+
+        public static void RegisterCommand<T1>(string name, string description, Action<T1> command, Action<ICommandMetaData[]> metaDataCustomize = null)
+            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
+
+        public static void RegisterCommand<T1, T2>(string name, string description, Action<T1, T2> command, Action<ICommandMetaData[]> metaDataCustomize = null)
+            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
+
+        public static void RegisterCommand<T1, T2, T3>(string name, string description, Action<T1, T2, T3> command, Action<ICommandMetaData[]> metaDataCustomize = null)
+            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
+
+        public static void RegisterCommand<T1, T2, T3, T4>(string name, string description, Action<T1, T2, T3, T4> command, Action<ICommandMetaData[]> metaDataCustomize = null)
+            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
+
+        public static void RegisterCommand<T1>(string name, string description, Func<T1> command, Action<ICommandMetaData[]> metaDataCustomize = null)
+            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
+
+        public static void RegisterCommand<T1, T2>(string name, string description, Func<T1, T2> command, Action<ICommandMetaData[]> metaDataCustomize = null)
+            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
+
+        public static void RegisterCommand<T1, T2, T3>(string name, string description, Func<T1, T2, T3> command, Action<ICommandMetaData[]> metaDataCustomize = null)
+            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
+
+        public static void RegisterCommand<T1, T2, T3, T4>(string name, string description, Func<T1, T2, T3, T4> command, Action<ICommandMetaData[]> metaDataCustomize = null)
+            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
+
+        public static void RegisterCommand<T1, T2, T3, T4, T5>(string name, string description, Func<T1, T2, T3, T4, T5> command, Action<ICommandMetaData[]> metaDataCustomize = null)
+            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
+
+        private static void RegisterCommand(string name, string description, MethodInfo method, object target, Action<ICommandMetaData[]> metaDataCustomize)
+        {
+            //TODO: add MethodCommand arguments support check
+            var methodCommand = new MethodCommand(name, description, method, target);
+            var metaData = methodCommand.Options.Select(v => new CommandMetaData
             {
-                _commands.Add(command.Name, command);
-                command.Logger = _commandsLogger;
+                Key = v,
+                // CustomName = v.Key.Prototype,
+                AvailableValues = methodCommand.ValueHints.TryGetValue(v, out var av) ? av : new AvailableValuesHint()
+            }).ToArray();
+            metaDataCustomize?.Invoke(metaData);
+            for (int i = 0; i < metaData.Length; i++)
+            {
+                var item = metaData[i];
+                methodCommand.ValueHints[item.Key] = item.AvailableValues;
             }
+            RegisterCommand(methodCommand);
+        }
+
+        public interface ICommandMetaData
+        {
+            // public string CustomName { get; set; }
+            public AvailableValuesHint AvailableValues { get; set; }
+
+        }
+        private class CommandMetaData : ICommandMetaData
+        {
+            public Option Key { get; set; }
+            // public string CustomName { get; set; }
+            public AvailableValuesHint AvailableValues { get; set; }
         }
 
         public static void ExecuteCommand(string commandLine)

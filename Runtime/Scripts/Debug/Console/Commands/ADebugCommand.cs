@@ -24,13 +24,7 @@ namespace ANU.IngameDebug.Console.Commands
         {
             get
             {
-                if (_options == null)
-                {
-                    _options = CreateOptions(_valueHints);
-                    // add help if already not defined
-                    if (!_options.Contains("help"))
-                        _options.Add("help|?|h", "see this command help", v => _printHelp = v != null);
-                }
+                CacheOptions();
                 return _options;
             }
         }
@@ -101,7 +95,14 @@ namespace ANU.IngameDebug.Console.Commands
         }
 
         protected Dictionary<Option, AvailableValuesHint> InternalValueHints => _valueHints;
-        public IReadOnlyDictionary<Option, AvailableValuesHint> ValueHints => _valueHints;
+        public IDictionary<Option, AvailableValuesHint> ValueHints
+        {
+            get
+            {
+                CacheOptions();
+                return _valueHints;
+            }
+        }
 
         public void Execute(string args = null)
         {
@@ -158,6 +159,17 @@ namespace ANU.IngameDebug.Console.Commands
 
         protected abstract OptionSet CreateOptions(Dictionary<Option, AvailableValuesHint> valueHints);
         protected abstract void OnParsed();
+
+        private void CacheOptions()
+        {
+            if (_options == null)
+            {
+                _options = CreateOptions(_valueHints);
+                // add help if already not defined
+                if (!_options.Contains("help"))
+                    _options.Add("help|?|h", "see this command help", v => _printHelp = v != null);
+            }
+        }
     }
 
     public class AvailableValuesHint : List<string>

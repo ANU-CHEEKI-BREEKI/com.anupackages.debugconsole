@@ -10,13 +10,16 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 {
     public class MethodCommand : ADebugCommand
     {
+        private readonly object _instance;
         private readonly MethodInfo _method;
+
         private readonly object[] _parameterValues;
         private readonly bool[] _isParameterValid;
         private ParameterInfo[] _parameters;
 
-        public MethodCommand(string name, string description, MethodInfo method) : base(name, description)
+        public MethodCommand(string name, string description, MethodInfo method, object instance) : base(name, description)
         {
+            _instance = instance;
             _method = method;
 
             _parameters = method.GetParameters();
@@ -59,7 +62,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                 throw new ArgumentException(builder.ToString());
             }
 
-            _method.Invoke(null, _parameterValues);
+            _method.Invoke(_instance, _parameterValues);
             ResetParametersValues();
         }
 
@@ -73,7 +76,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                 var parameter = _parameters[parameterIndex];
 
                 var isOptional = parameter.HasDefaultValue;
-                var isFlag = parameter.ParameterType == typeof(bool);
+                var isFlag = false;//parameter.ParameterType == typeof(bool);
 
                 var optionName = parameter.Name;
 
@@ -121,6 +124,8 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                     hints = values.AvailableValues.Select(v => v.ToString());
                 else if (parameter.ParameterType.IsEnum)
                     hints = Enum.GetNames(parameter.ParameterType);
+                else if (parameter.ParameterType == typeof(bool))
+                    hints = new string[] { "true", "false" };
 
                 if (hints != null)
                     valueHints[opt] = new AvailableValuesHint(hints);

@@ -56,7 +56,8 @@ namespace ANU.IngameDebug.Console
                         return group.Select(method => new MethodCommand(
                             name: addPrefix ? $"{method.method.DeclaringType.Name}-{method.name}" : method.name,
                             description: method.description,
-                            method: method.method
+                            method: method.method,
+                            instance: null
                         ));
                     })
                     .ToArray()
