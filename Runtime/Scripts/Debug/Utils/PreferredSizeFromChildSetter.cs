@@ -3,6 +3,7 @@ using UnityEngine.UI;
 
 namespace ANU.IngameDebug.Utils.UI
 {
+    [ExecuteAlways]
     [DisallowMultipleComponent]
     [RequireComponent(typeof(LayoutElement))]
     public class PreferredSizeFromChildSetter : MonoBehaviour
@@ -13,17 +14,14 @@ namespace ANU.IngameDebug.Utils.UI
 
         private LayoutElement _element;
 
-        private void Awake()
-        {
-            _element = GetComponent<LayoutElement>();
-        }
+        private void Awake() => _element = GetComponent<LayoutElement>();
 
         private void LateUpdate()
         {
             if (_preferedHeight)
-                _element.preferredHeight = LayoutUtility.GetPreferredHeight(_child);
+                _element.preferredHeight = LayoutUtility.GetPreferredHeight(_child) - _child.sizeDelta.y;
             if (_preferredWidth)
-                _element.preferredWidth = LayoutUtility.GetPreferredWidth(_child);
+                _element.preferredWidth = LayoutUtility.GetPreferredWidth(_child) - _child.sizeDelta.x;
         }
     }
 }
