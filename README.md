@@ -2,6 +2,11 @@
 *Advanced in-game console, which replicates Windows cmd.*
 
 - [ATTENTION](/com.anupackages.debugconsole#ATTENTION)
+- [ATTENTION](/com.anupackages.debugconsole#ATTENTION)
+- [ATTENTION](/com.anupackages.debugconsole#ATTENTION)
+- [ATTENTION](/com.anupackages.debugconsole#ATTENTION)
+- [License](#License)
+
 
 ## ATTENTION
 
