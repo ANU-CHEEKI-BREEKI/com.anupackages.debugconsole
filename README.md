@@ -26,17 +26,17 @@ Also it displays console messages (logs, warnings, errors, exceptions, assertion
 User interface is created with uGUI and packed in a single SpriteAtlas. 
 - Commands, parameters, parameters values autocomplete\
   <img width="410" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/c2713c6b-a7b9-404a-a766-162f9b868192">
-  <img width="165" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/caeed8f5-dc7c-47d6-892d-19547ea7c7b2">
-  <img width="219" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/f195cd02-a642-435d-bbcc-fa09843f934d">
+  <img width="204" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/caeed8f5-dc7c-47d6-892d-19547ea7c7b2">
+  <img width="189" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/f195cd02-a642-435d-bbcc-fa09843f934d">
   
 - Persistent commands history\
   <img width="410" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/2d4c2238-5036-4187-9854-2f0b4ee9001c">
 
 - It is possible to resize or change UI scale of the console window during the game.\
-  <img width="82" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/5f56fb2b-8a6d-4045-ab25-ae19ccd657ef">
+  <img width="150" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/5f56fb2b-8a6d-4045-ab25-ae19ccd657ef">
   
 - Console messages can be filtered by message type the same way as in UnityEditor console window.\
-  <img width="144" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/1bbee44d-cbc2-41dd-b06e-e576b52394fb">
+  <img width="200" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/1bbee44d-cbc2-41dd-b06e-e576b52394fb">
   
 - It is possible to filter logs by search query ste same way as in UnityEditor console window.\
 
