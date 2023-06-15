@@ -1,6 +1,8 @@
 ## com.anupackages.debugconsole
 *Advanced in-game console, which replicates Windows cmd.*
 
+- [ATTENTION](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole#ATTENTION)
+
 ## ATTENTION
 
 This Asset is depends of other [repo](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.ndesk-options), which is redistribution of MIT licensed C# options parser [NDesk.Options](http://gitweb.ndesk.org/?p=ndesk-options;a=summary) (looks like original repo already missed, but there is [original web page](http://www.ndesk.org/Options))
@@ -21,7 +23,7 @@ User interface is created with uGUI and packed in a single SpriteAtlas.
 ## Roadmap
 Each star ★ on the project page brings new features closer. You can suggest new features in the [Discussions](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/discussions).
 
-## Samples
+## How to use
 
 ### Attributes
 
