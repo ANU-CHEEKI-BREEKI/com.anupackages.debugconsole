@@ -17,6 +17,9 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
         private readonly bool[] _isParameterValid;
         private ParameterInfo[] _parameters;
 
+        public MethodCommand(MethodInfo method, object instance)
+            : this(GetName(method), GetDescription(method), method, instance) { }
+
         public MethodCommand(string name, string description, MethodInfo method, object instance) : base(name, description)
         {
             _instance = instance;
@@ -27,6 +30,26 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
             _isParameterValid = new bool[_parameters.Length];
 
             ResetParametersValues();
+        }
+
+        public static string GetName(MethodInfo method)
+        {
+            var attribute = method.GetCustomAttribute<DebugCommandAttribute>();
+            return string.IsNullOrEmpty(attribute.Name)
+                ? string.Join(
+                    "",
+                    method.Name
+                        .Select(c =>
+                            char.IsUpper(c) ? "-" + char.ToLower(c) : c.ToString()
+                        )
+                ).Trim('-')
+                : attribute.Name;
+        }
+
+        public static string GetDescription(MethodInfo method)
+        {
+            var attribute = method.GetCustomAttribute<DebugCommandAttribute>();
+            return attribute?.Description;
         }
 
         private void ResetParametersValues()
@@ -76,7 +99,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                 var parameter = _parameters[parameterIndex];
 
                 var isOptional = parameter.HasDefaultValue;
-                var isFlag = false;//parameter.ParameterType == typeof(bool);
+                var isFlag = parameter.ParameterType == typeof(bool) && isOptional && ((bool)parameter.DefaultValue == false);
 
                 var optionName = parameter.Name;
 

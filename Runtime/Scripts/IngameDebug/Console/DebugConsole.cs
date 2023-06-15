@@ -29,11 +29,12 @@ namespace ANU.IngameDebug.Console
         [Space]
         [SerializeField] private SuggestionPopUp _suggestions;
         [Space]
-        [SerializeField] private Color _log;
-        [SerializeField] private Color _warnings;
-        [SerializeField] private Color _errors;
-        [SerializeField] private Color _exceptions;
-        [SerializeField] private Color _assert;
+        [SerializeField] private SearchInputField _searchInput;
+        [SerializeField] private Toggle _logToggle;
+        [SerializeField] private Toggle _warningToggle;
+        [SerializeField] private Toggle _errorToggle;
+        [Space]
+        [SerializeField] private UITheme _theme;
 
         private static CommandLineHistory _commandsHistory = new CommandLineHistory();
 
@@ -83,6 +84,12 @@ namespace ANU.IngameDebug.Console
         public static void RegisterCommand(string name, string description, Action command, Action<ICommandMetaData[]> metaDataCustomize = null)
             => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
 
+        public static void RegisterCommand(Delegate command, Action<ICommandMetaData[]> metaDataCustomize = null)
+            => RegisterCommand(command.Method, command.Target, metaDataCustomize);
+        
+        public static void RegisterCommand(string name, string description, Delegate command, Action<ICommandMetaData[]> metaDataCustomize = null)
+            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
+
         public static void RegisterCommand<T1>(string name, string description, Action<T1> command, Action<ICommandMetaData[]> metaDataCustomize = null)
             => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
 
@@ -114,6 +121,19 @@ namespace ANU.IngameDebug.Console
         {
             //TODO: add MethodCommand arguments support check
             var methodCommand = new MethodCommand(name, description, method, target);
+            RegisterCommand(methodCommand, metaDataCustomize);
+        }
+
+        private static void RegisterCommand(MethodInfo method, object target, Action<ICommandMetaData[]> metaDataCustomize)
+        {
+            //TODO: add MethodCommand arguments support check
+            var methodCommand = new MethodCommand(method, target);
+            RegisterCommand(methodCommand, metaDataCustomize);
+        }
+
+        private static void RegisterCommand(MethodCommand command, Action<ICommandMetaData[]> metaDataCustomize)
+        {
+            var methodCommand = command;
             var metaData = methodCommand.Options.Select(v => new CommandMetaData
             {
                 Key = v,
@@ -412,11 +432,11 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
                 condition,
                 type switch
                 {
-                    LogType.Error => Instance._errors,
-                    LogType.Assert => Instance._assert,
-                    LogType.Warning => Instance._warnings,
-                    LogType.Log => Instance._log,
-                    LogType.Exception => Instance._exceptions,
+                    LogType.Error => Instance._theme.Errors,
+                    LogType.Assert => Instance._theme.Assert,
+                    LogType.Warning => Instance._theme.Warnings,
+                    LogType.Log => Instance._theme.Log,
+                    LogType.Exception => Instance._theme.Exceptions,
                     _ => Color.white
                 }
             );
@@ -475,5 +495,15 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
                 Logger.LogWarning(message, context);
             }
         }
+    }
+
+    [System.Serializable]
+    public struct UITheme
+    {
+        [field: SerializeField] public Color Log { get; private set; }
+        [field: SerializeField] public Color Warnings { get; private set; }
+        [field: SerializeField] public Color Errors { get; private set; }
+        [field: SerializeField] public Color Exceptions { get; private set; }
+        [field: SerializeField] public Color Assert { get; private set; }
     }
 }
