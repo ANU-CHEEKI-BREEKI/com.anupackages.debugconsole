@@ -1,5 +1,5 @@
 ## com.anupackages.debugconsole
-*Advanced in-game console, which replicades windows cmd.*
+*Advanced in-game console, which replicates Windows cmd.*
 
 ## ATTENTION
 
