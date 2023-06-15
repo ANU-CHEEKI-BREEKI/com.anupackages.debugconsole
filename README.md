@@ -29,4 +29,4 @@ Each star ★ on the project page brings new features closer. You can suggest ne
 
 
 ## License
-MIT licensed.
+[MIT licensed](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/blob/log-list/LICENCE.md).
