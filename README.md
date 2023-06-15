@@ -1,8 +1,7 @@
 ## com.anupackages.debugconsole
 *Advanced in-game console, which replicates Windows cmd.*
 
-<img width="432" alt="Screenshot 2023-06-15 at 15 32 19" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/373256d9-ea6e-479f-a8ae-e29c0c3c55e8">
-
+<img width="432" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/373256d9-ea6e-479f-a8ae-e29c0c3c55e8">
 
 - [ATTENTION](#ATTENTION)
 - [About](#About)
@@ -25,9 +24,21 @@ Provides easy way to create and invoke debug commands in game console at runtime
 Also it displays console messages (logs, warnings, errors, exceptions, assertions) at runtime in a build.
 
 User interface is created with uGUI and packed in a single SpriteAtlas. 
-- It is possible to resize or hide the console window during the game.
-- Console messages can be filtered by message type the same way as in UnityEditor console window.
-- It is possible to filter logs by search query ste same way as in UnityEditor console window.
+- Commands, parameters, parameters values autocomplete\
+  <img width="410" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/c2713c6b-a7b9-404a-a766-162f9b868192">
+  <img width="165" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/caeed8f5-dc7c-47d6-892d-19547ea7c7b2">
+  <img width="219" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/f195cd02-a642-435d-bbcc-fa09843f934d">
+  
+- Persistent commands history\
+  <img width="410" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/2d4c2238-5036-4187-9854-2f0b4ee9001c">
+
+- It is possible to resize or change UI scale of the console window during the game.\
+  <img width="82" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/5f56fb2b-8a6d-4045-ab25-ae19ccd657ef">
+  
+- Console messages can be filtered by message type the same way as in UnityEditor console window.\
+  <img width="144" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/1bbee44d-cbc2-41dd-b06e-e576b52394fb">
+  
+- It is possible to filter logs by search query ste same way as in UnityEditor console window.\
 
 ## How to Install
 
