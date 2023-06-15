@@ -1,7 +1,7 @@
 ## com.anupackages.debugconsole
 *Advanced in-game console, which replicates Windows cmd.*
 
-- [ATTENTION](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole#ATTENTION)
+- [ATTENTION](/com.anupackages.debugconsole#ATTENTION)
 
 ## ATTENTION
 
