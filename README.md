@@ -1,10 +1,13 @@
 ## com.anupackages.debugconsole
 *Advanced in-game console, which replicates Windows cmd.*
 
-- [ATTENTION](/com.anupackages.debugconsole#ATTENTION)
-- [ATTENTION](/com.anupackages.debugconsole#ATTENTION)
-- [ATTENTION](/com.anupackages.debugconsole#ATTENTION)
-- [ATTENTION](/com.anupackages.debugconsole#ATTENTION)
+- [ATTENTION](#ATTENTION)
+- [About](#About)
+- [How to Install](#How-to-Install)
+- [Roadmap](#Roadmap)
+- [How to use](#How-to-use)
+  - [Attributes](#Attributes)
+  - [Direct registration](#Direct-registration)
 - [License](#License)
 
 
@@ -14,7 +17,7 @@ This Asset is depends of other [repo](https://github.com/ANU-CHEEKI-BREEKI/com.a
 
 If you install this asset as package by Unity Package Manager, than packcage com.anupackages.ndesk-options will be installed automatically.
 
-## ABOUT
+## About
 Provides easy way to create and invoke debug commands in game console at runtime.
 Also it displays console messages (logs, warnings, errors, exceptions, assertions) at runtime in a build.
 
