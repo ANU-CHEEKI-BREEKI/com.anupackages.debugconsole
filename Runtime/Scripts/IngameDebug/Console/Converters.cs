@@ -161,7 +161,9 @@ namespace ANU.IngameDebug.Console
     internal class GameObjectConverter : IConverter<GameObject>
     {
         public GameObject ConvertFromString(string option)
-            => GameObject.Find(option);
+            => option.ToLower() == "null"
+                ? null
+                : GameObject.Find(option);
     }
 
     internal class ComponentConverter : IConverter
@@ -169,6 +171,36 @@ namespace ANU.IngameDebug.Console
         public Type TargetType => typeof(UnityEngine.Component);
 
         object IConverter.ConvertFromString(string option, System.Type targetType)
-            => GameObject.FindObjectsByType(targetType, FindObjectsSortMode.None).FirstOrDefault(t => t.name == option);
+            => option.ToLower() == "null"
+                ? null
+                : GameObject.FindObjectsByType(targetType, FindObjectsSortMode.None).FirstOrDefault(t => t.name == option);
+    }
+
+    internal class BoolConverter : IConverter<bool>
+    {
+        public bool ConvertFromString(string option)
+        {
+            switch (option.ToLower())
+            {
+                case "0":
+                case "-":
+                case "false":
+                case "no":
+                case "n":
+                case "discard":
+                case "cancel":
+                    return false;
+                case "1":
+                case "+":
+                case "true":
+                case "yes":
+                case "y":
+                case "approve":
+                case "apply":
+                    return true;
+                default:
+                    throw new Exception($"Not a valid input for Boolean: {option}");
+            }
+        }
     }
 }

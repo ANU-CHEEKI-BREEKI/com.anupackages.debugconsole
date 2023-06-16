@@ -111,6 +111,11 @@ namespace ANU.IngameDebug.Console.Commands
             if (string.IsNullOrEmpty(args))
                 args = "<>";
 
+            //TODO: preprocess command to define if there are any mandatory option leading -- or -
+            // if no - add corresponding option names to match passed parameters
+            // this way we will be able to use console like C# methods - pass mandatory parameters without option names
+            // or pass with names manually, oor combine, but if we pass any option name - all next parameters should be passed with option names too
+
             try
             {
                 var notParsedOptions = options.Parse(args.SplitCommandLine());

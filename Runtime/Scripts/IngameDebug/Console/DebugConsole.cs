@@ -267,6 +267,7 @@ namespace ANU.IngameDebug.Console
             Converters.Register(new Color32Converter());
             Converters.Register(new GameObjectConverter());
             Converters.Register(new ComponentConverter());
+            Converters.Register(new BoolConverter());
         }
 
         private void OnDestroy()
@@ -358,6 +359,7 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
             // DebugConsole.RegisterCommand<Quaternion>("TestQuat", "", t => Debug.Log(t));
             // DebugConsole.RegisterCommand<GameObject>("TestGo", "", t => Debug.Log(t));
             // DebugConsole.RegisterCommand<DebugConsole>("TestComponent_DebugConsole", "", t => Debug.Log(t));
+            DebugConsole.RegisterCommand<bool>("test-bool", "", t => Debug.Log(t));
         }
 
         private void Update()
