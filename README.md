@@ -53,10 +53,12 @@ Sypported parameter types and some syntax flexibility:
   - false: `0`, `-`, `no`, `n`, `discard`, `cancel`, `off`
 - `Quaternion`
   - parsed as `Vector3` euler angles
-- `Color`, `Color32`
-  - as `Vector3`
-  - as `Vector4`
-  - as [HtmlString](https://docs.unity3d.com/ScriptReference/ColorUtility.TryParseHtmlString.html), for example `#RGB`, `#RRGGBBAA`, `red`, 'cyan', etc..
+- `Color32`
+  - parsed as `Color`
+- `Color`, 
+  - parsed as `Vector3`
+  - parsed as `Vector4`
+  - parsed as [HtmlString](https://docs.unity3d.com/ScriptReference/ColorUtility.TryParseHtmlString.html), for example `#RGB`, `#RRGGBBAA`, `red`, 'cyan', etc..
 - vectors (`Vector2Int`, `Vector2`, `Vector3Int`, `Vector3`, `Vector4`)
   - `[]` or `()` are equivalented, so below listed samples for `[]` only
   - `,` or ` `as component delimiter: `[1, 2, 3]` or `[1 2 3]` or `[1  , 2   ,3   ]` are equivalented
