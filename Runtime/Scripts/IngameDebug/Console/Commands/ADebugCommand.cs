@@ -50,7 +50,7 @@ namespace ANU.IngameDebug.Console.Commands
 
                     var val = "=VALUE";
                     if (InternalValueHints.ContainsKey(opt))
-                        val = "=" + string.Join("|", InternalValueHints[opt]);
+                        val = "=" + string.Join(", -", InternalValueHints[opt]);
 
                     switch (opt.OptionValueType)
                     {
@@ -113,13 +113,13 @@ namespace ANU.IngameDebug.Console.Commands
 
             try
             {
-                var notParcedOptions = options.Parse(args.SplitCommandLine());
+                var notParsedOptions = options.Parse(args.SplitCommandLine());
 
-                if (notParcedOptions.Any())
+                if (notParsedOptions.Any())
                 {
                     var builder = new StringBuilder();
                     builder.AppendLine("there is no options with names:");
-                    foreach (var item in notParcedOptions)
+                    foreach (var item in notParsedOptions)
                     {
                         builder.Append("    ");
                         builder.AppendLine(item);

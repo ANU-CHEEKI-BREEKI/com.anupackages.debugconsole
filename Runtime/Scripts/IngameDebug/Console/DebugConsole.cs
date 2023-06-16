@@ -58,6 +58,13 @@ namespace ANU.IngameDebug.Console
             set => _commandsLogger.Logger = value;
         }
 
+        private readonly static ConverterRegistry _converters = new();
+        private readonly static CommandInputPreprocessor _preprocessors = new();
+
+        internal static ConverterRegistry ConvertersRegistry => _converters;
+        public IConverterRegistry Converters => _converters;
+        internal static CommandInputPreprocessor Preprocessors => _preprocessors;
+
         private static ISuggestionsContext SuggestionsContext
         {
             get => _suggestionsContext;
@@ -86,7 +93,7 @@ namespace ANU.IngameDebug.Console
 
         public static void RegisterCommand(Delegate command, Action<ICommandMetaData[]> metaDataCustomize = null)
             => RegisterCommand(command.Method, command.Target, metaDataCustomize);
-        
+
         public static void RegisterCommand(string name, string description, Delegate command, Action<ICommandMetaData[]> metaDataCustomize = null)
             => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
 
@@ -169,6 +176,7 @@ namespace ANU.IngameDebug.Console
                 if (Instance != null)
                     Instance._input.text = "";
 
+
                 if (!silent)
                 {
                     _commandsHistory.Record(commandLine);
@@ -208,6 +216,8 @@ namespace ANU.IngameDebug.Console
             _historyContext = new HistorySuggestionsContext(_commandsHistory);
             _content.SetActive(false);
 
+            SetUpPreprocessors();
+            SetUpConverters();
             SetupConsoleCommands();
 
             _input.onSubmit.AddListener(text =>
@@ -240,6 +250,16 @@ namespace ANU.IngameDebug.Console
             LoadCommandsHistory(_commandsHistory);
         }
 
+        private void SetUpPreprocessors()
+        {
+            Preprocessors.Add(new BracketsToStringPreprocessor());
+        }
+
+        private void SetUpConverters()
+        {
+            Converters.Register(new Vector2IntConverter());
+        }
+
         private void OnDestroy()
         {
             Application.logMessageReceived -= LogMessageReceived;
@@ -249,6 +269,7 @@ namespace ANU.IngameDebug.Console
 
         private static void ExecuteCommandInternal(string commandLine)
         {
+            commandLine = _preprocessors.Preprocess(commandLine);
             var commandName = ExtractCommandName(commandLine);
 
             if (!_commands.ContainsKey(commandName))

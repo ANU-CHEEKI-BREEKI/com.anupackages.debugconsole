@@ -65,7 +65,7 @@ namespace ANU.IngameDebug.Console
             if (!HasSize)
                 Size = _rect.sizeDelta;
 
-            InternalConsoleSize(Size);
+            _rect.sizeDelta = Size;
         }
 
         void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
@@ -121,6 +121,7 @@ namespace ANU.IngameDebug.Console
         private void ConsoleSize(
             [OptAltNames("v")]
             [OptDesc("in range [10,100]")]
+            [OptVal("[50, 50]", "[70, 70]", "[100, 100]")]
             Vector2Int value
         )
         {

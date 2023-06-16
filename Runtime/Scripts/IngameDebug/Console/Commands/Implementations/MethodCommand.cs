@@ -117,13 +117,19 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                     optionDescription,
                     value =>
                     {
+                        value = value.Trim('"').Trim('\'');
+
                         if (isOptional && value == null)
                         {
                             // do nothing
                         }
                         else
                         {
-                            if (isFlag)
+                            if (DebugConsole.ConvertersRegistry.TryConvert(parameter.ParameterType, value, out var convertedValue))
+                            {
+                                _parameterValues[parameterIndex] = convertedValue;
+                            }
+                            else if (isFlag)
                             {
                                 _parameterValues[parameterIndex] = value != null;
                             }
