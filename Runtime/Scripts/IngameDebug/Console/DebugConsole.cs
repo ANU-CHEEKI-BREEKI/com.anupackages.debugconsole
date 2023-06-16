@@ -258,6 +258,15 @@ namespace ANU.IngameDebug.Console
         private void SetUpConverters()
         {
             Converters.Register(new Vector2IntConverter());
+            Converters.Register(new Vector2Converter());
+            Converters.Register(new Vector3IntConverter());
+            Converters.Register(new Vector3Converter());
+            Converters.Register(new Vector4Converter());
+            Converters.Register(new QuaternionConverter());
+            Converters.Register(new ColorConverter());
+            Converters.Register(new Color32Converter());
+            Converters.Register(new GameObjectConverter());
+            Converters.Register(new ComponentConverter());
         }
 
         private void OnDestroy()
@@ -340,6 +349,15 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
                     return set;
                 })
             );
+
+            // DebugConsole.RegisterCommand<Vector2Int>("TestV2Int", "", t => Debug.Log(t));
+            // DebugConsole.RegisterCommand<Vector2>("TestV2", "", t => Debug.Log(t));
+            // DebugConsole.RegisterCommand<Vector3Int>("TestV3Int", "", t => Debug.Log(t));
+            // DebugConsole.RegisterCommand<Vector3>("TestV3", "", t => Debug.Log(t));
+            // DebugConsole.RegisterCommand<Vector4>("TestV4", "", t => Debug.Log(t));
+            // DebugConsole.RegisterCommand<Quaternion>("TestQuat", "", t => Debug.Log(t));
+            // DebugConsole.RegisterCommand<GameObject>("TestGo", "", t => Debug.Log(t));
+            // DebugConsole.RegisterCommand<DebugConsole>("TestComponent_DebugConsole", "", t => Debug.Log(t));
         }
 
         private void Update()

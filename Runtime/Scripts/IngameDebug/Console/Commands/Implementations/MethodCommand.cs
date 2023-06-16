@@ -125,13 +125,13 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                         }
                         else
                         {
-                            if (DebugConsole.ConvertersRegistry.TryConvert(parameter.ParameterType, value, out var convertedValue))
-                            {
-                                _parameterValues[parameterIndex] = convertedValue;
-                            }
-                            else if (isFlag)
+                            if (isFlag)
                             {
                                 _parameterValues[parameterIndex] = value != null;
+                            }
+                            else if (DebugConsole.ConvertersRegistry.TryConvert(parameter.ParameterType, value, out var convertedValue))
+                            {
+                                _parameterValues[parameterIndex] = convertedValue;
                             }
                             else
                             {
