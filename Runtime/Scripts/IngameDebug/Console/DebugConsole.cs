@@ -162,15 +162,18 @@ namespace ANU.IngameDebug.Console
             public AvailableValuesHint AvailableValues { get; set; }
         }
 
-        public static void ExecuteCommand(string commandLine)
+        public static void ExecuteCommand(string commandLine, bool silent = false)
         {
             try
             {
                 if (Instance != null)
                     Instance._input.text = "";
 
-                _commandsHistory.Record(commandLine);
-                Log("> " + commandLine);
+                if (!silent)
+                {
+                    _commandsHistory.Record(commandLine);
+                    Log("> " + commandLine);
+                }
 
                 if (Router != null)
                     Router.SendCommand(commandLine);

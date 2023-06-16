@@ -71,8 +71,9 @@ namespace ANU.IngameDebug.Console
             {
                 CurrentScale = Mathf.Clamp(value, 50, 200);
                 ResetInput();
-
                 _scaler.referenceResolution = _initialResolutionReference / (CurrentScale / 100f);
+
+                DebugConsole.ExecuteCommand("refresh-console-size", silent: true);
             }
         }
     }
