@@ -47,14 +47,21 @@ Each star ★ on the project page brings new features closer. You can suggest ne
 
 ## How to use
 
-Vector2Int, Vector2, Vector3Int, Vector3, Vector4, Quaternion, Color, Color32, GameObject, Component, any type inherited from Component
+Color, Color32, GameObject, Component, any type inherited from Component
 also custom converter for `bool` to support some flexibility in the syntax;
 
 syntax flexibility:
-- bool (non case sensitive)
+- `bool` (non case sensitive)
   - true: `1`, `+`, `yes`, `y`, `approve`, `apply`, `on`
   - false: `0`, `-`, `no`, `n`, `discard`, `cancel`, `off`
-- vectors `[]` or `()` are equivalented, so below listed samples for `[]` only
+- `Quaternion`
+  - parsed as `Vector3` euler angles
+- `Color`, `Color32`
+  - as `Vector3`
+  - as `Vector4`
+  - as [HtmlString](https://docs.unity3d.com/ScriptReference/ColorUtility.TryParseHtmlString.html), for example `#RGB`, `#RRGGBBAA`, `red`, 'cyan', etc..
+- vectors (`Vector2Int`, `Vector2`, `Vector3Int`, `Vector3`, `Vector4`)
+  - `[]` or `()` are equivalented, so below listed samples for `[]` only
   - `[]`: all components equals zero
   - `[n]`: all components equals `n`
 - GameObject and Component
