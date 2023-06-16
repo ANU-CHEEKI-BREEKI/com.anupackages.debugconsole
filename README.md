@@ -59,7 +59,7 @@ Sypported parameter types and some syntax flexibility:
   - as [HtmlString](https://docs.unity3d.com/ScriptReference/ColorUtility.TryParseHtmlString.html), for example `#RGB`, `#RRGGBBAA`, `red`, 'cyan', etc..
 - vectors (`Vector2Int`, `Vector2`, `Vector3Int`, `Vector3`, `Vector4`)
   - `[]` or `()` are equivalented, so below listed samples for `[]` only
-  - `,` or ` `as xomponent delimiter: `[1, 2, 3]` or `[1 2 3]` or `[1  , 2   ,3   ]` are equivalented
+  - `,` or ` `as component delimiter: `[1, 2, 3]` or `[1 2 3]` or `[1  , 2   ,3   ]` are equivalented
   - `[]`: all components equals zero
   - `[n]`: all components equals `n`
 - GameObject and Component, any type inherited from Component
