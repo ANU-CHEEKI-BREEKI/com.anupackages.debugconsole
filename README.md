@@ -48,6 +48,8 @@ Each star ★ on the project page brings new features closer. You can suggest ne
 ## How to use
 
 Sypported parameter types and some syntax flexibility:
+- `string`
+  - surround with `"` or `'`
 - `bool` (non case sensitive)
   - true: `1`, `+`, `yes`, `y`, `approve`, `apply`, `on`
   - false: `0`, `-`, `no`, `n`, `discard`, `cancel`, `off`
