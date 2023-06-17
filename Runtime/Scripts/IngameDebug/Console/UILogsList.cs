@@ -125,9 +125,9 @@ namespace ANU.IngameDebug.Console
                 var c = _content.GetChild(i) as RectTransform;
                 var itemWRect = c.GetWorldRect();
 
-                // c.GetComponentInChildren<TextMeshProUGUI>().color = itemWRect.IsInside(parentWRect)
-                //     ? Color.white
-                //     : Color.red;
+                c.GetComponentInChildren<TextMeshProUGUI>().color = itemWRect.IsInside(parentWRect)
+                    ? Color.white
+                    : Color.red;
 
 
                 // debug text directly in log message
@@ -136,37 +136,10 @@ namespace ANU.IngameDebug.Console
                 //     t.text += "{-}";
                 // t.text = System.Text.RegularExpressions.Regex.Replace(t.text, @"\{.*\}", $"{{{r}}}");
             }
+
+            // get start index from scrollbar
+            // spawn items until there are free space in the container
+            // and adjust content position after rebuild layout
         }
-
-        private void OnDrawGizmos()
-        {
-            var parentWRect = _viewPort.GetWorldRect();
-
-            for (int i = 0; i < _content.childCount && i <= 0 ; i++)
-            {
-                var c = _content.GetChild(i) as RectTransform;
-                var itemWRect = c.GetWorldRect();
-
-                Extensions.TryGetIntersection(parentWRect, itemWRect, includeZeroSize: false, out var intersection);
-                Gizmos.color = Color.magenta;
-                Gizmos.DrawWireCube(parentWRect.center, parentWRect.size);
-                Gizmos.color = Color.green;
-                Gizmos.DrawWireCube(itemWRect.center, itemWRect.size);
-                Gizmos.color = Color.blue;
-                Gizmos.DrawWireCube(intersection.center, intersection.size);
-                
-                c.GetComponentInChildren<TextMeshProUGUI>().color = itemWRect.IsInside(parentWRect, 1f)
-                   ? Color.white
-                   : Color.red;
-
-                Debug.Log($"inside: {itemWRect.IsInside(parentWRect)}");
-                Debug.Log($"itemWRect, {itemWRect.x}, {itemWRect.y}, {itemWRect.height}, {itemWRect.width}");
-                Debug.Log($"intersection, {intersection.x}, {intersection.y}, {intersection.height}, {intersection.width}");
-            }
-        }
-
-        // get start index from scrollbar
-        // spawn items until there are free space in the container
-        // and adjust content position after rebuild layout
     }
 }
