@@ -51,6 +51,8 @@ namespace ANU.IngameDebug.Console
 
         public static bool IsOpened => Instance._content.activeInHierarchy;
         public static ICommandsRouter Router { get; set; } = null;
+        
+        public static bool ShowLogs { get; set; } = true;
 
         public static ILogger Logger
         {
@@ -447,6 +449,9 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
 
         private static void LogMessageReceived(string condition, string stackTrace, LogType type)
         {
+            if(!ShowLogs)
+                return;
+
             if (Instance == null)
                 return;
 

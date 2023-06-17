@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 namespace ANU.IngameDebug.Console
 {
+    [RequireComponent(typeof(RectTransform))]
     public class UILogPresenter : MonoBehaviour
     {
         [SerializeField] private Button _button;
@@ -16,6 +17,10 @@ namespace ANU.IngameDebug.Console
         private Log _log;
 
         public Log Log => _log;
+        public RectTransform RectTransform => transform as RectTransform;
+
+        //TODO: later add there other elements
+        public float PrefferedHeight => LayoutUtility.GetPreferredHeight(_text.rectTransform);
 
         public void Present(Log log)
         {
