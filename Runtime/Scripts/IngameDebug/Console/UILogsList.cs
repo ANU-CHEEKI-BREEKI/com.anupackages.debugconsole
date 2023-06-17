@@ -241,6 +241,11 @@ namespace ANU.IngameDebug.Console
                 // if all visible - scroll bar full sized
                 // if not visible.. ve can calculate the range of indices visible and not for size
                 // and ve can calculate position as ratio of indices that less than first child index and that greater than last child index
+                // SET VALUE WITHOUT NOTIFY
+
+
+                // WHEN scrollbar set value by ui
+                // we can release all child, and then refill from start index from bot to top.. like when we initializing the scroll. but from provided start index instead of 0
             }
 
             void CalculateClampVelocity()
