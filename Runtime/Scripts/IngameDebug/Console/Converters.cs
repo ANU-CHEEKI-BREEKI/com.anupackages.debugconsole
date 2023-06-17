@@ -189,6 +189,7 @@ namespace ANU.IngameDebug.Console
                 case "n":
                 case "discard":
                 case "cancel":
+                case "off":
                     return false;
                 case "1":
                 case "+":
@@ -197,6 +198,7 @@ namespace ANU.IngameDebug.Console
                 case "y":
                 case "approve":
                 case "apply":
+                case "on":
                     return true;
                 default:
                     throw new Exception($"Not a valid input for Boolean: {option}");
