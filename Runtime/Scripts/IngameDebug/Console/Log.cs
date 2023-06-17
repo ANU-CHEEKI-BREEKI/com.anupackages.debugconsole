@@ -13,6 +13,8 @@ namespace ANU.IngameDebug.Console
         private string _selectionSubstring;
         private string _selectedMessage;
 
+        public bool IsExpanded { get; set; }
+
         public Log(LogTypes type, string message, string stackTrace) : this(type, message, stackTrace, DateTime.Now) { }
         public Log(LogTypes type, string message, string stackTrace, DateTime receivedTime)
         {
