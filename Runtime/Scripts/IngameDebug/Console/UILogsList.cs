@@ -235,6 +235,12 @@ namespace ANU.IngameDebug.Console
 
             void UpdateScrollBar()
             {
+                //TODO: we have indices in 1st child
+                // and in last child
+                // so we can use that to calculate approximated normalized position... somehow.
+                // if all visible - scroll bar full sized
+                // if not visible.. ve can calculate the range of indices visible and not for size
+                // and ve can calculate position as ratio of indices that less than first child index and that greater than last child index
             }
 
             void CalculateClampVelocity()
