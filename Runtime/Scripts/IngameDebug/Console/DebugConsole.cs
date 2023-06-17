@@ -7,7 +7,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using ANU.IngameDebug.Utils;
-using System.Text.RegularExpressions;
 using ANU.IngameDebug.Console.Commands;
 using ANU.IngameDebug.Console.Commands.Implementations;
 using System.Reflection;
@@ -26,9 +25,6 @@ namespace ANU.IngameDebug.Console
         [SerializeField] private GameObject _content;
         [SerializeField] private TMP_InputField _input;
         [Space]
-        [SerializeField] private ScrollRect _scroll;
-        [SerializeField] private TextMeshProUGUI _consoleLog;
-        [Space]
         [SerializeField] private SuggestionPopUp _suggestions;
         [Space]
         [SerializeField] private SearchInputField _searchInput;
@@ -43,17 +39,19 @@ namespace ANU.IngameDebug.Console
         private static ISuggestionsContext _suggestionsContext;
         private static CommandsSuggestionsContext _commandsContext;
         private static HistorySuggestionsContext _historyContext;
-
-        private static Dictionary<string, ADebugCommand> _commands = new();
-        private static DebugConsole Instance { get; set; }
-
-        public static bool IsOpened => Instance._content.activeInHierarchy;
-        public static ICommandsRouter Router { get; set; } = null;
-
         private static CommandsLogger _commandsLogger = new CommandsLogger()
         {
             Logger = new UnityLogger()
         };
+
+        private static DebugConsole Instance { get; set; }
+
+        private static Dictionary<string, ADebugCommand> _commands = new();
+        internal static LogsContainer Logs { get; } = new();
+
+        public static bool IsOpened => Instance._content.activeInHierarchy;
+        public static ICommandsRouter Router { get; set; } = null;
+
         public static ILogger Logger
         {
             get => _commandsLogger.Logger;
@@ -73,6 +71,8 @@ namespace ANU.IngameDebug.Console
                     Instance._suggestions.Title = _suggestionsContext?.Title;
             }
         }
+
+        public UITheme Theme => _theme;
 
         public static void RegisterCommands(params ADebugCommand[] commands)
         {
@@ -331,8 +331,9 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
                 {
                     var maxLength = _commands.Values.Max(n => n.Name.Length);
                     var nameLength = Mathf.Max(maxLength, maxLength + 5);
-                    
+
                     var builder = new StringBuilder();
+                    builder.AppendLine("Available commands:");
                     foreach (var command in _commands.Values)
                     {
                         builder.Append("  - ");
@@ -340,10 +341,10 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
                         builder.Append(new string('-', nameLength - command.Name.Length));
                         builder.AppendLine(command.Description);
                     }
-                    
+
                     Log(builder.ToString());
                 }),
-                new LambdaCommand("clear", "clear console log", ClearLog),
+                new LambdaCommand("clear", "clear console log", Logs.Clear),
                 new LambdaCommand("suggestions-context", "switch suggestions context", SwitchContext),
                 new LambdaCommand("time", "", optionValuesHint =>
                 {
@@ -352,16 +353,6 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
                     return set;
                 })
             );
-
-            // DebugConsole.RegisterCommand<Vector2Int>("TestV2Int", "", t => Debug.Log(t));
-            // DebugConsole.RegisterCommand<Vector2>("TestV2", "", t => Debug.Log(t));
-            // DebugConsole.RegisterCommand<Vector3Int>("TestV3Int", "", t => Debug.Log(t));
-            // DebugConsole.RegisterCommand<Vector3>("TestV3", "", t => Debug.Log(t));
-            // DebugConsole.RegisterCommand<Vector4>("TestV4", "", t => Debug.Log(t));
-            // DebugConsole.RegisterCommand<Quaternion>("TestQuat", "", t => Debug.Log(t));
-            // DebugConsole.RegisterCommand<GameObject>("TestGo", "", t => Debug.Log(t));
-            // DebugConsole.RegisterCommand<DebugConsole>("TestComponent_DebugConsole", "", t => Debug.Log(t));
-            // DebugConsole.RegisterCommand<bool>("test-bool", "", t => Debug.Log(t));
         }
 
         private void Update()
@@ -454,38 +445,16 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
                 _suggestions.Hide();
         }
 
-        private void ClearLog()
-        {
-            _consoleLog.text = "";
-            _scroll.verticalScrollbar.value = 0f;
-        }
-
-        private void AppendLine(string message)
-        {
-            _consoleLog.text += $"{message}\r\n";
-            this.InvokeSkipOneFrame(() => _scroll.verticalScrollbar.value = 0f);
-        }
-
-        private void AppendLine(string message, Color color)
-            => AppendLine($"<color=#{color.ToHexString()}>{message}</color>");
-
         private static void LogMessageReceived(string condition, string stackTrace, LogType type)
         {
             if (Instance == null)
                 return;
 
-            Instance.AppendLine(
+            Logs.Add(new Log(
+                (LogTypes)type,
                 condition,
-                type switch
-                {
-                    LogType.Error => Instance._theme.Errors,
-                    LogType.Assert => Instance._theme.Assert,
-                    LogType.Warning => Instance._theme.Warnings,
-                    LogType.Log => Instance._theme.Log,
-                    LogType.Exception => Instance._theme.Exceptions,
-                    _ => Color.white
-                }
-            );
+                stackTrace
+            ));
         }
 
         private void SaveCommandsHistory(CommandLineHistory history)
@@ -541,15 +510,5 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
                 Logger.LogWarning(message, context);
             }
         }
-    }
-
-    [System.Serializable]
-    public struct UITheme
-    {
-        [field: SerializeField] public Color Log { get; private set; }
-        [field: SerializeField] public Color Warnings { get; private set; }
-        [field: SerializeField] public Color Errors { get; private set; }
-        [field: SerializeField] public Color Exceptions { get; private set; }
-        [field: SerializeField] public Color Assert { get; private set; }
     }
 }
