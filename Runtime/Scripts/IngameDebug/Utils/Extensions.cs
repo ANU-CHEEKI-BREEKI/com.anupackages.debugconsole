@@ -113,6 +113,15 @@ namespace ANU.IngameDebug.Utils
                 && Mathf.Abs(intersection.height - innerRect.height) <= epsilon;
         }
 
+        public static bool IsOutside(this Rect innerRect, Rect outterRect, float epsilon = float.Epsilon)
+        {
+            if (!TryGetIntersection(outterRect, innerRect, includeZeroSize: false, out var intersection))
+                return true;
+
+            return intersection.width < epsilon
+                && intersection.height < epsilon;
+        }
+
         public static string ToHexString(this Color color) => ColorUtility.ToHtmlStringRGBA(color);
 
         public static Coroutine InvokeSkipOneFrame(this MonoBehaviour monoBehaviour, Action method)

@@ -246,6 +246,7 @@ namespace ANU.IngameDebug.Console
 
             ExecuteCommand("clear", true);
             ExecuteCommand("help", true);
+            ExecuteCommand("refresh-console-size", true);
 
             LoadCommandsHistory(_commandsHistory);
         }

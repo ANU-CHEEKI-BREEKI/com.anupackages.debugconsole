@@ -20,6 +20,7 @@ namespace ANU.IngameDebug.Console
         private Action _onClick;
 
         public Log Log => _log;
+        public int Index { get; set; }
         public RectTransform RectTransform => transform as RectTransform;
 
         //TODO: later add there other elements
