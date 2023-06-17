@@ -20,7 +20,7 @@ namespace ANU.IngameDebug.Console
         private Action _onClick;
 
         public Log Log => _log;
-        public int Index { get; set; }
+        public int Index { get; private set; }
         public RectTransform RectTransform => transform as RectTransform;
 
         //TODO: later add there other elements
@@ -40,9 +40,10 @@ namespace ANU.IngameDebug.Console
             });
         }
 
-        public void Present(Log log, Action onClick)
+        public void Present(int index, Log log, Action onClick)
         {
-            this._onClick = onClick;
+            Index = index;
+            _onClick = onClick;
             _log = log;
             _message.text = "                      " + _log.DisplayString;
             _receivedTime.text = $"[{_log.ReceivedTime:hh:mm:ss}]";

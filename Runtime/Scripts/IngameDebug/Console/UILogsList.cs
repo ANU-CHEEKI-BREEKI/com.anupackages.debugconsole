@@ -11,16 +11,20 @@ using static ANU.IngameDebug.Console.LogsContainer;
 
 namespace ANU.IngameDebug.Console
 {
-    public class UILogsList : MonoBehaviour
+    [DefaultExecutionOrder(100)]
+    public class UILogsList : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
     {
         [SerializeField] private UILogPresenter _logPresenterPrefab;
         [SerializeField] private RectTransform _content;
-        [SerializeField] private RectTransform _viewPort;
         [SerializeField] private Scrollbar _scrollbar;
+        [Space]
+        [SerializeField] private float _elasticity = 0.1f;
+        [SerializeField] private bool _innertia = true;
+        [SerializeField] private float _decelerationRate = 0.135f;
 
         private ObjectPool<UILogPresenter> _logsPool;
-        private bool _changed;
-        private int _index;
+        private float _velocity;
+        private bool _drag;
 
         private void Awake()
         {
@@ -39,14 +43,24 @@ namespace ANU.IngameDebug.Console
                 }
             );
 
-            DebugConsole.Logs.Changed += Changed;
-
             while (_content.childCount > 0)
             {
                 var c = _content.GetChild(0);
                 c.SetParent(null);
                 Destroy(c.gameObject);
             }
+
+            DebugConsole.Logs.Changed += args =>
+            {
+                if (args.Type != CollectionChangedArgs.ChangeType.Remove)
+                    return;
+
+                foreach (var item in _content.GetComponentsInChildren<UILogPresenter>())
+                {
+                    if (args.ChangedItems.Contains(item.Log))
+                        _logsPool.Release(item);
+                };
+            };
 
             _scrollbar.value = 1f;
             _scrollbar.size = 0.1f;
@@ -82,132 +96,246 @@ namespace ANU.IngameDebug.Console
             _logsPool.Dispose();
         }
 
-        private void Changed(CollectionChangedArgs obj)
-        {
-            return;
-
-            foreach (var log in obj.ChangedItems)
-            {
-                if (obj.Type == LogsContainer.CollectionChangedArgs.ChangeType.Add)
-                {
-                    var p = _logsPool.Get();
-                    p.Present(
-                        log,
-                        onClick: () => LayoutRebuilder.ForceRebuildLayoutImmediate(p.RectTransform)
-                    );
-                    LayoutRebuilder.ForceRebuildLayoutImmediate(p.RectTransform);
-                }
-                else // remove
-                {
-                    foreach (var item in _content.GetComponentsInChildren<UILogPresenter>().Where(p => p.Log == log))
-                        _logsPool.Release(item);
-                }
-            }
-        }
-
         private void LateUpdate()
         {
             // if some item above or below container - disable it and adjust content position
-            var viewPort = _viewPort.rect;
-
-            var hAboveCenter = 0f;
-            var hBelowCenter = 0f;
-
-            var parentWRect = _viewPort.GetWorldRect();
-            var contentWRect = _content.GetWorldRect();
-            var contentLRect = _content.rect;
-            var contentW2LRatio = Mathf.Approximately(contentWRect.height, 0)
+            var parentWRect = _content.GetWorldRect();
+            var parentLRect = _content.rect;
+            var w2LRatio = Mathf.Approximately(parentWRect.height, 0)
                 ? 1
-                : contentLRect.height / contentWRect.height;
+                : parentLRect.height / parentWRect.height;
 
-            for (int i = 0; i < _content.childCount; i++)
+            Layout(parentWRect);
+            DisableOutOrParentRect(parentWRect);
+
+            // spawn items until there are free space in the container
+            SpawnBotItems(parentWRect, w2LRatio);
+            SpawnTopItems(parentWRect, w2LRatio);
+            SpawnIfNoItems(parentWRect, w2LRatio);
+            CalculateClampVelocity();
+            Scroll();
+            UpdateScrollBar();
+
+            void Layout(Rect parentWRect)
             {
-                var c = _content.GetChild(i) as RectTransform;
-                var itemWRect = c.GetWorldRect();
-
-                if (itemWRect.IsOutside(parentWRect, 1))
+                var epsilon = 1f;
+                for (int i = 0; i < _content.childCount - 1; i++)
                 {
-                    // calculate sized above and below center
-                    var a = Mathf.Max(0, Mathf.Min(itemWRect.height, itemWRect.yMax - parentWRect.center.y));
-                    var b = Mathf.Max(0, Mathf.Min(itemWRect.height, parentWRect.center.y - itemWRect.yMin));
-                    hAboveCenter += a;
-                    hBelowCenter += b;
+                    var c = _content.GetChild(i) as RectTransform;
+                    var c2 = _content.GetChild(i + 1) as RectTransform;
+                    var itemWRect = c.GetWorldRect();
+                    var itemWRect2 = c2.GetWorldRect();
 
-                    if (a > 0)
-                        _index++;
-                    if (b > 0)
-                        _index--;
+                    var offset = 0f;
 
-                    i--;
-                    _logsPool.Release(c.GetComponent<UILogPresenter>());
+                    if (itemWRect.yMin < itemWRect2.yMax)
+                        offset = (itemWRect2.yMax - itemWRect.yMin) * w2LRatio;
+                    else if (itemWRect.yMin - itemWRect2.yMax > epsilon)
+                        offset = -(itemWRect.yMin - itemWRect2.yMax) * w2LRatio;
+
+                    if (!Mathf.Approximately(offset, 0))
+                    {
+                        for (int j = i + 1; j < _content.childCount; j++)
+                            _content.GetChild(j).localPosition += Vector3.down * offset;
+                    }
                 }
             }
 
-            var g = _content.GetComponent<LayoutGroup>();
-            var p = g.padding;
-            p.top += (int)(hAboveCenter * contentW2LRatio);
-            p.bottom += (int)(hBelowCenter * contentW2LRatio);
-
-            // spawn items until there are free space in the container
-            var startIndex = 0;
-            if (_content.childCount > 0)
-                startIndex = _content.GetChild(0).GetComponent<UILogPresenter>().Index - 1;
-
-            while (p.top > 0 && startIndex > 0)
+            void DisableOutOrParentRect(Rect parentWRect)
             {
-                var log = DebugConsole.Logs[startIndex];
-                var presenter = _logsPool.Get();
-                presenter.Present(
-                    log,
-                    onClick: () => LayoutRebuilder.ForceRebuildLayoutImmediate(presenter.RectTransform)
-                );
-                LayoutRebuilder.ForceRebuildLayoutImmediate(presenter.RectTransform);
-                p.top -= (int)presenter.PrefferedHeight;
+                for (int i = 0; i < _content.childCount; i++)
+                {
+                    var c = _content.GetChild(i) as RectTransform;
+                    var itemWRect = c.GetWorldRect();
 
-                startIndex--;
+                    if (itemWRect.IsOutside(parentWRect, 1))
+                    {
+                        // calculate sized above and below center
+                        var a = Mathf.Max(0, Mathf.Min(itemWRect.height, itemWRect.yMax - parentWRect.center.y));
+                        var b = Mathf.Max(0, Mathf.Min(itemWRect.height, parentWRect.center.y - itemWRect.yMin));
+
+                        // if (a > 0)
+                        //     _index++;
+                        // if (b > 0)
+                        //     _index--;
+
+                        i--;
+                        _logsPool.Release(c.GetComponent<UILogPresenter>());
+                    }
+                }
             }
 
-            startIndex = 0;
-            if (_content.childCount > 0)
-                startIndex = _content.GetChild(_content.childCount - 1).GetComponent<UILogPresenter>().Index + 1;
-
-            while (p.bottom > 0 && startIndex < DebugConsole.Logs.Count - 1)
+            void SpawnBotItems(Rect parentWRect, float w2LRatio)
             {
-                var log = DebugConsole.Logs[startIndex];
-                var presenter = _logsPool.Get();
-                presenter.Present(
-                    log,
-                    onClick: () => LayoutRebuilder.ForceRebuildLayoutImmediate(presenter.RectTransform)
-                );
-                LayoutRebuilder.ForceRebuildLayoutImmediate(presenter.RectTransform);
-                p.bottom -= (int)presenter.PrefferedHeight;
+                if (_content.childCount > 0)
+                {
+                    var lastItem = _content.GetChild(_content.childCount - 1) as RectTransform;
+                    var lastPresenter = lastItem.GetComponent<UILogPresenter>();
+                    var lastIndex = lastPresenter.Index;
+                    var lastItemWRect = lastItem.GetWorldRect();
 
-                startIndex++;
+                    while (lastItemWRect.yMin > parentWRect.yMin && lastIndex < DebugConsole.Logs.Count - 1)
+                    {
+                        lastIndex++;
+
+                        var presenter = SpawnPresenter(lastIndex);
+                        presenter.transform.localPosition = lastItem.localPosition + Vector3.down * lastItemWRect.height * w2LRatio;
+
+                        lastItem = presenter.RectTransform;
+                        lastPresenter = presenter;
+                        lastItemWRect = lastItem.GetWorldRect();
+                    }
+                }
             }
 
-            // and adjust content position after rebuild layout
-            g.padding = p;
-
-            var contentH = contentWRect.height;
-            startIndex = 0;
-            if (_content.childCount > 0)
-                startIndex = _content.GetChild(_content.childCount - 1).GetComponent<UILogPresenter>().Index + 1;
-
-            while (contentH < parentWRect.height && startIndex < DebugConsole.Logs.Count - 1)
+            void SpawnTopItems(Rect parentWRect, float w2LRatio)
             {
-                var log = DebugConsole.Logs[startIndex];
-                var presenter = _logsPool.Get();
-                presenter.Present(
-                    log,
-                    onClick: () => LayoutRebuilder.ForceRebuildLayoutImmediate(presenter.RectTransform)
-                );
-                LayoutRebuilder.ForceRebuildLayoutImmediate(presenter.RectTransform);
-                contentH += (int)presenter.PrefferedHeight / contentW2LRatio;
+                if (_content.childCount > 0)
+                {
+                    var firstItem = _content.GetChild(0) as RectTransform;
+                    var firstPresenter = firstItem.GetComponent<UILogPresenter>();
+                    var firstIndex = firstPresenter.Index;
+                    var firstItemWRect = firstItem.GetWorldRect();
 
-                startIndex++;
+                    while (firstItemWRect.yMax < parentWRect.yMax && firstIndex > 0)
+                    {
+                        firstIndex--;
+
+                        var presenter = SpawnPresenter(firstIndex);
+                        presenter.transform.SetAsFirstSibling();
+
+                        firstItem = presenter.RectTransform;
+                        firstPresenter = presenter;
+                        firstItemWRect = firstItem.GetWorldRect();
+
+                        presenter.transform.localPosition = firstItem.localPosition + Vector3.up * firstItemWRect.height * w2LRatio;
+                    }
+                }
             }
 
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_content);
+            void SpawnIfNoItems(Rect parentWRect, float w2LRatio)
+            {
+                //if its empty - spawn from top to bot
+                // and then move lil up to scroll down to the end
+                if (_content.childCount == 0 && DebugConsole.Logs.Count > 0)
+                {
+                    Rect wRect = default;
+                    var index = 0;
+                    do
+                    {
+                        var presenter = SpawnPresenter(index);
+                        presenter.RectTransform.anchoredPosition = Vector2.zero + Vector2.down * wRect.height * w2LRatio;
+                        wRect = presenter.RectTransform.GetWorldRect();
+
+                        index++;
+                    }
+                    while (wRect.yMax < parentWRect.yMax && index < DebugConsole.Logs.Count);
+                }
+            }
+
+            void UpdateScrollBar()
+            {
+            }
+
+            void CalculateClampVelocity()
+            {
+                if (_drag)
+                    return;
+
+                if (_content.childCount <= 0)
+                    return;
+
+                var delta = 0;
+                if (_content.GetChild(0).GetComponent<UILogPresenter>().Index == 0)
+                    delta = -1;
+                else if (_content.GetChild(_content.childCount - 1).GetComponent<UILogPresenter>().Index == DebugConsole.Logs.Count - 1)
+                    delta = 1;
+
+                if (delta == 0)
+                    return;
+
+                CalculateClampDistance(delta, out var perentRect, out var distance);
+
+                if (distance < 0)
+                    return;
+
+                _velocity = -delta * distance * 10;
+            }
+
+            void Scroll()
+            {
+                if (_drag)
+                    return;
+
+                _velocity = Mathf.Lerp(_velocity, 0, _decelerationRate * Time.deltaTime);
+
+                for (int i = 0; i < _content.childCount; i++)
+                    _content.GetChild(i).localPosition += Vector3.up * _velocity * Time.deltaTime;
+            }
+        }
+
+        private UILogPresenter SpawnPresenter(int index)
+        {
+            var log = DebugConsole.Logs[index];
+            var presenter = _logsPool.Get();
+            presenter.Present(
+                index,
+                log,
+                onClick: () =>
+                {
+                    presenter.RectTransform.ForceUpdateRectTransforms();
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(presenter.RectTransform);
+                }
+            );
+            presenter.RectTransform.ForceUpdateRectTransforms();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(presenter.RectTransform);
+            var sd = presenter.RectTransform.sizeDelta;
+            sd.x = 0;
+            presenter.RectTransform.anchoredPosition = Vector2.zero;
+            presenter.RectTransform.sizeDelta = sd;
+            return presenter;
+        }
+
+        void IDragHandler.OnDrag(PointerEventData eventData)
+        {
+            _velocity = 0;
+
+            if (_content.childCount <= 0)
+                return;
+
+            var delta = eventData.delta.y;
+            CalculateClampDistance(delta, out var parentrect, out var distance);
+
+            if (distance > parentrect.height * _elasticity)
+                delta *= parentrect.height * _elasticity / distance * 0.5f;
+
+            for (int i = 0; i < _content.childCount; i++)
+                _content.GetChild(i).localPosition += Vector3.up * delta;
+        }
+
+        private void CalculateClampDistance(float delta, out Rect parentrect, out float distance)
+        {
+            var scrollDown = delta > 0;
+
+            var borderItem = _content.GetChild(scrollDown ? _content.childCount - 1 : 0) as RectTransform;
+            var wRect = borderItem.GetWorldRect();
+            parentrect = _content.GetWorldRect();
+            distance = scrollDown
+                ? wRect.yMin - parentrect.yMin
+                : parentrect.yMax - wRect.yMax;
+        }
+
+        void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
+        {
+            _drag = true;
+            _velocity = 0;
+        }
+
+        void IEndDragHandler.OnEndDrag(PointerEventData eventData)
+        {
+            _drag = false;
+            if (_innertia)
+                _velocity = eventData.delta.y / Time.deltaTime;
         }
     }
 }
