@@ -1,18 +1,13 @@
-using System.Collections.Generic;
-
 namespace ANU.IngameDebug.Console
 {
-    internal class CommandInputPreprocessor
+    public interface ICommandInputPreprocessor
     {
-        private readonly List<ICommandInputPreprocessor> _preprocessors = new();
-        public void Add(ICommandInputPreprocessor preprocessor) => _preprocessors.Add(preprocessor);
+        string Preprocess(string input);
+    }
 
-        public string Preprocess(string input)
-        {
-            foreach (var item in _preprocessors)
-                input = item.Preprocess(input);
-
-            return input;
-        }
+    public interface ICommandInputPreprocessorRegistry
+    {
+        void Add(ICommandInputPreprocessor preprocessor);
+        string Preprocess(string input);
     }
 }

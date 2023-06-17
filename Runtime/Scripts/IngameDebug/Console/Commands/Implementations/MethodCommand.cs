@@ -129,7 +129,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                             {
                                 _parameterValues[parameterIndex] = value != null;
                             }
-                            else if (DebugConsole.ConvertersRegistry.TryConvert(parameter.ParameterType, value, out var convertedValue))
+                            else if (DebugConsole.Converters.TryConvert(parameter.ParameterType, value, out var convertedValue))
                             {
                                 _parameterValues[parameterIndex] = convertedValue;
                             }

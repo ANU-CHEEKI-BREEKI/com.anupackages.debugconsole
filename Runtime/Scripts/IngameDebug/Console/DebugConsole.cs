@@ -58,12 +58,8 @@ namespace ANU.IngameDebug.Console
             set => _commandsLogger.Logger = value;
         }
 
-        private readonly static ConverterRegistry _converters = new();
-        private readonly static CommandInputPreprocessor _preprocessors = new();
-
-        internal static ConverterRegistry ConvertersRegistry => _converters;
-        public IConverterRegistry Converters => _converters;
-        internal static CommandInputPreprocessor Preprocessors => _preprocessors;
+        public static IConverterRegistry Converters { get; } = new ConverterRegistry();
+        public static ICommandInputPreprocessorRegistry Preprocessors { get; } = new CommandInputPreprocessorRegistry();
 
         private static ISuggestionsContext SuggestionsContext
         {
@@ -279,7 +275,7 @@ namespace ANU.IngameDebug.Console
 
         private static void ExecuteCommandInternal(string commandLine)
         {
-            commandLine = _preprocessors.Preprocess(commandLine);
+            commandLine = Preprocessors.Preprocess(commandLine);
             var commandName = ExtractCommandName(commandLine);
 
             if (!_commands.ContainsKey(commandName))

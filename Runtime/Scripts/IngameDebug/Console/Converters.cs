@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace ANU.IngameDebug.Console
 {
-    internal abstract class VectorConverterBase
+    public abstract class VectorConverterBase
     {
         protected IEnumerable<T> GetComponents<T>(string option)
         {
@@ -40,7 +40,7 @@ namespace ANU.IngameDebug.Console
         }
     }
 
-    internal class Vector2IntConverter : VectorConverterBase, IConverter<Vector2Int>
+    public class Vector2IntConverter : VectorConverterBase, IConverter<Vector2Int>
     {
         public Vector2Int ConvertFromString(string option)
         {
@@ -52,7 +52,7 @@ namespace ANU.IngameDebug.Console
         }
     }
 
-    internal class Vector2Converter : VectorConverterBase, IConverter<Vector2>
+    public class Vector2Converter : VectorConverterBase, IConverter<Vector2>
     {
         public Vector2 ConvertFromString(string option)
         {
@@ -64,7 +64,7 @@ namespace ANU.IngameDebug.Console
         }
     }
 
-    internal class Vector3IntConverter : VectorConverterBase, IConverter<Vector3Int>
+    public class Vector3IntConverter : VectorConverterBase, IConverter<Vector3Int>
     {
         public Vector3Int ConvertFromString(string option)
         {
@@ -76,7 +76,7 @@ namespace ANU.IngameDebug.Console
         }
     }
 
-    internal class Vector3Converter : VectorConverterBase, IConverter<Vector3>
+    public class Vector3Converter : VectorConverterBase, IConverter<Vector3>
     {
         public Vector3 ConvertFromString(string option)
         {
@@ -88,7 +88,7 @@ namespace ANU.IngameDebug.Console
         }
     }
 
-    internal class Vector4Converter : VectorConverterBase, IConverter<Vector4>
+    public class Vector4Converter : VectorConverterBase, IConverter<Vector4>
     {
         public Vector4 ConvertFromString(string option)
         {
@@ -100,7 +100,7 @@ namespace ANU.IngameDebug.Console
         }
     }
 
-    internal class QuaternionConverter : IConverter<Quaternion>
+    public class QuaternionConverter : IConverter<Quaternion>
     {
         IConverter<Vector3> _vector3Converter = new Vector3Converter();
 
@@ -111,7 +111,7 @@ namespace ANU.IngameDebug.Console
         }
     }
 
-    internal class ColorConverter : IConverter<Color>
+    public class ColorConverter : IConverter<Color>
     {
         private static readonly IConverter<Vector3> _vector3Converter = new Vector3Converter();
         private static readonly IConverter<Vector4> _vector4Converter = new Vector4Converter();
@@ -147,7 +147,7 @@ namespace ANU.IngameDebug.Console
         }
     }
 
-    internal class Color32Converter : IConverter<Color32>
+    public class Color32Converter : IConverter<Color32>
     {
         private static readonly IConverter<Color> _colorConverter = new ColorConverter();
 
@@ -158,7 +158,7 @@ namespace ANU.IngameDebug.Console
         }
     }
 
-    internal class GameObjectConverter : IConverter<GameObject>
+    public class GameObjectConverter : IConverter<GameObject>
     {
         public GameObject ConvertFromString(string option)
             => option.ToLower() == "null"
@@ -166,7 +166,7 @@ namespace ANU.IngameDebug.Console
                 : GameObject.Find(option);
     }
 
-    internal class ComponentConverter : IConverter
+    public class ComponentConverter : IConverter
     {
         public Type TargetType => typeof(UnityEngine.Component);
 
@@ -176,7 +176,7 @@ namespace ANU.IngameDebug.Console
                 : GameObject.FindObjectsByType(targetType, FindObjectsSortMode.None).FirstOrDefault(t => t.name == option);
     }
 
-    internal class BoolConverter : IConverter<bool>
+    public class BoolConverter : IConverter<bool>
     {
         public bool ConvertFromString(string option)
         {

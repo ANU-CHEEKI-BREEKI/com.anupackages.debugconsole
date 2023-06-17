@@ -24,5 +24,8 @@ namespace ANU.IngameDebug.Console
         void Register<T>(Func<string, T> converter);
         void Register<T>(IConverter<T> converter);
         void Register(IConverter converter);
+
+        bool TryConvert<T>(string option, out object value);
+        bool TryConvert(Type type, string option, out object value);
     }
 }
