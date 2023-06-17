@@ -55,7 +55,7 @@ namespace ANU.IngameDebug.Console
             if (string.IsNullOrEmpty(command))
                 return false;
 
-            _commands.RemoveaAll(v => v == command);
+            _commands.RemoveAll(v => v == command);
             _commands.AddLast(command);
             _currentNode = null;
             return true;

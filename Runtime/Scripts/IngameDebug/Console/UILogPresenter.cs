@@ -62,5 +62,9 @@ namespace ANU.IngameDebug.Console
                 _stacktrace.gameObject.SetActive(false);
             }
         }
+
+        // private void Update() {
+        //     _message.text = System.Text.RegularExpressions.Regex.Replace(_message.text, @"\{.*\}", $"{{{RectTransform.rect.center}}}");
+        // }
     }
 }

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ANU.IngameDebug.Utils;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Pool;
@@ -13,6 +15,7 @@ namespace ANU.IngameDebug.Console
     {
         [SerializeField] private UILogPresenter _logPresenterPrefab;
         [SerializeField] private RectTransform _content;
+        [SerializeField] private RectTransform _viewPort;
         [SerializeField] private Scrollbar _scrollbar;
 
         private ObjectPool<UILogPresenter> _logsPool;
@@ -23,8 +26,16 @@ namespace ANU.IngameDebug.Console
         {
             _logsPool = new UnityEngine.Pool.ObjectPool<UILogPresenter>(
                 () => Instantiate(_logPresenterPrefab),
-                actionOnGet: p => p.gameObject.SetActive(true),
-                actionOnRelease: p => p.gameObject.SetActive(false)
+                actionOnGet: p =>
+                {
+                    p.transform.SetParent(_content, false);
+                    p.gameObject.SetActive(true);
+                },
+                actionOnRelease: p =>
+                {
+                    p.gameObject.SetActive(false);
+                    p.transform.SetParent(null);
+                }
             );
 
             DebugConsole.Logs.Changed += Changed;
@@ -43,7 +54,7 @@ namespace ANU.IngameDebug.Console
         private void OnEnable()
         {
             //FIXME: layout broken on first open
-            
+
             //TODO: disable nested canvas to disable rendering
             // then rebuild layout and then enable canvas
             // to not show lags
@@ -95,98 +106,67 @@ namespace ANU.IngameDebug.Console
                     }
                 }
             }
-
-            // // release all
-            // for (int i = 0; i < _presenters.Count; i++)
-            //     _logsPool.Release(_presenters[i]);
-            // _presenters.Clear();
-
-            // if (DebugConsole.Logs.Count <= 0)
-            //     return;
-
-            // // rebind new
-            // var index = Mathf.RoundToInt(DebugConsole.Logs.Count * (1 - _scrollbar.value));
-            // // take slice of logs 
-            // var containerHeight = _content.rect.height;
-
-            // var itemsHeight = 0f;
-            // var direction = 1;
-            // var t = 0;
-            // var lowBoundary = false;
-            // var highBoundary = false;
-
-            // do
-            // {
-            //     var i = index + direction * t;
-
-            //     if (i < 0)
-            //         lowBoundary = true;
-
-            //     if (i >= DebugConsole.Logs.Count)
-            //         highBoundary = true;
-
-            //     if (i >= 0 && i < DebugConsole.Logs.Count)
-            //     {
-            //         var log = DebugConsole.Logs[i];
-            //         var p = _logsPool.Get();
-            //         p.transform.SetParent(_content, false);
-            //         p.Present(log);
-            //         itemsHeight += p.PrefferedHeight;
-
-            //         if (direction <= 0)
-            //             _presenters.Insert(0, p);
-            //         else
-            //             _presenters.Add(p);
-            //     }
-            //     direction = (int)Mathf.Sign(direction) * -1;
-            //     if (direction < 0)
-            //         t++;
-            // }
-            // while (itemsHeight < containerHeight * 2 && _presenters.Count < DebugConsole.Logs.Count && (!lowBoundary || !highBoundary));
-
-            // DebugConsole.ShowLogs = false;
-
-            // if (itemsHeight >= containerHeight * 2)
-            //     Debug.Log("itemsHeight >= containerHeight * 2");
-
-            // if (_presenters.Count >= DebugConsole.Logs.Count)
-            //     Debug.Log("_presenters.Count >= DebugConsole.Logs.Count");
-
-            // if (lowBoundary && highBoundary)
-            //     Debug.Log("lowBoundary && highBoundary");
-
-            // DebugConsole.ShowLogs = true;
-
-            // var h = 0f;
-            // var s = 0;
-            // foreach (var item in _presenters)
-            // {
-            //     var p = item.RectTransform.localPosition;
-            //     p.y = h;
-            //     item.RectTransform.localPosition = p;
-            //     h -= item.PrefferedHeight;
-            //     item.transform.SetSiblingIndex(s);
-            //     s++;
-            // }
         }
 
-        // void IDragHandler.OnDrag(PointerEventData eventData)
-        // {
-        //     for (int i = 0; i < _presenters.Count; i++)
-        //     {
-        //         _presenters[i].RectTransform.position += eventData.delta.y * Vector3.up;
-        //     }
-        // }
+        private void LateUpdate()
+        {
+            // if some item above or below container - disable it and adjust content position
+            var viewPort = _viewPort.rect;
+            var hAboveCenter = 0f;
+            var hBelowCenter = 0f;
 
-        // private void LateUpdate()
-        // {
-        //     if (_changed)
-        //     {
-        //         _changed = false;
-        //         Changed();
+            var parentWRect = _viewPort.GetWorldRect();
+            var contentWRect = _content.GetWorldRect();
+            var contentLRect = _content.rect;
+            var contentW2LRatio = contentLRect.x / contentWRect.x;
 
-        //         //FIXME: somehow update ContentSizeFitter of all visible items
-        //     }
-        // }
+            for (int i = 0; i < _content.childCount; i++)
+            {
+                var c = _content.GetChild(i) as RectTransform;
+                var itemWRect = c.GetWorldRect();
+
+                // c.GetComponentInChildren<TextMeshProUGUI>().color = itemWRect.IsInside(parentWRect)
+                //     ? Color.white
+                //     : Color.red;
+
+
+                // debug text directly in log message
+                // var t = c.GetComponentInChildren<TextMeshProUGUI>();
+                // if (!t.text.Contains('{'))
+                //     t.text += "{-}";
+                // t.text = System.Text.RegularExpressions.Regex.Replace(t.text, @"\{.*\}", $"{{{r}}}");
+            }
+        }
+
+        private void OnDrawGizmos()
+        {
+            var parentWRect = _viewPort.GetWorldRect();
+
+            for (int i = 0; i < _content.childCount && i <= 0 ; i++)
+            {
+                var c = _content.GetChild(i) as RectTransform;
+                var itemWRect = c.GetWorldRect();
+
+                Extensions.TryGetIntersection(parentWRect, itemWRect, includeZeroSize: false, out var intersection);
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawWireCube(parentWRect.center, parentWRect.size);
+                Gizmos.color = Color.green;
+                Gizmos.DrawWireCube(itemWRect.center, itemWRect.size);
+                Gizmos.color = Color.blue;
+                Gizmos.DrawWireCube(intersection.center, intersection.size);
+                
+                c.GetComponentInChildren<TextMeshProUGUI>().color = itemWRect.IsInside(parentWRect, 1f)
+                   ? Color.white
+                   : Color.red;
+
+                Debug.Log($"inside: {itemWRect.IsInside(parentWRect)}");
+                Debug.Log($"itemWRect, {itemWRect.x}, {itemWRect.y}, {itemWRect.height}, {itemWRect.width}");
+                Debug.Log($"intersection, {intersection.x}, {intersection.y}, {intersection.height}, {intersection.width}");
+            }
+        }
+
+        // get start index from scrollbar
+        // spawn items until there are free space in the container
+        // and adjust content position after rebuild layout
     }
 }

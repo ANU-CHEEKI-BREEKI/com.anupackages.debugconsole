@@ -49,7 +49,7 @@ namespace ANU.IngameDebug.Utils
             return input;
         }
 
-        public static int RemoveaAll<T>(this LinkedList<T> list, Func<T, bool> predcate)
+        public static int RemoveAll<T>(this LinkedList<T> list, Func<T, bool> predcate)
         {
             if (predcate == null || list.Count <= 0)
                 return 0;
@@ -103,11 +103,14 @@ namespace ANU.IngameDebug.Utils
                 return intersection.size.x > 0 && intersection.size.y > 0;
         }
 
-        public static bool IsInside(this Rect outterRect, Rect innerRect)
+        public static bool IsInside(this Rect innerRect, Rect outterRect, float epsilon = float.Epsilon)
         {
             if (!TryGetIntersection(outterRect, innerRect, includeZeroSize: false, out var intersection))
                 return false;
-            return intersection == innerRect;
+            return Mathf.Abs(intersection.x - innerRect.x) <= epsilon
+                && Mathf.Abs(intersection.y - innerRect.y) <= epsilon
+                && Mathf.Abs(intersection.width - innerRect.width) <= epsilon
+                && Mathf.Abs(intersection.height - innerRect.height) <= epsilon;
         }
 
         public static string ToHexString(this Color color) => ColorUtility.ToHtmlStringRGBA(color);

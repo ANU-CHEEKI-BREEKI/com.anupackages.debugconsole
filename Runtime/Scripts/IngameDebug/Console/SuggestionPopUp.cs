@@ -208,7 +208,7 @@ namespace ANU.IngameDebug.Console
             var parentRect = (_scrollRect.transform as RectTransform).GetWorldRect();
             var targetRect = target.GetWorldRect();
 
-            if (!targetRect.IsInside(parentRect))
+            if (!parentRect.IsInside(targetRect))
             {
                 var shift = Vector2.zero;
 
