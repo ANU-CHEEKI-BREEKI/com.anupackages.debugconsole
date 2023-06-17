@@ -47,7 +47,7 @@ Each star ★ on the project page brings new features closer. You can suggest ne
 
 ## How to use
 
-Sypported parameter types and some syntax flexibility:
+Supported parameter types and some syntax flexibility:
 - `string`
   - surround with `"` or `'`
 - `bool` (non case sensitive)
@@ -57,10 +57,10 @@ Sypported parameter types and some syntax flexibility:
   - parsed as `Vector3` euler angles
 - `Color32`
   - parsed as `Color`
-- `Color`, 
+- `Color`
   - parsed as `Vector3`
   - parsed as `Vector4`
-  - parsed as [HtmlString](https://docs.unity3d.com/ScriptReference/ColorUtility.TryParseHtmlString.html), for example `#RGB`, `#RRGGBBAA`, `red`, 'cyan', etc..
+  - parsed as [HtmlString](https://docs.unity3d.com/ScriptReference/ColorUtility.TryParseHtmlString.html), for example `#RGB`, `#RRGGBBAA`, `red`, `cyan`, etc..
 - vectors (`Vector2Int`, `Vector2`, `Vector3Int`, `Vector3`, `Vector4`)
   - `[]` or `()` are equivalented, so below listed samples for `[]` only
   - `,` or ` `as component delimiter: `[1, 2, 3]` or `[1 2 3]` or `[1  , 2   ,3   ]` are equivalented
