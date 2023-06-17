@@ -1,4 +1,4 @@
-namespace ANU.IngameDebug.Console
+namespace ANU.IngameDebug.Console.CommandLinePreprocessors
 {
     public interface ICommandInputPreprocessor
     {

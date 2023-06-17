@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ANU.IngameDebug.Console
+namespace ANU.IngameDebug.Console.Converters
 {
     internal class ConverterRegistry : IConverterRegistry
     {

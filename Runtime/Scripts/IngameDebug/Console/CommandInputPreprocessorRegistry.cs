@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ANU.IngameDebug.Console
+namespace ANU.IngameDebug.Console.CommandLinePreprocessors
 {
     internal class CommandInputPreprocessorRegistry : ICommandInputPreprocessorRegistry
     {

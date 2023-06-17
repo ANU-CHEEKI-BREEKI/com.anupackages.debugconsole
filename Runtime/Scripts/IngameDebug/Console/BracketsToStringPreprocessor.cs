@@ -1,10 +1,11 @@
 using System;
 using System.Text.RegularExpressions;
+using ANU.IngameDebug.Console.CommandLinePreprocessors;
 using UnityEngine;
 
 namespace ANU.IngameDebug.Console
 {
-    internal class BracketsToStringPreprocessor : ICommandInputPreprocessor
+    public class BracketsToStringPreprocessor : ICommandInputPreprocessor
     {
         private readonly Regex _regex;
 

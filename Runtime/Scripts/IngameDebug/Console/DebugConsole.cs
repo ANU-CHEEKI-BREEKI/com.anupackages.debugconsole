@@ -11,6 +11,8 @@ using System.Text.RegularExpressions;
 using ANU.IngameDebug.Console.Commands;
 using ANU.IngameDebug.Console.Commands.Implementations;
 using System.Reflection;
+using ANU.IngameDebug.Console.Converters;
+using ANU.IngameDebug.Console.CommandLinePreprocessors;
 
 namespace ANU.IngameDebug.Console
 {
@@ -240,8 +242,8 @@ namespace ANU.IngameDebug.Console
 
             _suggestions.Hided += () => SuggestionsContext = _commandsContext;
 
-            ExecuteCommand("clear");
-            ExecuteCommand("help");
+            ExecuteCommand("clear", true);
+            ExecuteCommand("help", true);
 
             LoadCommandsHistory(_commandsHistory);
         }
@@ -311,7 +313,7 @@ namespace ANU.IngameDebug.Console
         {
             DebugConsole.RegisterCommands(
                 new LambdaCommand("help", "print help", () => Log(
-$@"To call command                 - enter command name and parameters
+$@"To call command               - enter command name and parameters
     for example: ""command_name -param_name_1 -param_name_2""
 To see all commands              - enter command ""list""
 To see concrete command help     - enter command name with parameter ""-help""
@@ -327,14 +329,18 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
 ")),
                 new LambdaCommand("list", "print all command names with descriptions", () =>
                 {
+                    var maxLength = _commands.Values.Max(n => n.Name.Length);
+                    var nameLength = Mathf.Max(maxLength, maxLength + 5);
+                    
                     var builder = new StringBuilder();
                     foreach (var command in _commands.Values)
                     {
                         builder.Append("  - ");
-                        builder.AppendLine(command.Name);
-                        builder.Append("        ");
+                        builder.Append(command.Name);
+                        builder.Append(new string('-', nameLength - command.Name.Length));
                         builder.AppendLine(command.Description);
                     }
+                    
                     Log(builder.ToString());
                 }),
                 new LambdaCommand("clear", "clear console log", ClearLog),

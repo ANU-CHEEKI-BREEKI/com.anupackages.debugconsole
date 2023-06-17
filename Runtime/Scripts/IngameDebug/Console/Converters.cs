@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-namespace ANU.IngameDebug.Console
+namespace ANU.IngameDebug.Console.Converters
 {
     public abstract class VectorConverterBase
     {

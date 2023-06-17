@@ -42,7 +42,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 9.999878, y: 10}
-  m_SizeDelta: {x: 1123.8716, y: 827.8444}
+  m_SizeDelta: {x: 1590.7705, y: 1037.949}
   m_Pivot: {x: 0, y: 0}
 --- !u!222 &6582383314641204496
 CanvasRenderer:
@@ -2391,8 +2391,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "dfsdf \nsdfsdf\nsdfsdfs\nsdfsdfs\n<color=#f88f>this is an arror</color>\nsdad\n<color=#ffff88ff>this
-    is a warning</color>\nsdf\nsdf\nsd\nfs\ndfsdfsdfsdf\nsdfs\nfsdf\n\nsdfsdfsdfsd\nkjoioji"
+  m_text: "12345\n    5\ndfsdf \nsdfsdf\nsdfsdfs\nsdfsdfs\n<color=#f88f>this is an
+    arror</color>\nsdad\n<color=#ffff88ff>this is a warning</color>\nsdf\nsdf\nsd\nfs\ndfsdfsdfsdf\nsdfs\nfsdf\n\nsdfsdfsdfsd\nkjoioji"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2413,8 +2413,8 @@ MonoBehaviour:
   m_fontColorGradientPreset: {fileID: 0}
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
-  m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: -1183493901
+  m_StyleSheet: {fileID: 11400000, guid: b96f4e70432d24664a1bb678d09e8eb0, type: 2}
+  m_TextStyleHashCode: 387027396
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2

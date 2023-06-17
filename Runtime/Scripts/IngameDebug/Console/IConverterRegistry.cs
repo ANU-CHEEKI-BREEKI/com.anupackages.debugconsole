@@ -1,6 +1,6 @@
 using System;
 
-namespace ANU.IngameDebug.Console
+namespace ANU.IngameDebug.Console.Converters
 {
     public interface IConverter
     {
