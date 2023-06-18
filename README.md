@@ -76,6 +76,9 @@ Supported parameter types and some syntax flexibility:
   - used `GameObject.Find` and filtered by `name` for Component types
   - can pass `null` (non case sensitive)
 
+### command line syntax
+NDeskOptions + C# optional and named parameters style
+
 
 commands categories
 commands list
