@@ -82,6 +82,9 @@ Infinite scroll
 
 ### Custom converters
 
+
+### public ILogger Logger { get; set; }
+
 ### Custom commandline preprocessors
 
 ## License
