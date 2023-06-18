@@ -447,7 +447,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 728492913941291625}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a4db7a114972834c8e4117be1d82ba3, type: 3}
+  m_Script: {fileID: 11500000, guid: 16135f5043e6546619eb902d95fbab68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
@@ -480,8 +480,8 @@ MonoBehaviour:
   m_Interactable: 1
   m_TargetGraphic: {fileID: 6582050061693897910}
   m_HandleRect: {fileID: 4855249315321555189}
-  m_Direction: 2
-  m_Value: 1
+  m_Direction: 3
+  m_Value: 0
   m_Size: 0.1
   m_NumberOfSteps: 1
   m_OnValueChanged:

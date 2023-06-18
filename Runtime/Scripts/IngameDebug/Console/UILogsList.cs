@@ -16,7 +16,7 @@ namespace ANU.IngameDebug.Console
     {
         [SerializeField] private UILogPresenter _logPresenterPrefab;
         [SerializeField] private RectTransform _content;
-        [SerializeField] private Scrollbar _scrollbar;
+        [SerializeField] private CustomScrollBar _scrollbar;
         [Space]
         [SerializeField] private float _elasticity = 0.1f;
         [SerializeField] private bool _innertia = true;
@@ -62,8 +62,9 @@ namespace ANU.IngameDebug.Console
                 };
             };
 
-            _scrollbar.value = 1f;
-            _scrollbar.size = 0.1f;
+            _scrollbar.value = 0;
+            _scrollbar.size = 1;
+            _scrollbar.onValueChanged.AddListener(ScrollNormalize);
         }
 
         private void OnEnable()
@@ -167,85 +168,75 @@ namespace ANU.IngameDebug.Console
 
             void SpawnBotItems(Rect parentWRect, float w2LRatio)
             {
-                if (_content.childCount > 0)
+                if (_content.childCount <= 0)
+                    return;
+
+                var lastItem = _content.GetChild(_content.childCount - 1) as RectTransform;
+                var lastPresenter = lastItem.GetComponent<UILogPresenter>();
+                var lastIndex = lastPresenter.Index;
+                var lastItemWRect = lastItem.GetWorldRect();
+
+                while (lastItemWRect.yMin > parentWRect.yMin && lastIndex < DebugConsole.Logs.Count - 1)
                 {
-                    var lastItem = _content.GetChild(_content.childCount - 1) as RectTransform;
-                    var lastPresenter = lastItem.GetComponent<UILogPresenter>();
-                    var lastIndex = lastPresenter.Index;
-                    var lastItemWRect = lastItem.GetWorldRect();
+                    lastIndex++;
 
-                    while (lastItemWRect.yMin > parentWRect.yMin && lastIndex < DebugConsole.Logs.Count - 1)
-                    {
-                        lastIndex++;
+                    var presenter = SpawnPresenter(lastIndex);
+                    presenter.transform.localPosition = lastItem.localPosition + Vector3.down * lastItemWRect.height * w2LRatio;
 
-                        var presenter = SpawnPresenter(lastIndex);
-                        presenter.transform.localPosition = lastItem.localPosition + Vector3.down * lastItemWRect.height * w2LRatio;
-
-                        lastItem = presenter.RectTransform;
-                        lastPresenter = presenter;
-                        lastItemWRect = lastItem.GetWorldRect();
-                    }
+                    lastItem = presenter.RectTransform;
+                    lastPresenter = presenter;
+                    lastItemWRect = lastItem.GetWorldRect();
                 }
             }
 
             void SpawnTopItems(Rect parentWRect, float w2LRatio)
             {
-                if (_content.childCount > 0)
+                if (_content.childCount <= 0)
+                    return;
+
+                var firstItem = _content.GetChild(0) as RectTransform;
+                var firstPresenter = firstItem.GetComponent<UILogPresenter>();
+                var firstIndex = firstPresenter.Index;
+                var firstItemWRect = firstItem.GetWorldRect();
+
+                while (firstItemWRect.yMax < parentWRect.yMax && firstIndex > 0)
                 {
-                    var firstItem = _content.GetChild(0) as RectTransform;
-                    var firstPresenter = firstItem.GetComponent<UILogPresenter>();
-                    var firstIndex = firstPresenter.Index;
-                    var firstItemWRect = firstItem.GetWorldRect();
+                    firstIndex--;
 
-                    while (firstItemWRect.yMax < parentWRect.yMax && firstIndex > 0)
-                    {
-                        firstIndex--;
+                    var presenter = SpawnPresenter(firstIndex);
+                    presenter.transform.SetAsFirstSibling();
 
-                        var presenter = SpawnPresenter(firstIndex);
-                        presenter.transform.SetAsFirstSibling();
+                    firstItem = presenter.RectTransform;
+                    firstPresenter = presenter;
+                    firstItemWRect = firstItem.GetWorldRect();
 
-                        firstItem = presenter.RectTransform;
-                        firstPresenter = presenter;
-                        firstItemWRect = firstItem.GetWorldRect();
-
-                        presenter.transform.localPosition = firstItem.localPosition + Vector3.up * firstItemWRect.height * w2LRatio;
-                    }
-                }
-            }
-
-            void SpawnIfNoItems(Rect parentWRect, float w2LRatio)
-            {
-                //if its empty - spawn from top to bot
-                // and then move lil up to scroll down to the end
-                if (_content.childCount == 0 && DebugConsole.Logs.Count > 0)
-                {
-                    Rect wRect = default;
-                    var index = 0;
-                    do
-                    {
-                        var presenter = SpawnPresenter(index);
-                        presenter.RectTransform.anchoredPosition = Vector2.zero + Vector2.down * wRect.height * w2LRatio;
-                        wRect = presenter.RectTransform.GetWorldRect();
-
-                        index++;
-                    }
-                    while (wRect.yMax < parentWRect.yMax && index < DebugConsole.Logs.Count);
+                    presenter.transform.localPosition = firstItem.localPosition + Vector3.up * firstItemWRect.height * w2LRatio;
                 }
             }
 
             void UpdateScrollBar()
             {
-                //TODO: we have indices in 1st child
-                // and in last child
-                // so we can use that to calculate approximated normalized position... somehow.
-                // if all visible - scroll bar full sized
-                // if not visible.. ve can calculate the range of indices visible and not for size
-                // and ve can calculate position as ratio of indices that less than first child index and that greater than last child index
-                // SET VALUE WITHOUT NOTIFY
+                if (_scrollbar.IsDragging)
+                    return;
 
+                var range = 0;
+                var firstIndex = 0;
+                var lastIndex = 0;
+                if (_content.childCount > 0)
+                {
+                    firstIndex = _content.GetChild(0).GetComponent<UILogPresenter>().Index;
+                    lastIndex = _content.GetChild(_content.childCount - 1).GetComponent<UILogPresenter>().Index;
+                    range = lastIndex - firstIndex;
+                }
 
-                // WHEN scrollbar set value by ui
-                // we can release all child, and then refill from start index from bot to top.. like when we initializing the scroll. but from provided start index instead of 0
+                _scrollbar.size = DebugConsole.Logs.Count == 0
+                    ? 1f
+                    : range / (float)DebugConsole.Logs.Count;
+
+                _scrollbar.SetValueWithoutNotify(DebugConsole.Logs.Count == 0
+                    ? 0f
+                    : firstIndex / (float)(DebugConsole.Logs.Count - range)
+                );
             }
 
             void CalculateClampVelocity()
@@ -283,6 +274,73 @@ namespace ANU.IngameDebug.Console
                 for (int i = 0; i < _content.childCount; i++)
                     _content.GetChild(i).localPosition += Vector3.up * _velocity * Time.deltaTime;
             }
+        }
+
+        void SpawnIfNoItems(Rect parentWRect, float w2LRatio)
+        {
+            if (_content.childCount > 0)
+                return;
+
+            var startIndex = Mathf.RoundToInt(
+                _scrollbar.value * DebugConsole.Logs.Count
+            );
+
+            var fullHeight = 0f;
+
+            //if its empty - spawn from top to bot
+            // and then move lil up to scroll down to the end
+            var nextIndex = startIndex;
+            var h = 0f;
+            while (fullHeight < parentWRect.height && nextIndex < DebugConsole.Logs.Count)
+            {
+                var presenter = SpawnPresenter(nextIndex);
+                presenter.RectTransform.anchoredPosition = Vector2.zero + Vector2.down * h * w2LRatio;
+                var wRect = presenter.RectTransform.GetWorldRect();
+                fullHeight += wRect.height;
+                h = wRect.height;
+
+                nextIndex++;
+            }
+
+            var prevIndex = startIndex - 1;
+            var upH = 0f;
+            while (fullHeight < parentWRect.height && prevIndex < DebugConsole.Logs.Count && prevIndex > 0)
+            {
+                var presenter = SpawnPresenter(prevIndex);
+                var wRect = presenter.RectTransform.GetWorldRect();
+                presenter.RectTransform.anchoredPosition = Vector2.zero + Vector2.up * wRect.height * w2LRatio;
+                fullHeight += wRect.height;
+                upH += wRect.height;
+
+                prevIndex++;
+            }
+
+            // move down to fir UP items inside parent rect
+            for (int i = 0; i < _content.childCount; i++)
+                _content.GetChild(i).localPosition += Vector3.down * upH * w2LRatio;
+        }
+
+        private void ScrollNormalize(float normalizedPosition)
+        {
+            // WHEN scrollbar set value by ui
+            // we can release all child, and then refill from start index from bot to top.. 
+            // like when we initializing the scroll. but from provided start index instead of 0
+
+            _velocity = 0;
+            while (_content.childCount > 0)
+            {
+                _logsPool.Release(
+                    _content.GetChild(0).GetComponent<UILogPresenter>()
+                );
+            }
+
+            var parentWRect = _content.GetWorldRect();
+            var parentLRect = _content.rect;
+            var w2LRatio = Mathf.Approximately(parentWRect.height, 0)
+                ? 1
+                : parentLRect.height / parentWRect.height;
+
+            SpawnIfNoItems(parentLRect, w2LRatio);
         }
 
         private UILogPresenter SpawnPresenter(int index)
