@@ -1,0 +1,122 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8a59f4f6bfa9464f90c87a0a08f2e16, type: 3}
+  m_Name: 02-Dark
+  m_EditorClassIdentifier: 
+  <Input>k__BackingField: {r: 0, g: 0.30056715, b: 1, a: 1}
+  <Log>k__BackingField: {r: 0, g: 1, b: 0.49324322, a: 1}
+  <Warnings>k__BackingField: {r: 1, g: 1, b: 0, a: 1}
+  <Errors>k__BackingField: {r: 1, g: 0, b: 0, a: 1}
+  <Exceptions>k__BackingField: {r: 1, g: 0, b: 0, a: 1}
+  <Assert>k__BackingField: {r: 1, g: 0, b: 0.65546227, a: 1}
+  <Stacktrace>k__BackingField: {r: 0.8584906, g: 0.8382432, b: 0.8382432, a: 1}
+  _message_Log:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _message_Warnings:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _message_Errors:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _message_Exceptions:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _message_Assert:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _output_Log:
+    _isEnabled: 1
+    _value: {r: 0, g: 1, b: 0.048674583, a: 1}
+  _output_Warnings:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _output_Errors:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _output_Exceptions:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _output_Assert:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  <Background>k__BackingField: {r: 0, g: 0, b: 0, a: 0.68235296}
+  <Foreground>k__BackingField: {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 0.68235296}
+  <Font>k__BackingField: {r: 0.8584906, g: 0.8584906, b: 0.8584906, a: 1}
+  <FontSelected>k__BackingField: {r: 0.8962264, g: 0.66494215, b: 0, a: 1}
+  <FontPressed>k__BackingField: {r: 0.6132076, g: 0.4552196, b: 0, a: 1}
+  <ScrollBar_Background>k__BackingField: {r: 0.3773585, g: 0.3773585, b: 0.3773585,
+    a: 0.28627452}
+  <ScrollBar_Foreground>k__BackingField: {r: 0.735849, g: 0.735849, b: 0.735849, a: 0.21960784}
+  _consoleList_Background:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _consoleList_Foreground:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _consoleList_ScrollBar_Background:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _consoleList_ScrollBar_Foreground:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _suggestions_Background:
+    _isEnabled: 1
+    _value: {r: 0, g: 0, b: 0, a: 1}
+  _suggestions_Font:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _suggestions_FontSelected:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _suggestions_FontPressed:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _suggestions_ScrollBar_Background:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _suggestions_ScrollBar_Foreground:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _commandLine_Background:
+    _isEnabled: 1
+    _value: {r: 0, g: 0, b: 0, a: 1}
+  _commandLine_Foreground:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _commandLine_Font:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _commandLineControls_Foreground:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _commandLineControls_Font:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _resize_Background:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _resize_Foreground:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _resize_Font:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  filter_Background:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  filter_Foreground:
+    _isEnabled: 1
+    _value: {r: 1, g: 1, b: 1, a: 0.09803922}
+  filter_Font:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
