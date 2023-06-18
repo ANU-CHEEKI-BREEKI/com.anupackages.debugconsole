@@ -3773,6 +3773,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _content: {fileID: 308017275168155019}
   _input: {fileID: 4953431976657879906}
+  _submit: {fileID: 4406182309212703401}
+  _clear: {fileID: 437850544577155313}
+  _close: {fileID: 837183489544980374}
   _suggestions: {fileID: 4683053573495274068}
   _theme:
     <Log>k__BackingField: {r: 1, g: 1, b: 1, a: 1}

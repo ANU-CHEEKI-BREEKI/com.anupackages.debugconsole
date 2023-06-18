@@ -25,6 +25,9 @@ namespace ANU.IngameDebug.Console
 
         [SerializeField] private GameObject _content;
         [SerializeField] private TMP_InputField _input;
+        [SerializeField] private Button _submit;
+        [SerializeField] private Button _clear;
+        [SerializeField] private Button _close;
         [Space]
         [SerializeField] private SuggestionPopUp _suggestions;
         [Space]
@@ -206,18 +209,20 @@ namespace ANU.IngameDebug.Console
             SetUpConverters();
             SetupConsoleCommands();
 
-            _input.onSubmit.AddListener(text =>
-            {
-                if (string.IsNullOrEmpty(text))
-                    return;
-                ExecuteCommand(text);
-            });
+            _input.onSubmit.AddListener(text => Submit());
             _input.onValueChanged.AddListener(text =>
             {
                 if (text != _commandsHistory.Current)
                     _commandsHistory.Reset();
 
                 DisplaySuggestions(text);
+            });
+            _submit.onClick.AddListener(Submit);
+            _clear.onClick.AddListener(Logs.Clear);
+            _close.onClick.AddListener(() =>
+            {
+                _content.SetActive(false);
+                _input.text = "";
             });
 
             _suggestions.Chosen += s =>
@@ -234,6 +239,14 @@ namespace ANU.IngameDebug.Console
             ExecuteCommand("help", true);
 
             LoadCommandsHistory(_commandsHistory);
+
+            void Submit()
+            {
+                var text = _input.text;
+                if (string.IsNullOrEmpty(text))
+                    return;
+                ExecuteCommand(text);
+            }
         }
 
         private void SetUpPreprocessors()
