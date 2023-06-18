@@ -43,7 +43,7 @@ User interface is created with uGUI and packed in a single SpriteAtlas.
 ## How to Install
 
 - via Unity Package Manager
-  - git url: `https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/tree/log-list.git`
+  - git url: `https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole.git`
   - npm package: ``
 - download sources as zip archive and import to your project
 - asset store?
