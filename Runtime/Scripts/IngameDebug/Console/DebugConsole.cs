@@ -346,7 +346,7 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
 
                     var builder = new StringBuilder();
                     builder.AppendLine("Available commands:");
-                    foreach (var command in _commands.Values)
+                    foreach (var command in _commands.Values.OrderBy(cmd => cmd.Name))
                     {
                         builder.Append("  - ");
                         builder.Append(command.Name);

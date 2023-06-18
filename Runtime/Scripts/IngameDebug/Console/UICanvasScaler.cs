@@ -53,7 +53,7 @@ namespace ANU.IngameDebug.Console
 
         private void ResetInput() => _exact.text = CurrentScale.ToString() + "%";
 
-        [DebugCommand(Description = "Set console ui scale.")]
+        [DebugCommand(Name = "console.scale", Description = "Set console ui scale.")]
         private void ConsoleScale(
             [OptVal("50", "75", "100", "125", "150", "200")]
             [OptAltNames("v")]
@@ -73,7 +73,7 @@ namespace ANU.IngameDebug.Console
                 ResetInput();
                 _scaler.referenceResolution = _initialResolutionReference / (CurrentScale / 100f);
 
-                DebugConsole.ExecuteCommand("refresh-console-size", silent: true);
+                DebugConsole.ExecuteCommand("console.refresh-size", silent: true);
             }
         }
     }

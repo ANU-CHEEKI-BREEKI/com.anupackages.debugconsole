@@ -111,13 +111,13 @@ namespace ANU.IngameDebug.Console
             SizeYVPort = corner.y / Screen.height;
         }
 
-        [DebugCommand]
+        [DebugCommand(Name = "console.refresh-size")]
         private void RefreshConsoleSize() => ConsoleSize(new Vector2Int(
             Mathf.RoundToInt(SizeXVPort * 100f),
             Mathf.RoundToInt(SizeYVPort * 100f)
         ));
 
-        [DebugCommand(Description = "Set console rect relative size to vieport")]
+        [DebugCommand(Name = "console.size", Description = "Set console rect size relative to vieport. Values is Vector2Int in range [0, 100]")]
         private void ConsoleSize(
             [OptAltNames("v")]
             [OptDesc("in range [10,100]")]
