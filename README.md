@@ -1,5 +1,5 @@
 ## com.anupackages.debugconsole
-*Advanced in-game console, which replicates Windows cmd.*
+*Advanced in-game console for Unity 3D, which replicates Windows cmd.*
 
 <img width="432" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/373256d9-ea6e-479f-a8ae-e29c0c3c55e8">
 
@@ -74,6 +74,11 @@ Supported parameter types and some syntax flexibility:
 
 ### Direct registration
 
+### Custom converters
+
+### Custom commandline preprocessors
+
+### Infinite scroll
 
 ## License
 [MIT licensed](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/blob/log-list/LICENCE.md).
