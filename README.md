@@ -84,6 +84,9 @@ Infinite scroll
 
 ### Attributes
 
+#### Static 
+#### Instanced
+
 ### Direct registration
 
 ### Custom converters
@@ -92,6 +95,8 @@ Infinite scroll
 ### public ILogger Logger { get; set; }
 
 ### Custom commandline preprocessors
+
+### UI Themes
 
 ## License
 [MIT licensed](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/blob/log-list/LICENCE.md).
