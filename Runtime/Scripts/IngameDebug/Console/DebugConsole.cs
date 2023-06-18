@@ -31,7 +31,8 @@ namespace ANU.IngameDebug.Console
         [Space]
         [SerializeField] private SuggestionPopUp _suggestions;
         [Space]
-        [SerializeField] private UITheme _theme;
+        [SerializeField] private UITheme[] _themes;
+        [SerializeField] private UITheme _currentTheme;
 
         private static CommandLineHistory _commandsHistory = new CommandLineHistory();
 
@@ -68,7 +69,18 @@ namespace ANU.IngameDebug.Console
             }
         }
 
-        public UITheme Theme => _theme;
+        public static event Action<UITheme> ThemeChanged;
+        public static UITheme CurrentTheme
+        {
+            get => Instance == null ? null : Instance._currentTheme;
+            private set
+            {
+                if (Instance._currentTheme == value)
+                    return;
+                Instance._currentTheme = value;
+                ThemeChanged?.Invoke(CurrentTheme);
+            }
+        }
 
         public static void RegisterCommands(params ADebugCommand[] commands)
         {
@@ -179,7 +191,7 @@ namespace ANU.IngameDebug.Console
                 if (Router != null)
                     Router.SendCommand(commandLine);
                 else
-                    ExecuteCommandInternal(commandLine);
+                    ExecuteCommandInternal(commandLine, silent);
             }
             finally
             {
@@ -188,8 +200,29 @@ namespace ANU.IngameDebug.Console
             }
         }
 
+        private void OnValidate()
+        {
+            if (Application.isPlaying)
+                return;
+
+            Instance = this;
+            ThemeChanged?.Invoke(CurrentTheme);
+
+            if (CurrentTheme != null)
+                CurrentTheme.Changed += () => ThemeChanged?.Invoke(CurrentTheme);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ClearStatic()
+        {
+            Instance = null;
+        }
+
         private void Awake()
         {
+            if (!Application.isPlaying)
+                return;
+
             if (Instance != null)
             {
                 Destroy(gameObject);
@@ -276,14 +309,14 @@ namespace ANU.IngameDebug.Console
 
         private void OnApplicationQuit() => SaveCommandsHistory(_commandsHistory);
 
-        private static void ExecuteCommandInternal(string commandLine)
+        private static void ExecuteCommandInternal(string commandLine, bool silent)
         {
             try
             {
                 commandLine = Preprocessors.Preprocess(commandLine);
                 var commandName = ExtractCommandName(commandLine);
 
-                if (!_commands.ContainsKey(commandName))
+                if (!_commands.ContainsKey(commandName) && !silent)
                 {
                     Logger.LogError($"There is no command with name \"{commandName}\". Enter \"help\" to see command usage.");
                     return;
@@ -304,11 +337,8 @@ namespace ANU.IngameDebug.Console
             }
             catch (Exception ex)
             {
-                //FIXME: somehow need to be able to mark this log as output but still be able to determine
-                // LogType (error, exception.. etx)
-                // also need to print it to console but not receive on MessageReceived
-                // maybe do this By logger? we already have it inside commands. then also need to pass logger to converters and preprocessors
-                Logger.LogException(ex);
+                if (!silent)
+                    Logger.LogException(ex);
             }
         }
 
@@ -365,10 +395,72 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
                     return set;
                 })
             );
+            DebugConsole.RegisterCommand(new Action<int, string, bool>(SetConsoleTheme));
+        }
+
+        [DebugCommand(Name = "console.theme", Description = "Set console theme at runtime. Pass index or name of wanted UITheme listed in DebugConsole Themes list")]
+        private void SetConsoleTheme(
+            [OptAltNames("i")]
+            int index = -1,
+            [OptAltNames("n")]
+            string name = "",
+            [OptAltNames("l"), OptDesc("Print all available themes")]
+            bool list = false
+        )
+        {
+            if (list)
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine($"There are {_themes.Length} themes available: ");
+                for (int i = 0; i < _themes.Length; i++)
+                {
+                    var item = _themes[i];
+                    sb.AppendLine($"[{i}]: {item.name}");
+                }
+                Logger.Log(sb.ToString());
+                return;
+            }
+
+
+            if (_themes.Length == 0)
+            {
+                Logger.LogError("Provide at least one item in DebugConsole Themes list");
+            }
+            else if (index >= 0)
+            {
+                if (index < 0)
+                {
+                    Logger.LogError("Index should be greater or equals 0");
+                    return;
+                }
+                else if (index >= _themes.Length)
+                {
+                    Logger.LogError($"Index out of bounds Themes list. There are {_themes.Length} themes available");
+                    return;
+                }
+
+                var theme = _themes[index];
+                CurrentTheme = theme;
+            }
+            else if (!string.IsNullOrEmpty(name))
+            {
+                var theme = _themes.FirstOrDefault(t => t.name == name);
+                if (theme == null)
+                    Logger.LogError($"Theme \"{name}\" not found. Provide at least one item with name \"{name}\" in DebugConsole Themes list");
+                else
+                    CurrentTheme = theme;
+            }
+            else
+            {
+                Logger.LogError("Provide index or name of wanted UITheme listed in DebugConsole Themes list");
+            }
         }
 
         private void Update()
         {
+            if (!Application.isPlaying)
+                return;
+
             var controlDown = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
             var tildePressed = Input.GetKeyDown(KeyCode.Tilde) || Input.GetKeyDown(KeyCode.BackQuote);
             var dotPressed = Input.GetKeyDown(KeyCode.Period);

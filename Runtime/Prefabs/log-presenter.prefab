@@ -67,9 +67,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: '                     Lorem ipsum dolor sit amet, consectetur adipiscing
-    elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Et sollicitudin
-    ac orci phasellus egestas tellus rutrum tellus pellentesque. Metus dictum at
-    tempor commodo ullamcorper a lacus vestibulum.'
+    elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. '
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -78,8 +76,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4287138047
+  m_fontColor: {r: 1, g: 0.53333336, b: 0.53333336, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -211,12 +209,6 @@ MonoBehaviour:
     elementum curabitur vitae nunc sed velit. Ornare arcu dui vivamus arcu felis
     bibendum ut tristique et. Quisque id diam vel quam elementum pulvinar etiam.
     Ac tincidunt vitae semper quis lectus nulla. Arcu odio ut sem nulla pharetra.
-    Purus in mollis nunc sed id semper risus. Ultricies lacus sed turpis tincidunt
-    id aliquet. Sit amet nulla facilisi morbi tempus iaculis urna. Turpis massa sed
-    elementum tempus egestas sed. Enim praesent elementum facilisis leo. Porttitor
-    eget dolor morbi non arcu. Habitant morbi tristique senectus et netus et malesuada.
-    Proin nibh nisl condimentum id venenatis a. Lacus sed viverra tellus in hac habitasse
-    platea dictumst. Egestas erat imperdiet sed euismod nisi porta.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -225,8 +217,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4292730333
+  m_fontColor: {r: 0.8679245, g: 0.8679245, b: 0.8679245, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -352,6 +344,8 @@ MonoBehaviour:
   _iconError: {fileID: 21300000, guid: 799bcf69d647346328470e461d545fe3, type: 3}
   _iconInput: {fileID: 21300000, guid: 44d8b26dcd2d14944be18765653b36c1, type: 3}
   _iconOutput: {fileID: 21300000, guid: 880e936bef3c24f028ac4c1874453327, type: 3}
+  _debugConsoleLogType: 0
+  _debugMessageType: 0
 --- !u!114 &2368201777362762101
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -596,8 +590,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4287138047
+  m_fontColor: {r: 1, g: 0.53333336, b: 0.53333336, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -736,7 +730,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.53333336, b: 0.53333336, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

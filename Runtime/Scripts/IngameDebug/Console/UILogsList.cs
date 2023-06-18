@@ -11,6 +11,7 @@ using static ANU.IngameDebug.Console.LogsContainer;
 namespace ANU.IngameDebug.Console
 {
     [DefaultExecutionOrder(100)]
+    [ExecuteAlways]
     internal class UILogsList : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
     {
         [SerializeField] private UILogPresenter _logPresenterPrefab;
@@ -28,6 +29,8 @@ namespace ANU.IngameDebug.Console
         [SerializeField] private UIMessageTypeToggle _errors;
         [Space]
         [SerializeField] private Button _scrollToEnd;
+        [Space]
+        // [SerializeField] private T _field = value;
 
         private ObjectPool<UILogPresenter> _logsPool;
         private float _velocity;
@@ -37,6 +40,9 @@ namespace ANU.IngameDebug.Console
 
         private void Awake()
         {
+            if (!Application.isPlaying)
+                return;
+
             DebugConsole.RegisterCommand(new Action<bool>(Expand));
             DebugConsole.RegisterCommand(new Action<bool>(AutoScroll));
             DebugConsole.RegisterCommand(new Action<float>(ScrollNormalize));
@@ -96,6 +102,21 @@ namespace ANU.IngameDebug.Console
             _scrollToEndEnabled = true;
         }
 
+        private void OnEnable() {
+            DebugConsole.ThemeChanged += UpdateTheme;
+        }
+
+        private void OnDisable() {
+            DebugConsole.ThemeChanged -= UpdateTheme;
+        }
+
+        private void UpdateTheme(UITheme obj)
+        {
+            _logs.Color = obj?.Log ?? Color.white;
+            _warnings.Color = obj?.Warnings ?? Color.white;
+            _errors.Color = obj?.Errors ?? Color.white;
+        }
+
         private void ScrollToBot()
         {
             ScrollNormalize(1);
@@ -125,21 +146,13 @@ namespace ANU.IngameDebug.Console
                 + DebugConsole.Logs.GetMessagesCountFor(LogType.Assert);
         }
 
-        private void Start()
-        {
-            // fill debug logs
-            var LongText = "\r\nLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Elementum integer enim neque volutpat ac tincidunt vitae. Massa tempor nec feugiat nisl pretium fusce id. Tincidunt augue interdum velit euismod in pellentesque massa placerat. At lectus urna duis convallis convallis tellus id interdum velit. Sit amet mattis vulputate enim nulla aliquet porttitor. Non arcu risus quis varius quam quisque id diam. Interdum posuere lorem ipsum dolor sit amet consectetur adipiscing elit. Vestibulum morbi blandit cursus risus at. Ac placerat vestibulum lectus mauris ultrices eros in cursus. Libero justo laoreet sit amet. Praesent elementum facilisis leo vel. Blandit libero volutpat sed cras. Gravida in fermentum et sollicitudin ac.";
-
-            var ShortText = "Lorem ipsum dolor sit amet";
-
-            for (int i = 0; i < 500; i++)
-                Debug.Log($" --->   {i}   <--- {(i % 10 == 0 && UnityEngine.Random.value < 0.2f ? LongText : ShortText)}");
-        }
-
-        private void OnDestroy() => _logsPool.Dispose();
+        private void OnDestroy() => _logsPool?.Dispose();
 
         private void LateUpdate()
         {
+               if (!Application.isPlaying)
+                return;
+
             _scrollToEnd.gameObject.SetActive(!_scrollToEndEnabled);
 
             // if some item above or below container - disable it and adjust content position

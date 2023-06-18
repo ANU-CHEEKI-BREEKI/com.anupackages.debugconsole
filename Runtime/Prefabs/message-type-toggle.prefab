@@ -478,5 +478,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _toggle: {fileID: 7937201225685027857}
+  _icon: {fileID: 704684138147459433}
   _label: {fileID: 7993929680996738698}
   _types: 
