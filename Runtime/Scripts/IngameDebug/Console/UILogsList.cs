@@ -37,6 +37,7 @@ namespace ANU.IngameDebug.Console
 
         private void Awake()
         {
+            DebugConsole.RegisterCommand(new Action<bool>(Expand));
             DebugConsole.RegisterCommand(new Action<bool>(AutoScroll));
             DebugConsole.RegisterCommand(new Action<float>(ScrollNormalize));
             DebugConsole.RegisterCommand(new Action<string, bool, bool, bool, bool>(FilterItems));
@@ -376,6 +377,16 @@ namespace ANU.IngameDebug.Console
             // move down to fit UP items inside parent rect
             for (int i = 0; i < _content.childCount; i++)
                 _content.GetChild(i).localPosition += Vector3.down * upH;
+        }
+
+        [DebugCommand(Name = "console.fold-in", Description = "Fold in all messages")]
+        private void Expand(
+            [OptDesc("Set this flag to expand all message instead"), OptAltNames("e")]
+            bool expand = false
+        )
+        {
+            foreach (var item in DebugConsole.Logs.AllLogs)
+                item.IsExpanded = expand;
         }
 
         [DebugCommand(Name = "console.filter", Description = "Filter console messages by message type or/and search string")]

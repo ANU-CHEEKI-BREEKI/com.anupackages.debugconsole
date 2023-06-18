@@ -72,7 +72,7 @@ namespace ANU.IngameDebug.Console
 
         private void UpdateStacktrace()
         {
-            if (Log.IsExpanded)
+            if (Log.IsExpanded && !string.IsNullOrEmpty(Log.StackTrace))
             {
                 _stacktrace.text = Log.StackTrace;
                 _stacktrace.gameObject.SetActive(true);
@@ -82,5 +82,7 @@ namespace ANU.IngameDebug.Console
                 _stacktrace.gameObject.SetActive(false);
             }
         }
+
+        private void Update() => UpdateStacktrace();
     }
 }

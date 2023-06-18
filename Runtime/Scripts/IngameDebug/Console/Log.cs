@@ -29,7 +29,7 @@ namespace ANU.IngameDebug.Console
         {
             ConsoleLogtype = consoleLogType;
             MessageType = messageType;
-            
+
             Message = message;
             StackTrace = stackTrace;
             ReceivedTime = receivedTime;
