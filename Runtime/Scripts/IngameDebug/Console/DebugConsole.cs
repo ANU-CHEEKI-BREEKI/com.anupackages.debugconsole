@@ -268,9 +268,6 @@ namespace ANU.IngameDebug.Console
 
             _suggestions.Hided += () => SuggestionsContext = _commandsContext;
 
-            ExecuteCommand("clear", true);
-            ExecuteCommand("help", true);
-
             LoadCommandsHistory(_commandsHistory);
 
             void Submit()
@@ -280,6 +277,13 @@ namespace ANU.IngameDebug.Console
                     return;
                 ExecuteCommand(text);
             }
+        }
+
+        private void Start()
+        {
+            ExecuteCommand("clear", true);
+            ExecuteCommand("list", true);
+            ExecuteCommand("help", true);
         }
 
         private void SetUpPreprocessors()
