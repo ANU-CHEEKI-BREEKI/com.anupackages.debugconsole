@@ -33,16 +33,10 @@ namespace ANU.IngameDebug.Console.Commands
         {
             using (var writer = new StringWriter())
             {
-                writer.WriteLine("Name:");
-                writer.Write("    ");
-                writer.WriteLine(Name);
-
-                writer.WriteLine("Description:");
-                writer.Write("    ");
-                writer.WriteLine(Description);
-
+                writer.WriteLine($"Help for {Name} command usage:");
+                writer.WriteLine($"{"Name:",-15} {Name}");
+                writer.WriteLine($"{"Description:",-15} {Description}");
                 writer.WriteLine("Options:");
-
                 foreach (var opt in Options)
                 {
                     writer.Write("    --");
@@ -123,13 +117,13 @@ namespace ANU.IngameDebug.Console.Commands
                 if (notParsedOptions.Any())
                 {
                     var builder = new StringBuilder();
-                    builder.AppendLine("there is no options with names:");
+                    builder.AppendLine("there are no options with names:");
                     foreach (var item in notParsedOptions)
                     {
                         builder.Append("    ");
                         builder.AppendLine(item);
                     }
-                    builder.AppendLine("maybe you forgot type -- before option?:");
+                    builder.AppendLine("maybe you forgot to type -- before option?:");
                     Logger.LogWarning(builder.ToString());
                 }
                 else

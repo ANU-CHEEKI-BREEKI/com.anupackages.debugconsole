@@ -1,12 +1,9 @@
 namespace ANU.IngameDebug.Console
 {
-    public enum LogTypes
+    public enum ConsoleLogType
     {
-        Error,
-        Assertion,
-        Warning,
-        Log,
-        Exception,
+        AppMessage,
         Input,
+        Output,
     }
 }

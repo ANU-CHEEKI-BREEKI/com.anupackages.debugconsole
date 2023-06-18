@@ -12,6 +12,7 @@ using ANU.IngameDebug.Console.Commands.Implementations;
 using System.Reflection;
 using ANU.IngameDebug.Console.Converters;
 using ANU.IngameDebug.Console.CommandLinePreprocessors;
+using System.Text.RegularExpressions;
 
 namespace ANU.IngameDebug.Console
 {
@@ -27,22 +28,15 @@ namespace ANU.IngameDebug.Console
         [Space]
         [SerializeField] private SuggestionPopUp _suggestions;
         [Space]
-        [SerializeField] private SearchInputField _searchInput;
-        [SerializeField] private Toggle _logToggle;
-        [SerializeField] private Toggle _warningToggle;
-        [SerializeField] private Toggle _errorToggle;
-        [Space]
         [SerializeField] private UITheme _theme;
 
         private static CommandLineHistory _commandsHistory = new CommandLineHistory();
 
+        private static readonly Regex _receivedMessageTypeRegex = new Regex(@"\[console:(?<type>.*?)\] ");
+
         private static ISuggestionsContext _suggestionsContext;
         private static CommandsSuggestionsContext _commandsContext;
         private static HistorySuggestionsContext _historyContext;
-        private static CommandsLogger _commandsLogger = new CommandsLogger()
-        {
-            Logger = new UnityLogger()
-        };
 
         private static DebugConsole Instance { get; set; }
 
@@ -51,17 +45,14 @@ namespace ANU.IngameDebug.Console
 
         public static bool IsOpened => Instance._content.activeInHierarchy;
         public static ICommandsRouter Router { get; set; } = null;
-        
+
         public static bool ShowLogs { get; set; } = true;
 
-        public static ILogger Logger
-        {
-            get => _commandsLogger.Logger;
-            set => _commandsLogger.Logger = value;
-        }
+        private static ILogger InputLogger { get; } = new UnityLogger(ConsoleLogType.Input);
+        public static ILogger Logger { get; } = new UnityLogger(ConsoleLogType.Output);
 
-        public static IConverterRegistry Converters { get; } = new ConverterRegistry();
-        public static ICommandInputPreprocessorRegistry Preprocessors { get; } = new CommandInputPreprocessorRegistry();
+        public static IConverterRegistry Converters { get; } = new ConverterRegistry(Logger);
+        public static ICommandInputPreprocessorRegistry Preprocessors { get; } = new CommandInputPreprocessorRegistry(Logger);
 
         private static ISuggestionsContext SuggestionsContext
         {
@@ -85,7 +76,7 @@ namespace ANU.IngameDebug.Console
         public static void RegisterCommand(ADebugCommand command)
         {
             _commands[command.Name] = command;
-            command.Logger = _commandsLogger;
+            command.Logger = Logger;
         }
 
         public static void RegisterCommand(string name, string description, Action command, Action<ICommandMetaData[]> metaDataCustomize = null)
@@ -176,11 +167,10 @@ namespace ANU.IngameDebug.Console
                 if (Instance != null)
                     Instance._input.text = "";
 
-
                 if (!silent)
                 {
                     _commandsHistory.Record(commandLine);
-                    Log("> " + commandLine);
+                    InputLogger.Log(commandLine);
                 }
 
                 if (Router != null)
@@ -190,14 +180,10 @@ namespace ANU.IngameDebug.Console
             }
             finally
             {
-                Instance._input.ActivateInputField();
+                if (Instance != null)
+                    Instance._input.ActivateInputField();
             }
         }
-
-        public static void Log(string message, object context = null) => Logger?.Log(message, context == null ? Instance : context);
-        public static void LogWarning(string message, object context = null) => Logger?.LogWarning(message, context == null ? Instance : context);
-        public static void LogError(string message, object context = null) => Logger?.LogError(message, context == null ? Instance : context);
-        public static void LogException(Exception exception, object context = null) => Logger?.LogException(exception, context == null ? Instance : context);
 
         private void Awake()
         {
@@ -246,7 +232,6 @@ namespace ANU.IngameDebug.Console
 
             ExecuteCommand("clear", true);
             ExecuteCommand("help", true);
-            ExecuteCommand("refresh-console-size", true);
 
             LoadCommandsHistory(_commandsHistory);
         }
@@ -280,27 +265,38 @@ namespace ANU.IngameDebug.Console
 
         private static void ExecuteCommandInternal(string commandLine)
         {
-            commandLine = Preprocessors.Preprocess(commandLine);
-            var commandName = ExtractCommandName(commandLine);
-
-            if (!_commands.ContainsKey(commandName))
+            try
             {
-                LogError($"There is no command with name \"{commandName}\". Enter \"help\" to see command usage.");
-                return;
+                commandLine = Preprocessors.Preprocess(commandLine);
+                var commandName = ExtractCommandName(commandLine);
+
+                if (!_commands.ContainsKey(commandName))
+                {
+                    Logger.LogError($"There is no command with name \"{commandName}\". Enter \"help\" to see command usage.");
+                    return;
+                }
+
+                var command = _commands[commandName];
+
+                // remove command name from command line input
+                if (commandLine != null)
+                {
+                    var nameIndex = commandLine.IndexOf(command.Name);
+                    commandLine = commandLine
+                        .Remove(0, command.Name.Length)
+                        .Trim();
+                }
+
+                command.Execute(commandLine);
             }
-
-            var command = _commands[commandName];
-
-            // remove command name from command line input
-            if (commandLine != null)
+            catch (Exception ex)
             {
-                var nameIndex = commandLine.IndexOf(command.Name);
-                commandLine = commandLine
-                    .Remove(0, command.Name.Length)
-                    .Trim();
+                //FIXME: somehow need to be able to mark this log as output but still be able to determine
+                // LogType (error, exception.. etx)
+                // also need to print it to console but not receive on MessageReceived
+                // maybe do this By logger? we already have it inside commands. then also need to pass logger to converters and preprocessors
+                Logger.LogException(ex);
             }
-
-            command.Execute(commandLine);
         }
 
         private static string ExtractCommandName(string commandLine)
@@ -315,8 +311,8 @@ namespace ANU.IngameDebug.Console
         private void SetupConsoleCommands()
         {
             DebugConsole.RegisterCommands(
-                new LambdaCommand("help", "print help", () => Log(
-$@"To call command               - enter command name and parameters
+                new LambdaCommand("help", "print help", () => Logger.Log(
+    $@"To call command               - enter command name and parameters
     for example: ""command_name -param_name_1 -param_name_2""
 To see all commands              - enter command ""list""
 To see concrete command help     - enter command name with parameter ""-help""
@@ -345,7 +341,7 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
                         builder.AppendLine(command.Description);
                     }
 
-                    Log(builder.ToString());
+                    Logger.Log(builder.ToString());
                 }),
                 new LambdaCommand("clear", "clear console log", Logs.Clear),
                 new LambdaCommand("suggestions-context", "switch suggestions context", SwitchContext),
@@ -450,14 +446,25 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
 
         private static void LogMessageReceived(string condition, string stackTrace, LogType type)
         {
-            if(!ShowLogs)
+            if (!ShowLogs)
                 return;
 
             if (Instance == null)
                 return;
 
+            var logType = ConsoleLogType.AppMessage;
+            var match = _receivedMessageTypeRegex.Match(condition);
+
+            if (match.Success && match.Index == 0)
+            {
+                condition = condition.Substring(match.Length);
+                if (Enum.TryParse(typeof(ConsoleLogType), match.Groups["type"].Value, true, out var parsed))
+                    logType = (ConsoleLogType)parsed;
+            }
+
             Logs.Add(new Log(
-                (LogTypes)type,
+                logType,
+                type,
                 condition,
                 stackTrace
             ));
@@ -492,29 +499,17 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
             public List<string> _list;
         }
 
-        private class CommandsLogger : ILogger
+        private class UnityLogger : ILogger
         {
-            public ILogger Logger { get; set; }
+            private readonly ConsoleLogType _consoleLogType;
 
-            public void Log(string message, object context = null)
-            {
-                Logger.Log(message, context);
-            }
+            public UnityLogger(ConsoleLogType consoleLogType)
+                => _consoleLogType = consoleLogType;
 
-            public void LogError(string message, object context = null)
-            {
-                Logger.LogError(message, context);
-            }
-
-            public void LogException(Exception exception, object context = null)
-            {
-                Logger.LogException(exception, context);
-            }
-
-            public void LogWarning(string message, object context = null)
-            {
-                Logger.LogWarning(message, context);
-            }
+            public void Log(string message, UnityEngine.Object context) => Debug.Log($"[console:{_consoleLogType}] {message}", context);
+            public void LogWarning(string message, UnityEngine.Object context) => Debug.LogWarning($"[console:{_consoleLogType}] {message}", context);
+            public void LogError(string message, UnityEngine.Object context) => Debug.LogError($"[console:{_consoleLogType}] {message}", context);
+            public void LogException(Exception exception, UnityEngine.Object context) => Debug.LogException(new Exception($"[console:{_consoleLogType}] {exception.Message}", exception), context);
         }
     }
 }

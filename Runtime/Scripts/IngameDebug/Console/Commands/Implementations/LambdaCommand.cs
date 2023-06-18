@@ -7,12 +7,12 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
     public class LambdaCommand : ADebugCommand
     {
         private Func<Dictionary<Option, AvailableValuesHint>, OptionSet> _optionsGetter;
-        private readonly Action _onParced;
+        private readonly Action _onParsed;
 
-        public LambdaCommand(string name, string description, Func<Dictionary<Option, AvailableValuesHint>, OptionSet> optionsGetter, Action onParced = null) : base(name, description)
+        public LambdaCommand(string name, string description, Func<Dictionary<Option, AvailableValuesHint>, OptionSet> optionsGetter, Action onParsed = null) : base(name, description)
         {
             _optionsGetter = optionsGetter;
-            _onParced = onParced;
+            _onParsed = onParsed;
         }
 
         public LambdaCommand(string name, string description, Action noOptions) : base(name, description)
@@ -22,6 +22,6 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
             };
 
         protected override OptionSet CreateOptions(Dictionary<Option, AvailableValuesHint> valueHints) => _optionsGetter.Invoke(InternalValueHints);
-        protected override void OnParsed() => _onParced?.Invoke();
+        protected override void OnParsed() => _onParsed?.Invoke();
     }
 }

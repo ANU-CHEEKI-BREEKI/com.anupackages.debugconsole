@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ANU.IngameDebug.Utils;
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Pool;
@@ -12,7 +11,7 @@ using static ANU.IngameDebug.Console.LogsContainer;
 namespace ANU.IngameDebug.Console
 {
     [DefaultExecutionOrder(100)]
-    public class UILogsList : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
+    internal class UILogsList : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
     {
         [SerializeField] private UILogPresenter _logPresenterPrefab;
         [SerializeField] private RectTransform _content;
@@ -21,6 +20,11 @@ namespace ANU.IngameDebug.Console
         [SerializeField] private float _elasticity = 0.1f;
         [SerializeField] private bool _innertia = true;
         [SerializeField] private float _decelerationRate = 0.135f;
+        [Space]
+        [SerializeField] private SearchInputField _searchInput;
+        [SerializeField] private UIMessageTypeToggle _logs;
+        [SerializeField] private UIMessageTypeToggle _warnings;
+        [SerializeField] private UIMessageTypeToggle _errors;
 
         private ObjectPool<UILogPresenter> _logsPool;
         private float _velocity;
@@ -50,35 +54,55 @@ namespace ANU.IngameDebug.Console
                 Destroy(c.gameObject);
             }
 
-            DebugConsole.Logs.Changed += args =>
+            DebugConsole.Logs.Cleared += args =>
             {
-                if (args.Type != CollectionChangedArgs.ChangeType.Remove)
-                    return;
-
                 foreach (var item in _content.GetComponentsInChildren<UILogPresenter>())
-                {
-                    if (args.ChangedItems.Contains(item.Log))
-                        _logsPool.Release(item);
-                };
+                    _logsPool.Release(item);
+                UpdateFilterCounts();
+            };
+            DebugConsole.Logs.Filtered += args =>
+            {
+                foreach (var item in _content.GetComponentsInChildren<UILogPresenter>())
+                    _logsPool.Release(item);
+                UpdateFilterCounts();
+            };
+            DebugConsole.Logs.Added += args =>
+            {
+                UpdateFilterCounts();
             };
 
             _scrollbar.value = 0;
             _scrollbar.size = 1;
             _scrollbar.onValueChanged.AddListener(ScrollNormalize);
+
+            _logs.Toggled += UpdateFilter;
+            _warnings.Toggled += UpdateFilter;
+            _errors.Toggled += UpdateFilter;
+            _searchInput.ValueChanged += UpdateFilter;
+
+            UpdateFilter();
         }
 
-        private void OnEnable()
+        private void UpdateFilter()
         {
-            //FIXME: layout broken on first open
+            DebugConsole.Logs.Filter(
+                _searchInput.Value,
+                Array.Empty<LogType>()
+                    .Concat(_logs.Types)
+                    .Concat(_warnings.Types)
+                    .Concat(_errors.Types)
+                    .ToArray()
+            );
+            UpdateFilterCounts();
+        }
 
-            //TODO: disable nested canvas to disable rendering
-            // then rebuild layout and then enable canvas
-            // to not show lags
-            // maybe display some loading icon
-
-            // foreach (var p in _presenters)
-            //     LayoutRebuilder.ForceRebuildLayoutImmediate(p.RectTransform);
-            // LayoutRebuilder.ForceRebuildLayoutImmediate(_content);
+        private void UpdateFilterCounts()
+        {
+            _logs.Count = DebugConsole.Logs.GetMessagesCountFor(LogType.Log);
+            _warnings.Count = DebugConsole.Logs.GetMessagesCountFor(LogType.Warning);
+            _errors.Count = DebugConsole.Logs.GetMessagesCountFor(LogType.Error)
+                + DebugConsole.Logs.GetMessagesCountFor(LogType.Exception)
+                + DebugConsole.Logs.GetMessagesCountFor(LogType.Assert);
         }
 
         private void Start()
@@ -92,10 +116,7 @@ namespace ANU.IngameDebug.Console
                 Debug.Log($" --->   {i}   <--- {(i % 10 == 0 && UnityEngine.Random.value < 0.2f ? LongText : ShortText)}");
         }
 
-        private void OnDestroy()
-        {
-            _logsPool.Dispose();
-        }
+        private void OnDestroy() => _logsPool.Dispose();
 
         private void LateUpdate()
         {
@@ -151,15 +172,6 @@ namespace ANU.IngameDebug.Console
 
                     if (itemWRect.IsOutside(parentWRect, 1))
                     {
-                        // calculate sized above and below center
-                        var a = Mathf.Max(0, Mathf.Min(itemWRect.height, itemWRect.yMax - parentWRect.center.y));
-                        var b = Mathf.Max(0, Mathf.Min(itemWRect.height, parentWRect.center.y - itemWRect.yMin));
-
-                        // if (a > 0)
-                        //     _index++;
-                        // if (b > 0)
-                        //     _index--;
-
                         i--;
                         _logsPool.Release(c.GetComponent<UILogPresenter>());
                     }
@@ -173,19 +185,19 @@ namespace ANU.IngameDebug.Console
 
                 var lastItem = _content.GetChild(_content.childCount - 1) as RectTransform;
                 var lastPresenter = lastItem.GetComponent<UILogPresenter>();
-                var lastIndex = lastPresenter.Index;
+                var nextNode = lastPresenter.Node.Next;
                 var lastItemWRect = lastItem.GetWorldRect();
 
-                while (lastItemWRect.yMin > parentWRect.yMin && lastIndex < DebugConsole.Logs.Count - 1)
+                while (lastItemWRect.yMin > parentWRect.yMin && nextNode != null)
                 {
-                    lastIndex++;
-
-                    var presenter = SpawnPresenter(lastIndex);
+                    var presenter = SpawnPresenter(nextNode);
                     presenter.transform.localPosition = lastItem.localPosition + Vector3.down * lastItemWRect.height * w2LRatio;
 
                     lastItem = presenter.RectTransform;
                     lastPresenter = presenter;
                     lastItemWRect = lastItem.GetWorldRect();
+
+                    nextNode = nextNode.Next;
                 }
             }
 
@@ -196,14 +208,12 @@ namespace ANU.IngameDebug.Console
 
                 var firstItem = _content.GetChild(0) as RectTransform;
                 var firstPresenter = firstItem.GetComponent<UILogPresenter>();
-                var firstIndex = firstPresenter.Index;
+                var prevNode = firstPresenter.Node.Previous;
                 var firstItemWRect = firstItem.GetWorldRect();
 
-                while (firstItemWRect.yMax < parentWRect.yMax && firstIndex > 0)
+                while (firstItemWRect.yMax < parentWRect.yMax && prevNode != null)
                 {
-                    firstIndex--;
-
-                    var presenter = SpawnPresenter(firstIndex);
+                    var presenter = SpawnPresenter(prevNode);
                     presenter.transform.SetAsFirstSibling();
 
                     firstItem = presenter.RectTransform;
@@ -211,6 +221,8 @@ namespace ANU.IngameDebug.Console
                     firstItemWRect = firstItem.GetWorldRect();
 
                     presenter.transform.localPosition = firstItem.localPosition + Vector3.up * firstItemWRect.height * w2LRatio;
+
+                    prevNode = prevNode.Previous;
                 }
             }
 
@@ -224,8 +236,8 @@ namespace ANU.IngameDebug.Console
                 var lastIndex = 0;
                 if (_content.childCount > 0)
                 {
-                    firstIndex = _content.GetChild(0).GetComponent<UILogPresenter>().Index;
-                    lastIndex = _content.GetChild(_content.childCount - 1).GetComponent<UILogPresenter>().Index;
+                    firstIndex = _content.GetChild(0).GetComponent<UILogPresenter>().Node.Value.FilteredIndex;
+                    lastIndex = _content.GetChild(_content.childCount - 1).GetComponent<UILogPresenter>().Node.Value.FilteredIndex; ;
                     range = lastIndex - firstIndex;
                 }
 
@@ -248,9 +260,9 @@ namespace ANU.IngameDebug.Console
                     return;
 
                 var delta = 0;
-                if (_content.GetChild(0).GetComponent<UILogPresenter>().Index == 0)
+                if (_content.GetChild(0).GetComponent<UILogPresenter>().Node.Previous == null)
                     delta = -1;
-                else if (_content.GetChild(_content.childCount - 1).GetComponent<UILogPresenter>().Index == DebugConsole.Logs.Count - 1)
+                else if (_content.GetChild(_content.childCount - 1).GetComponent<UILogPresenter>().Node.Next == null)
                     delta = 1;
 
                 if (delta == 0)
@@ -286,36 +298,36 @@ namespace ANU.IngameDebug.Console
             );
 
             var fullHeight = 0f;
+            var startNode = DebugConsole.Logs.ElementAtOrDefault(startIndex);
+            var nextNode = startNode;
 
             //if its empty - spawn from top to bot
-            // and then move lil up to scroll down to the end
-            var nextIndex = startIndex;
             var h = 0f;
-            while (fullHeight < parentWRect.height && nextIndex < DebugConsole.Logs.Count)
+            while (fullHeight < parentWRect.height && nextNode != null)
             {
-                var presenter = SpawnPresenter(nextIndex);
+                var presenter = SpawnPresenter(nextNode);
                 presenter.RectTransform.anchoredPosition = Vector2.zero + Vector2.down * h * w2LRatio;
                 var wRect = presenter.RectTransform.GetWorldRect();
                 fullHeight += wRect.height;
                 h = wRect.height;
 
-                nextIndex++;
+                nextNode = nextNode.Next;
             }
 
-            var prevIndex = startIndex - 1;
+            var prevNode = startNode.Previous;
             var upH = 0f;
-            while (fullHeight < parentWRect.height && prevIndex < DebugConsole.Logs.Count && prevIndex > 0)
+            while (fullHeight < parentWRect.height && prevNode != null)
             {
-                var presenter = SpawnPresenter(prevIndex);
+                var presenter = SpawnPresenter(prevNode);
                 var wRect = presenter.RectTransform.GetWorldRect();
                 presenter.RectTransform.anchoredPosition = Vector2.zero + Vector2.up * wRect.height * w2LRatio;
                 fullHeight += wRect.height;
                 upH += wRect.height;
 
-                prevIndex++;
+                prevNode = prevNode.Previous;
             }
 
-            // move down to fir UP items inside parent rect
+            // move down to fit UP items inside parent rect
             for (int i = 0; i < _content.childCount; i++)
                 _content.GetChild(i).localPosition += Vector3.down * upH * w2LRatio;
         }
@@ -343,13 +355,11 @@ namespace ANU.IngameDebug.Console
             SpawnIfNoItems(parentLRect, w2LRatio);
         }
 
-        private UILogPresenter SpawnPresenter(int index)
+        private UILogPresenter SpawnPresenter(LogNode node)
         {
-            var log = DebugConsole.Logs[index];
             var presenter = _logsPool.Get();
             presenter.Present(
-                index,
-                log,
+                node,
                 onClick: () =>
                 {
                     presenter.RectTransform.ForceUpdateRectTransforms();

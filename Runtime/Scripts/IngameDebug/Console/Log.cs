@@ -1,11 +1,13 @@
 using System;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace ANU.IngameDebug.Console
 {
     public class Log
     {
-        public readonly LogTypes Type;
+        public readonly ConsoleLogType ConsoleLogtype;
+        public readonly LogType MessageType;
         public readonly string Message;
         public readonly string StackTrace;
         public readonly DateTime ReceivedTime;
@@ -14,15 +16,24 @@ namespace ANU.IngameDebug.Console
         private string _selectedMessage;
 
         public bool IsExpanded { get; set; }
+        public int WholeIndex { get; set; }
+        /// <summary>
+        /// It is invalid if item not in filtered items list
+        /// </summary>
+        public int FilteredIndex { get; set; }
 
-        public Log(LogTypes type, string message, string stackTrace) : this(type, message, stackTrace, DateTime.Now) { }
-        public Log(LogTypes type, string message, string stackTrace, DateTime receivedTime)
+        public Log(ConsoleLogType consoleLogType, LogType messageType, string message, string stackTrace)
+            : this(consoleLogType, messageType, message, stackTrace, DateTime.Now) { }
+
+        public Log(ConsoleLogType consoleLogType, LogType messageType, string message, string stackTrace, DateTime receivedTime)
         {
-            Type = type;
+            ConsoleLogtype = consoleLogType;
+            MessageType = messageType;
+            
             Message = message;
             StackTrace = stackTrace;
             ReceivedTime = receivedTime;
-            
+
             _selectedMessage = Message;
         }
 

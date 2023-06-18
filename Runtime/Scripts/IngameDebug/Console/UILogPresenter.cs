@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,7 +7,7 @@ using UnityEngine.UI;
 namespace ANU.IngameDebug.Console
 {
     [RequireComponent(typeof(RectTransform))]
-    public class UILogPresenter : MonoBehaviour
+    internal class UILogPresenter : MonoBehaviour
     {
         [SerializeField] private Button _button;
         [SerializeField] private TextMeshProUGUI _message;
@@ -14,13 +15,16 @@ namespace ANU.IngameDebug.Console
         [SerializeField] private TextMeshProUGUI _receivedTime;
         [SerializeField] private Image _icon;
         [Space]
-        [SerializeField] private Sprite[] _icons;
+        [SerializeField] private Sprite _iconLog;
+        [SerializeField] private Sprite _iconWarning;
+        [SerializeField] private Sprite _iconError;
+        [SerializeField] private Sprite _iconInput;
+        [SerializeField] private Sprite _iconOutput;
 
-        private Log _log;
         private Action _onClick;
 
-        public Log Log => _log;
-        public int Index { get; private set; }
+        public Log Log => Node.Value;
+        public LogNode Node { get; private set; }
         public RectTransform RectTransform => transform as RectTransform;
 
         //TODO: later add there other elements
@@ -30,9 +34,9 @@ namespace ANU.IngameDebug.Console
         {
             _button.onClick.AddListener(() =>
             {
-                if (_log == null)
+                if (Log == null)
                     return;
-                _log.IsExpanded = !_log.IsExpanded;
+                Log.IsExpanded = !Log.IsExpanded;
 
                 UpdateStacktrace();
 
@@ -40,23 +44,37 @@ namespace ANU.IngameDebug.Console
             });
         }
 
-        public void Present(int index, Log log, Action onClick)
+        public void Present(LogNode node, Action onClick)
         {
-            Index = index;
+            Node = node;
             _onClick = onClick;
-            _log = log;
-            _message.text = "                      " + _log.DisplayString;
-            _receivedTime.text = $"[{_log.ReceivedTime:hh:mm:ss}]";
-            _icon.sprite = _icons[(int)_log.Type];
+            _message.text = "                      " + Log.DisplayString;
+            _receivedTime.text = $"[{Log.ReceivedTime:hh:mm:ss}]";
+
+            _icon.sprite = Log.ConsoleLogtype switch
+            {
+                ConsoleLogType.Input => _iconInput,
+                ConsoleLogType.Output => _iconOutput,
+                ConsoleLogType.AppMessage => Log.MessageType switch
+                {
+                    LogType.Log => _iconLog,
+                    LogType.Warning => _iconWarning,
+                    LogType.Exception => _iconError,
+                    LogType.Assert => _iconError,
+                    LogType.Error => _iconError,
+                    _ => throw new System.NotImplementedException()
+                },
+                _ => throw new System.NotImplementedException()
+            };
 
             UpdateStacktrace();
         }
 
         private void UpdateStacktrace()
         {
-            if (_log.IsExpanded)
+            if (Log.IsExpanded)
             {
-                _stacktrace.text = _log.StackTrace;
+                _stacktrace.text = Log.StackTrace;
                 _stacktrace.gameObject.SetActive(true);
             }
             else
@@ -64,9 +82,5 @@ namespace ANU.IngameDebug.Console
                 _stacktrace.gameObject.SetActive(false);
             }
         }
-
-        // private void Update() {
-        //     _message.text = System.Text.RegularExpressions.Regex.Replace(_message.text, @"\{.*\}", $"{{{RectTransform.rect.center}}}");
-        // }
     }
 }

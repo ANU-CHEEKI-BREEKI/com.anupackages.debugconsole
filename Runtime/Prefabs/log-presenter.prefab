@@ -347,13 +347,11 @@ MonoBehaviour:
   _stacktrace: {fileID: 8516441583225460758}
   _receivedTime: {fileID: 3861345221550609791}
   _icon: {fileID: 2088646943514894407}
-  _icons:
-  - {fileID: 21300000, guid: 799bcf69d647346328470e461d545fe3, type: 3}
-  - {fileID: 21300000, guid: 799bcf69d647346328470e461d545fe3, type: 3}
-  - {fileID: 21300000, guid: 03abd85f52abd47d6a8f9f7858a6cf96, type: 3}
-  - {fileID: 21300000, guid: 0f556c14c745649a48d9b235ab8d73af, type: 3}
-  - {fileID: 21300000, guid: 799bcf69d647346328470e461d545fe3, type: 3}
-  - {fileID: 21300000, guid: 44d8b26dcd2d14944be18765653b36c1, type: 3}
+  _iconLog: {fileID: 21300000, guid: 0f556c14c745649a48d9b235ab8d73af, type: 3}
+  _iconWarning: {fileID: 21300000, guid: 03abd85f52abd47d6a8f9f7858a6cf96, type: 3}
+  _iconError: {fileID: 21300000, guid: 799bcf69d647346328470e461d545fe3, type: 3}
+  _iconInput: {fileID: 21300000, guid: 44d8b26dcd2d14944be18765653b36c1, type: 3}
+  _iconOutput: {fileID: 21300000, guid: 880e936bef3c24f028ac4c1874453327, type: 3}
 --- !u!114 &2368201777362762101
 MonoBehaviour:
   m_ObjectHideFlags: 0

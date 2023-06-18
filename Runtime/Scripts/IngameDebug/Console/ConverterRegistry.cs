@@ -8,7 +8,12 @@ namespace ANU.IngameDebug.Console.Converters
     {
         private readonly Dictionary<Type, IConverter> _converters = new();
 
-        public void Register<T>(Func<string, T> converter)
+        public ConverterRegistry(ILogger logger)
+            => Logger = logger;
+
+        public ILogger Logger { get; }
+
+        public void Register<T>(Func<string, ConverterExtraArgs, T> converter)
             => Register<T>(new LambdaConverter<T>(converter));
 
         public void Register<T>(IConverter<T> converter)
@@ -24,14 +29,14 @@ namespace ANU.IngameDebug.Console.Converters
         {
             if (_converters.TryGetValue(type, out var converter) && converter.CanConvert(type))
             {
-                value = converter.ConvertFromString(option, type);
+                value = converter.ConvertFromString(option, type, new ConverterExtraArgs() { Logger = Logger });
                 return true;
             }
 
             converter = _converters.Values.FirstOrDefault(w => w.CanConvert(type));
             if (converter != null)
             {
-                value = converter.ConvertFromString(option, type);
+                value = converter.ConvertFromString(option, type, new ConverterExtraArgs() { Logger = Logger });
                 return true;
             }
 
@@ -41,9 +46,9 @@ namespace ANU.IngameDebug.Console.Converters
 
         private class LambdaConverter<T> : IConverter<T>
         {
-            private readonly Func<string, T> _lambda;
+            private readonly Func<string, ConverterExtraArgs, T> _lambda;
 
-            public LambdaConverter(Func<string, T> lambda)
+            public LambdaConverter(Func<string, ConverterExtraArgs, T> lambda)
             {
                 if (lambda is null)
                     throw new ArgumentNullException(nameof(lambda));
@@ -51,7 +56,7 @@ namespace ANU.IngameDebug.Console.Converters
                 _lambda = lambda;
             }
 
-            public T ConvertFromString(string option) => _lambda.Invoke(option);
+            public T ConvertFromString(string option, ConverterExtraArgs args) => _lambda.Invoke(option, args);
         }
     }
 }

@@ -42,7 +42,7 @@ namespace ANU.IngameDebug.Console.Converters
 
     public class Vector2IntConverter : VectorConverterBase, IConverter<Vector2Int>
     {
-        public Vector2Int ConvertFromString(string option)
+        public Vector2Int ConvertFromString(string option, ConverterExtraArgs args)
         {
             var components = GetComponents<int>(option);
             var vector = Vector2Int.zero;
@@ -54,7 +54,7 @@ namespace ANU.IngameDebug.Console.Converters
 
     public class Vector2Converter : VectorConverterBase, IConverter<Vector2>
     {
-        public Vector2 ConvertFromString(string option)
+        public Vector2 ConvertFromString(string option, ConverterExtraArgs args)
         {
             var components = GetComponents<float>(option);
             var vector = Vector2.zero;
@@ -66,7 +66,7 @@ namespace ANU.IngameDebug.Console.Converters
 
     public class Vector3IntConverter : VectorConverterBase, IConverter<Vector3Int>
     {
-        public Vector3Int ConvertFromString(string option)
+        public Vector3Int ConvertFromString(string option, ConverterExtraArgs args)
         {
             var components = GetComponents<int>(option);
             var vector = Vector3Int.zero;
@@ -78,7 +78,7 @@ namespace ANU.IngameDebug.Console.Converters
 
     public class Vector3Converter : VectorConverterBase, IConverter<Vector3>
     {
-        public Vector3 ConvertFromString(string option)
+        public Vector3 ConvertFromString(string option, ConverterExtraArgs args)
         {
             var components = GetComponents<float>(option);
             var vector = Vector3.zero;
@@ -90,7 +90,7 @@ namespace ANU.IngameDebug.Console.Converters
 
     public class Vector4Converter : VectorConverterBase, IConverter<Vector4>
     {
-        public Vector4 ConvertFromString(string option)
+        public Vector4 ConvertFromString(string option, ConverterExtraArgs args)
         {
             var components = GetComponents<float>(option);
             var vector = Vector4.zero;
@@ -104,9 +104,9 @@ namespace ANU.IngameDebug.Console.Converters
     {
         IConverter<Vector3> _vector3Converter = new Vector3Converter();
 
-        public Quaternion ConvertFromString(string option)
+        public Quaternion ConvertFromString(string option, ConverterExtraArgs args)
         {
-            var euler = _vector3Converter.ConvertFromString(option);
+            var euler = _vector3Converter.ConvertFromString(option, args);
             return Quaternion.Euler(euler);
         }
     }
@@ -121,18 +121,18 @@ namespace ANU.IngameDebug.Console.Converters
             .Where(p => p.PropertyType == typeof(Color))
             .ToDictionary(p => p.Name, p => (Color)p.GetValue(null));
 
-        public Color ConvertFromString(string option)
+        public Color ConvertFromString(string option, ConverterExtraArgs args)
         {
             try
             {
-                var v4 = _vector4Converter.ConvertFromString(option);
+                var v4 = _vector4Converter.ConvertFromString(option, args);
                 return new Color(v4.x, v4.y, v4.z, v4.w);
             }
             finally { }
 
             try
             {
-                var v3 = _vector3Converter.ConvertFromString(option);
+                var v3 = _vector3Converter.ConvertFromString(option, args);
                 return new Color(v3.x, v3.y, v3.z);
             }
             finally { }
@@ -151,16 +151,16 @@ namespace ANU.IngameDebug.Console.Converters
     {
         private static readonly IConverter<Color> _colorConverter = new ColorConverter();
 
-        public Color32 ConvertFromString(string option)
+        public Color32 ConvertFromString(string option, ConverterExtraArgs args)
         {
-            var color = _colorConverter.ConvertFromString(option);
+            var color = _colorConverter.ConvertFromString(option, args);
             return new Color32((byte)(color.r * 255), (byte)(color.g * 255), (byte)(color.b * 255), (byte)(color.a * 255));
         }
     }
 
     public class GameObjectConverter : IConverter<GameObject>
     {
-        public GameObject ConvertFromString(string option)
+        public GameObject ConvertFromString(string option, ConverterExtraArgs args)
             => option.ToLower() == "null"
                 ? null
                 : GameObject.Find(option);
@@ -170,7 +170,7 @@ namespace ANU.IngameDebug.Console.Converters
     {
         public Type TargetType => typeof(UnityEngine.Component);
 
-        object IConverter.ConvertFromString(string option, System.Type targetType)
+        object IConverter.ConvertFromString(string option, System.Type targetType, ConverterExtraArgs args)
             => option.ToLower() == "null"
                 ? null
                 : GameObject.FindObjectsByType(targetType, FindObjectsSortMode.None).FirstOrDefault(t => t.name == option);
@@ -178,7 +178,7 @@ namespace ANU.IngameDebug.Console.Converters
 
     public class BoolConverter : IConverter<bool>
     {
-        public bool ConvertFromString(string option)
+        public bool ConvertFromString(string option, ConverterExtraArgs args)
         {
             switch (option.ToLower())
             {

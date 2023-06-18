@@ -2,77 +2,170 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
+using UnityEngine;
 
 namespace ANU.IngameDebug.Console
 {
-    public class LogsContainer : IEnumerable<Log>, IReadOnlyList<Log>
+    internal class LogsContainer
     {
-        public class CollectionChangedArgs
+        public struct CollectionFilteredArgs
         {
-            public enum ChangeType { Add, Remove }
+            public LogsContainer Container;
+            public IReadOnlyList<LogType> FilterTypes;
+            public string SearchStrgin;
 
-            public ChangeType Type;
-            public readonly LogsContainer Container;
-
-            public CollectionChangedArgs(LogsContainer container)
+            public CollectionFilteredArgs(LogsContainer container, IReadOnlyList<LogType> filterTypes, string searchStrgin)
             {
                 Container = container;
+                FilterTypes = filterTypes;
+                SearchStrgin = searchStrgin;
             }
+        }
+        public struct CollectionChangedArgs
+        {
+            public Log Log;
+            public LogsContainer Container;
 
-            public readonly List<Log> ChangedItems = new();
+            public CollectionChangedArgs(Log log, LogsContainer container)
+            {
+                Log = log;
+                Container = container;
+            }
+        }
+        public struct CollectionClearedArgs
+        {
+            public LogsContainer Container;
+
+            public CollectionClearedArgs(LogsContainer container)
+                => Container = container;
         }
 
-        private readonly List<Log> _logs = new();
-        private readonly CollectionChangedArgs _sharedArgs;
+        private readonly LinkedList<Log> _allLogs = new();
+        private readonly LinkedList<Log> _filteredLogs = new();
 
-        public int Count => ((IReadOnlyCollection<Log>)_logs).Count;
-        public Log this[int index] => ((IReadOnlyList<Log>)_logs)[index];
+        private readonly Dictionary<(ConsoleLogType, LogType), int> _messagesCount = new();
 
-        public event Action<CollectionChangedArgs> Changed;
+        public string SearchString { get; private set; }
+        public IReadOnlyList<LogType> FilterTypes { get; private set; }
 
-        public LogsContainer()
-            => _sharedArgs = new CollectionChangedArgs(this);
+        public IEnumerable<Log> AllLogs => _allLogs;
+        public IEnumerable<Log> FilteredLogs => _filteredLogs;
+
+        public int Count => ((IReadOnlyCollection<Log>)_filteredLogs).Count;
+
+        public event Action<CollectionChangedArgs> Added;
+        public event Action<CollectionClearedArgs> Cleared;
+        public event Action<CollectionFilteredArgs> Filtered;
 
         public void Add(Log log)
         {
-            _sharedArgs.ChangedItems.Clear();
-            _sharedArgs.ChangedItems.Add(log);
-            _sharedArgs.Type = CollectionChangedArgs.ChangeType.Add;
+            log.WholeIndex = _allLogs.Count;
 
-            _logs.Add(log);
+            _allLogs.AddLast(log);
+            AddAsFiltered(log);
 
-            Changed?.Invoke(_sharedArgs);
+            var types = (log.ConsoleLogtype, log.MessageType);
+            if (!_messagesCount.ContainsKey(types))
+                _messagesCount[types] = 0;
+            _messagesCount[types]++;
+
+            Added?.Invoke(new CollectionChangedArgs(log, this));
         }
 
-        public void Remove(Log log)
+        public int GetMessagesCountFor(LogType t2)
         {
-            _sharedArgs.ChangedItems.Clear();
-            _sharedArgs.ChangedItems.Add(log);
-            _sharedArgs.Type = CollectionChangedArgs.ChangeType.Remove;
+            var types = (ConsoleLogType.AppMessage, t2);
+            if (!_messagesCount.ContainsKey(types))
+                _messagesCount[types] = 0;
+            return _messagesCount[types];
+        }
 
-            _logs.Remove(log);
+        private void AddAsFiltered(Log log)
+        {
+            if (!IsMatchFilters(log))
+                return;
 
-            Changed?.Invoke(_sharedArgs);
+            log.FilteredIndex = _filteredLogs.Count;
+            _filteredLogs.AddLast(log);
         }
 
         public void Clear()
         {
-            _sharedArgs.ChangedItems.Clear();
-            _sharedArgs.ChangedItems.AddRange(_logs);
-            _sharedArgs.Type = CollectionChangedArgs.ChangeType.Remove;
+            _allLogs.Clear();
+            _filteredLogs.Clear();
 
-            _logs.Clear();
-
-            Changed?.Invoke(_sharedArgs);
+            _messagesCount.Clear();
+            Cleared?.Invoke(new CollectionClearedArgs(this));
         }
 
-        public IEnumerable<Log> Filter(LogTypes[] types = null)
-            => _logs.Where(l => types == null || types.Contains(l.Type));
+        public void Filter(string search = null, LogType[] types = null)
+        {
+            if (string.IsNullOrEmpty(SearchString) && string.IsNullOrEmpty(search)
+                && (types == FilterTypes
+                    || (types != null && FilterTypes != null && types.Length == FilterTypes.Count && types.Zip(FilterTypes, (a, b) => new { a = a, b = b }).All(b => b.a == b.b)))
+                )
+                return;
 
-        public IEnumerable<Log> Filter(string search, LogTypes[] types = null)
-            => Filter(types).Where(l => l.Message.Contains(search));
+            SearchString = search;
+            FilterTypes = types;
+            _filteredLogs.Clear();
 
-        public IEnumerator<Log> GetEnumerator() => ((IEnumerable<Log>)_logs).GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_logs).GetEnumerator();
+            foreach (var item in AllLogs)
+                AddAsFiltered(item);
+
+            Filtered?.Invoke(new CollectionFilteredArgs(this, FilterTypes, SearchString));
+        }
+
+        private bool IsMatchFilters(Log log)
+            => (FilterTypes == null || log.ConsoleLogtype != ConsoleLogType.AppMessage || FilterTypes.Contains(log.MessageType))
+            && (string.IsNullOrEmpty(SearchString) || log.Message.Contains(SearchString));
+
+        private IEnumerable<LinkedListNode<Log>> AsEnumerable()
+        {
+            var next = _filteredLogs.First;
+            while (next != null)
+            {
+                var current = next;
+                next = next.Next;
+                yield return current;
+            }
+        }
+
+        // TODO: make some caching of index
+        public LogNode ElementAtOrDefault(int index)
+            => AsEnumerable().ElementAtOrDefault(index);
+    }
+
+    internal struct LogNode
+    {
+        private readonly LinkedListNode<Log> _node;
+
+        public LogNode(LinkedListNode<Log> node) : this()
+            => _node = node;
+
+        public LogNode Next => _node?.Next;
+        public LogNode Previous => _node?.Previous;
+        public Log Value => _node?.Value;
+
+        public static implicit operator LogNode(LinkedListNode<Log> node)
+            => new LogNode(node);
+
+        public static bool operator ==(LogNode a, LogNode b)
+        {
+            if (a._node == null && b._node == null)
+                return true;
+            return a._node == b._node;
+        }
+
+        public static bool operator !=(LogNode a, LogNode b)
+        {
+            var equals = a == b;
+            return !equals;
+        }
+
+        public override bool Equals(object obj)
+            => obj is LogNode node && this == node;
+
+        public override int GetHashCode() => _node?.GetHashCode() ?? 0;
     }
 }
