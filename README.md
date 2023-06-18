@@ -42,6 +42,12 @@ User interface is created with uGUI and packed in a single SpriteAtlas.
 
 ## How to Install
 
+- via Unity Package Manager
+  - git url: `https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/tree/log-list.git`
+  - npm package: ``
+- download sources as zip archive and import to your project
+- asset store?
+  
 ## Roadmap
 Each star ★ on the project page brings new features closer. You can suggest new features in the [Discussions](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/discussions).
 
