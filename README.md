@@ -70,6 +70,12 @@ Supported parameter types and some syntax flexibility:
   - used `GameObject.Find` and filtered by `name` for Component types
   - can pass `null` (non case sensitive)
 
+
+commands categories
+commands list
+UI and UI commands
+Infinite scroll
+
 ### Attributes
 
 ### Direct registration
@@ -77,8 +83,6 @@ Supported parameter types and some syntax flexibility:
 ### Custom converters
 
 ### Custom commandline preprocessors
-
-### Infinite scroll
 
 ## License
 [MIT licensed](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/blob/log-list/LICENCE.md).
