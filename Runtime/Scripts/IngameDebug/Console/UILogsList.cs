@@ -37,6 +37,10 @@ namespace ANU.IngameDebug.Console
 
         private void Awake()
         {
+            DebugConsole.RegisterCommand(new Action<bool>(AutoScroll));
+            DebugConsole.RegisterCommand(new Action<float>(ScrollNormalize));
+            DebugConsole.RegisterCommand(new Action<string, bool, bool, bool, bool>(FilterItems));
+
             _logsPool = new UnityEngine.Pool.ObjectPool<UILogPresenter>(
                 () => Instantiate(_logPresenterPrefab),
                 actionOnGet: p =>
@@ -87,12 +91,14 @@ namespace ANU.IngameDebug.Console
 
             UpdateFilter();
 
-            _scrollToEnd.onClick.AddListener(() =>
-            {
-                ScrollNormalize(1);
-                _scrollToEnd.gameObject.SetActive(!_scrollToEndEnabled);
-                _scrollToEndEnabled = true;
-            });
+            _scrollToEnd.onClick.AddListener(ScrollToBot);
+            _scrollToEndEnabled = true;
+        }
+
+        private void ScrollToBot()
+        {
+            ScrollNormalize(1);
+            _scrollToEnd.gameObject.SetActive(!_scrollToEndEnabled);
             _scrollToEndEnabled = true;
         }
 
@@ -372,8 +378,58 @@ namespace ANU.IngameDebug.Console
                 _content.GetChild(i).localPosition += Vector3.down * upH;
         }
 
-        private void ScrollNormalize(float normalizedPosition)
+        [DebugCommand(Name = "console.filter", Description = "Filter console messages by message type or/and search string")]
+        private void FilterItems(
+            [OptDesc("Substring to search in all console messages"), OptAltNames("s")]
+            string search = "",
+            [OptDesc("Hide info messages"), OptAltNames("i")]
+            bool excludeInfo = false,
+            [OptDesc("Hide warning messages"), OptAltNames("w")]
+            bool excludeWarning = false,
+            [OptDesc("Hide error messages"), OptAltNames("e")]
+            bool excludeError = false,
+            [OptDesc("Inverse opt flags to Negative values. Example: console.filter -nisNullReference\r\nIt means find all info messages with \"NullReference\" substring. Other words - '-ni' means exclude all but info messages"), OptAltNames("n")]
+            bool inverseFlags = false
+        )
         {
+            if (inverseFlags)
+            {
+                excludeInfo = !excludeInfo;
+                excludeWarning = !excludeWarning;
+                excludeError = !excludeError;
+            }
+
+            _searchInput.Input.SetTextWithoutNotify(search);
+            _logs.Toggle.SetIsOnWithoutNotify(!excludeInfo);
+            _warnings.Toggle.SetIsOnWithoutNotify(!excludeWarning);
+            _errors.Toggle.SetIsOnWithoutNotify(!excludeError);
+            UpdateFilter();
+        }
+
+
+        [DebugCommand(Name = "console.scroll-auto", Description = "Enable auto scroll to last message in the console")]
+        private void AutoScroll(
+            [OptDesc("Set this flag to disable auto scroll instead")]
+            [OptAltNames("d")]
+            bool disable = false
+        )
+        {
+            if (!disable)
+                ScrollToBot();
+            else
+                _scrollToEndEnabled = false;
+        }
+
+        [DebugCommand(Name = "console.scroll-to", Description = "Scroll console to provided normalized position")]
+        private void ScrollNormalize(
+            [OptDesc("Normalized position to scroll the console. in rage [0,1]")]
+            [OptAltNames("n")]
+            [OptVal("0", "0.5", "1")]
+            float normalizedPosition
+        )
+        {
+            normalizedPosition = Mathf.Clamp01(normalizedPosition);
+
             _scrollbar.SetValueWithoutNotify(normalizedPosition);
 
             _scrollToEndEnabled = false;

@@ -112,9 +112,10 @@ namespace ANU.IngameDebug.Console.Commands
 
             try
             {
-                var notParsedOptions = options.Parse(args.SplitCommandLine());
+                var comandOptions = args.SplitCommandLine();
+                var notParsedOptions = options.Parse(comandOptions );
 
-                if (notParsedOptions.Any())
+                if (notParsedOptions.Any(p => p != "<>"))
                 {
                     var builder = new StringBuilder();
                     builder.AppendLine("there are no options with names:");

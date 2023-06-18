@@ -17,6 +17,7 @@ namespace ANU.IngameDebug.Console
 
         public event Action Toggled;
         public int Count { set => _label.text = value.ToString(); }
+        public Toggle Toggle => _toggle;
 
         private void Awake() => _toggle.onValueChanged.AddListener(s => Toggled?.Invoke());
     }

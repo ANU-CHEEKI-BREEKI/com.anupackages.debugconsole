@@ -13,6 +13,8 @@ namespace ANU.IngameDebug.Console
         public event Action ValueChanged;
         public string Value => _input.text;
 
+        public TMP_InputField Input => _input;
+
         private void Awake()
         {
             _clear.onClick.AddListener(() => _input.text = "");
