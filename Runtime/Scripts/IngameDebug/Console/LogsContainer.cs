@@ -132,8 +132,15 @@ namespace ANU.IngameDebug.Console
         }
 
         // TODO: make some caching of index
-        public LogNode ElementAtOrDefault(int index)
-            => AsEnumerable().ElementAtOrDefault(index);
+        public LogNode ElementAtIndexClampedOrDefault(int index)
+        {
+            if (index <= 0)
+                return _filteredLogs.First;
+            else if (index >= _filteredLogs.Count)
+                return _filteredLogs.Last;
+            else
+                return AsEnumerable().ElementAtOrDefault(index);
+        }
     }
 
     internal struct LogNode

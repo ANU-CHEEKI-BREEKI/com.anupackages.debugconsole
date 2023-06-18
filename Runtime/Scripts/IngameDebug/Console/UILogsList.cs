@@ -18,6 +18,7 @@ namespace ANU.IngameDebug.Console
         [SerializeField] private CustomScrollBar _scrollbar;
         [Space]
         [SerializeField] private float _elasticity = 0.1f;
+        [SerializeField] private float _elasticityVelocity = 10f;
         [SerializeField] private bool _innertia = true;
         [SerializeField] private float _decelerationRate = 0.135f;
         [Space]
@@ -25,10 +26,14 @@ namespace ANU.IngameDebug.Console
         [SerializeField] private UIMessageTypeToggle _logs;
         [SerializeField] private UIMessageTypeToggle _warnings;
         [SerializeField] private UIMessageTypeToggle _errors;
+        [Space]
+        [SerializeField] private Button _scrollToEnd;
 
         private ObjectPool<UILogPresenter> _logsPool;
         private float _velocity;
         private bool _drag;
+
+        private bool _scrollToEndEnabled = true;
 
         private void Awake()
         {
@@ -71,7 +76,7 @@ namespace ANU.IngameDebug.Console
                 UpdateFilterCounts();
             };
 
-            _scrollbar.value = 0;
+            _scrollbar.value = 1;
             _scrollbar.size = 1;
             _scrollbar.onValueChanged.AddListener(ScrollNormalize);
 
@@ -81,6 +86,14 @@ namespace ANU.IngameDebug.Console
             _searchInput.ValueChanged += UpdateFilter;
 
             UpdateFilter();
+
+            _scrollToEnd.onClick.AddListener(() =>
+            {
+                ScrollNormalize(1);
+                _scrollToEnd.gameObject.SetActive(!_scrollToEndEnabled);
+                _scrollToEndEnabled = true;
+            });
+            _scrollToEndEnabled = true;
         }
 
         private void UpdateFilter()
@@ -120,6 +133,8 @@ namespace ANU.IngameDebug.Console
 
         private void LateUpdate()
         {
+            _scrollToEnd.gameObject.SetActive(!_scrollToEndEnabled);
+
             // if some item above or below container - disable it and adjust content position
             var parentWRect = _content.GetWorldRect();
             var parentLRect = _content.rect;
@@ -260,20 +275,42 @@ namespace ANU.IngameDebug.Console
                     return;
 
                 var delta = 0;
-                if (_content.GetChild(0).GetComponent<UILogPresenter>().Node.Previous == null)
-                    delta = -1;
-                else if (_content.GetChild(_content.childCount - 1).GetComponent<UILogPresenter>().Node.Next == null)
-                    delta = 1;
 
-                if (delta == 0)
-                    return;
+                var presenters = _content.GetComponentsInChildren<UILogPresenter>();
+                var fullH = presenters.Sum(p => p.RectTransform.GetWorldRect().height);
+                var parentH = _content.GetWorldRect().height;
+
+                var firstItem = presenters.First().Node.Previous == null;
+                var lastItem = presenters.Last().Node.Next == null;
+
+                // if full items height >= scroll height
+                // prior last item
+                if (fullH >= parentH && _scrollToEndEnabled)
+                {
+                    if (lastItem)
+                        delta = 1;
+                    else if (firstItem)
+                        delta = -1;
+
+                    if (presenters.Last().Node.Next != null && _scrollToEndEnabled)
+                        delta = 0;
+                }
+                // if full items height < scroll height
+                // prior first item
+                else
+                {
+                    if (firstItem)
+                        delta = -1;
+                    else if (lastItem)
+                        delta = 1;
+                }
 
                 CalculateClampDistance(delta, out var perentRect, out var distance);
 
-                if (distance < 0)
-                    return;
-
-                _velocity = -delta * distance * 10;
+                if (delta != 0 && (distance > 0 || _scrollToEndEnabled))
+                    _velocity = -delta * distance * _elasticityVelocity;
+                else if (delta == 0 && _scrollToEndEnabled)
+                    _velocity = 5000;
             }
 
             void Scroll()
@@ -298,7 +335,7 @@ namespace ANU.IngameDebug.Console
             );
 
             var fullHeight = 0f;
-            var startNode = DebugConsole.Logs.ElementAtOrDefault(startIndex);
+            var startNode = DebugConsole.Logs.ElementAtIndexClampedOrDefault(startIndex);
             var nextNode = startNode;
 
             //if its empty - spawn from top to bot
@@ -314,30 +351,32 @@ namespace ANU.IngameDebug.Console
                 nextNode = nextNode.Next;
             }
 
+            // then from bot to top but from initial start index
+            // nad then ne need to scroll all down by this items height
             var prevNode = startNode.Previous;
             var upH = 0f;
             while (fullHeight < parentWRect.height && prevNode != null)
             {
                 var presenter = SpawnPresenter(prevNode);
+                presenter.transform.SetAsFirstSibling();
                 var wRect = presenter.RectTransform.GetWorldRect();
-                presenter.RectTransform.anchoredPosition = Vector2.zero + Vector2.up * wRect.height * w2LRatio;
+                upH += wRect.height * w2LRatio;
+                presenter.RectTransform.anchoredPosition = Vector2.zero + Vector2.up * upH;
                 fullHeight += wRect.height;
-                upH += wRect.height;
 
                 prevNode = prevNode.Previous;
             }
 
             // move down to fit UP items inside parent rect
             for (int i = 0; i < _content.childCount; i++)
-                _content.GetChild(i).localPosition += Vector3.down * upH * w2LRatio;
+                _content.GetChild(i).localPosition += Vector3.down * upH;
         }
 
         private void ScrollNormalize(float normalizedPosition)
         {
-            // WHEN scrollbar set value by ui
-            // we can release all child, and then refill from start index from bot to top.. 
-            // like when we initializing the scroll. but from provided start index instead of 0
+            _scrollbar.SetValueWithoutNotify(normalizedPosition);
 
+            _scrollToEndEnabled = false;
             _velocity = 0;
             while (_content.childCount > 0)
             {
@@ -390,6 +429,8 @@ namespace ANU.IngameDebug.Console
 
             for (int i = 0; i < _content.childCount; i++)
                 _content.GetChild(i).localPosition += Vector3.up * delta;
+
+            _scrollToEndEnabled = delta > 0 && distance > 0;
         }
 
         private void CalculateClampDistance(float delta, out Rect parentrect, out float distance)
@@ -413,6 +454,10 @@ namespace ANU.IngameDebug.Console
         void IEndDragHandler.OnEndDrag(PointerEventData eventData)
         {
             _drag = false;
+
+            if (Time.deltaTime <= 0)
+                return;
+
             if (_innertia)
                 _velocity = eventData.delta.y / Time.deltaTime;
         }
