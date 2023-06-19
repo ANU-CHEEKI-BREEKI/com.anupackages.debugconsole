@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -21,13 +22,20 @@ namespace ANU.IngameDebug.Console
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             DebugConsole.RegisterCommands(
-                AppDomain.CurrentDomain.GetAssemblies()
+                assemblies
                     .SelectMany(asm => asm.GetTypes())
+                    .Where(t => typeof(UnityEngine.MonoBehaviour).IsAssignableFrom(t))
+                    .Concat(assemblies
+                        .SelectMany(asm => asm.GetCustomAttributes<RegisterDebugCommandTypesAttribute>())
+                        .Where(atr => atr != null)
+                        .SelectMany(atr => atr.DeclaredTypes)
+                    )
+                    .Distinct()
                     .SelectMany(type => type.GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
                     .Select(method => new
                     {
                         method = method,
-                        attribute = method.GetCustomAttribute<DebugCommandAttribute>(),
+                        attribute = MethodCommand.GetCachedCommandAttribute(method)
                     })
                     .Where(method => method.attribute != null)
                     .Select(method => new
@@ -52,7 +60,7 @@ namespace ANU.IngameDebug.Console
 
 #if DEBUG
             timer.Stop();
-            var log = $"Searching commands declared by attributes ended.\nOperation elapsed duration: {timer.Elapsed:ss's :'fff'ms'}, ticks: {timer.ElapsedTicks}";
+            var log = $"Searching commands declared by attributes ended.\nOperation elapsed duration: {timer.Elapsed:ss's.'fff'ms'}, ticks: {timer.ElapsedTicks}";
             if (timer.Elapsed.Seconds < 3)
                 DebugConsole.Logger.Log(log);
             else if (timer.Elapsed.Seconds < 5)

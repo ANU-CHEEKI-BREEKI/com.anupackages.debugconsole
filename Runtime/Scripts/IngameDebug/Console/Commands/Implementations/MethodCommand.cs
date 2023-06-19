@@ -5,12 +5,18 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using NDesk.Options;
+using Unity.Profiling;
 using UnityEngine;
 
 namespace ANU.IngameDebug.Console.Commands.Implementations
 {
     public class MethodCommand : ADebugCommand
     {
+        private static ProfilerMarker _getAttribute = new ProfilerMarker("GetAttribute");
+        private static ProfilerMarker _getName = new ProfilerMarker("GetNAme");
+        private static ProfilerMarker _getDescription = new ProfilerMarker("GetDescription");
+        private static ProfilerMarker _createOptions = new ProfilerMarker("CreateOptions");
+
         private static readonly Dictionary<MethodInfo, DebugCommandAttribute> _cachedAttributes = new();
         private static readonly Dictionary<Type, DebugCommandPrefixAttribute> _cachedAttributes2 = new();
 
@@ -53,49 +59,59 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
         public static string GetName(MethodInfo method, string prefix = "")
         {
-            var attribute = GetCachedCommandAttribute(method);
-            var prefixAttribute = GetCachedPrefixAttribute(method);
+            using (_getName.Auto())
+            {
+                var attribute = GetCachedCommandAttribute(method);
+                var prefixAttribute = GetCachedPrefixAttribute(method);
 
-            var allPrefixes = prefixAttribute?.MorePrefixes?.Prepend(prefixAttribute.Prefix) ?? Array.Empty<string>();
-            if (!string.IsNullOrEmpty(prefix))
-                allPrefixes = allPrefixes.Prepend(prefix);
+                var allPrefixes = prefixAttribute?.MorePrefixes?.Prepend(prefixAttribute.Prefix) ?? Array.Empty<string>();
+                if (!string.IsNullOrEmpty(prefix))
+                    allPrefixes = allPrefixes.Prepend(prefix);
 
-            prefix = allPrefixes.Any()
-                ? string.Join(".", allPrefixes) + "."
-                : "";
+                prefix = allPrefixes.Any()
+                    ? string.Join(".", allPrefixes) + "."
+                    : "";
 
-            var name = string.IsNullOrEmpty(attribute?.Name)
-                ? string.Join("",
-                    method.Name
-                        .Select(c =>
-                            char.IsUpper(c) ? "-" + char.ToLower(c) : c.ToString()
-                        )
-                    ).Trim('-')
-                : attribute.Name;
+                var name = string.IsNullOrEmpty(attribute?.Name)
+                    ? string.Join("",
+                        method.Name
+                            .Select(c =>
+                                char.IsUpper(c) ? "-" + char.ToLower(c) : c.ToString()
+                            )
+                        ).Trim('-')
+                    : attribute.Name;
 
-            return prefix + name;
+                return prefix + name;
+            }
         }
 
-        private static DebugCommandPrefixAttribute GetCachedPrefixAttribute(MethodInfo method)
+        public static DebugCommandPrefixAttribute GetCachedPrefixAttribute(MethodInfo method)
         {
-            if (!_cachedAttributes2.ContainsKey(method.DeclaringType))
-                _cachedAttributes2[method.DeclaringType] = method.DeclaringType.GetCustomAttribute<DebugCommandPrefixAttribute>();
-
-            var prefixAttribute = _cachedAttributes2[method.DeclaringType];
-            return prefixAttribute;
+            using (_getAttribute.Auto())
+            {
+                if (!_cachedAttributes2.ContainsKey(method.DeclaringType))
+                    _cachedAttributes2[method.DeclaringType] = method.DeclaringType.GetCustomAttribute<DebugCommandPrefixAttribute>(false);
+                return _cachedAttributes2[method.DeclaringType];
+            }
         }
 
-        private static DebugCommandAttribute GetCachedCommandAttribute(MethodInfo method)
+        public static DebugCommandAttribute GetCachedCommandAttribute(MethodInfo method)
         {
-            if (!_cachedAttributes.ContainsKey(method))
-                _cachedAttributes[method] = method.GetCustomAttribute<DebugCommandAttribute>();
-            return _cachedAttributes[method];
+            using (_getAttribute.Auto())
+            {
+                if (!_cachedAttributes.ContainsKey(method))
+                    _cachedAttributes[method] = method.GetCustomAttribute<DebugCommandAttribute>(false);
+                return _cachedAttributes[method];
+            }
         }
 
         public static string GetDescription(MethodInfo method)
         {
-            var attribute = GetCachedCommandAttribute(method);
-            return attribute?.Description;
+            using (_getDescription.Auto())
+            {
+                var attribute = GetCachedCommandAttribute(method);
+                return attribute?.Description;
+            }
         }
 
         private void ResetParametersValues()
@@ -160,79 +176,82 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
         protected override OptionSet CreateOptions(Dictionary<Option, AvailableValuesHint> valueHints)
         {
-            var options = new OptionSet();
-
-            for (int i = 0; i < _parameters.Length; i++)
+            using (_createOptions.Auto())
             {
-                var parameterIndex = i;
-                var parameter = _parameters[parameterIndex];
+                var options = new OptionSet();
 
-                var isOptional = parameter.HasDefaultValue;
-                var isFlag = parameter.ParameterType == typeof(bool) && isOptional && ((bool)parameter.DefaultValue == false);
+                for (int i = 0; i < _parameters.Length; i++)
+                {
+                    var parameterIndex = i;
+                    var parameter = _parameters[parameterIndex];
 
-                var optionName = parameter.Name;
+                    var isOptional = parameter.HasDefaultValue;
+                    var isFlag = parameter.ParameterType == typeof(bool) && isOptional && ((bool)parameter.DefaultValue == false);
 
-                var altNames = parameter.GetCustomAttribute<OptAltNamesAttribute>();
-                if (altNames != null)
-                    optionName = string.Join("|", altNames.AlternativeNames.Prepend(optionName));
+                    var optionName = parameter.Name;
 
-                if (!isFlag)
-                    optionName += isOptional ? ":" : "=";
+                    var altNames = parameter.GetCustomAttribute<OptAltNamesAttribute>();
+                    if (altNames != null)
+                        optionName = string.Join("|", altNames.AlternativeNames.Prepend(optionName));
 
-                var optionDescription = parameter.GetCustomAttribute<OptDescAttribute>()?.Description;
+                    if (!isFlag)
+                        optionName += isOptional ? ":" : "=";
 
-                options.Add(
-                    optionName,
-                    optionDescription,
-                    value =>
-                    {
-                        value = value.Trim('"').Trim('\'');
+                    var optionDescription = parameter.GetCustomAttribute<OptDescAttribute>()?.Description;
 
-                        if (isOptional && value == null)
+                    options.Add(
+                        optionName,
+                        optionDescription,
+                        value =>
                         {
-                            // do nothing
+                            value = value.Trim('"').Trim('\'');
+
+                            if (isOptional && value == null)
+                            {
+                                // do nothing
+                            }
+                            else
+                            {
+                                _parameterValues[parameterIndex] = isFlag
+                                    ? value != null
+                                    : DebugConsole.Converters.Convert(parameter.ParameterType, value);
+
+                                _isParameterValid[parameterIndex] = true;
+                            }
                         }
-                        else
-                        {
-                            _parameterValues[parameterIndex] = isFlag
-                                ? value != null
-                                : DebugConsole.Converters.Convert(parameter.ParameterType, value);
+                    );
+                    var valAsKey = optionName.Split(new string[] { "|" }, StringSplitOptions.RemoveEmptyEntries);
+                    var opt = options[valAsKey.Last().TrimEnd('=', ':')];
 
-                            _isParameterValid[parameterIndex] = true;
-                        }
-                    }
-                );
-                var valAsKey = optionName.Split(new string[] { "|" }, StringSplitOptions.RemoveEmptyEntries);
-                var opt = options[valAsKey.Last().TrimEnd('=', ':')];
+                    IEnumerable<string> hints = null;
 
-                IEnumerable<string> hints = null;
+                    var values = parameter.GetCustomAttribute<OptValAttribute>();
+                    if (values != null)
+                        hints = values.AvailableValues.Select(v => v.ToString());
+                    else if (parameter.ParameterType.IsEnum)
+                        hints = Enum.GetNames(parameter.ParameterType);
+                    else if (parameter.ParameterType == typeof(bool))
+                        hints = new string[] { "true", "false" };
 
-                var values = parameter.GetCustomAttribute<OptValAttribute>();
-                if (values != null)
-                    hints = values.AvailableValues.Select(v => v.ToString());
-                else if (parameter.ParameterType.IsEnum)
-                    hints = Enum.GetNames(parameter.ParameterType);
-                else if (parameter.ParameterType == typeof(bool))
-                    hints = new string[] { "true", "false" };
+                    if (hints != null)
+                        valueHints[opt] = new AvailableValuesHint(hints);
+                }
 
-                if (hints != null)
-                    valueHints[opt] = new AvailableValuesHint(hints);
+                if (!_method.IsStatic && _instance == null)
+                {
+                    // add optional parameter for dynamic targets
+                    options.Add(
+                        "targets|t:",
+                        "Provide targets for instances command. This has highest priority over any `InstanceTargetType`",
+                        inputString => _dynamicInstances = DebugConsole.Converters.Convert(
+                            _method.DeclaringType.MakeArrayType(),
+                            inputString.Trim('"').Trim('\'')
+                        ) as object[]
+                    );
+                }
+
+                return options;
             }
-
-            if (!_method.IsStatic && _instance == null)
-            {
-                // add optional parameter for dynamic targets
-                options.Add(
-                    "targets|t:",
-                    "Provide targets for instances command. This has highest priority over any `InstanceTargetType`",
-                    inputString => _dynamicInstances = DebugConsole.Converters.Convert(
-                        _method.DeclaringType.MakeArrayType(),
-                        inputString.Trim('"').Trim('\'')
-                    ) as object[]
-                );
-            }
-
-            return options;
         }
 
         private IEnumerable<object> GetInstances()

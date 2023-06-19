@@ -1,8 +1,29 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ANU.IngameDebug.Console
 {
+    /// <summary>
+    /// Declare names of NON MonoBehaviour types you want declare debug commands inside.
+    /// This will let DebugConsole know where to find DebugCommands except types derrived of MonoBehaviour, which 
+    /// gonna boost performance a lot compare to searchgin all assembly types
+    /// example: [assembly: RegisterDebugCommandTypes(typeof(TestNonMonoBehaviourClass), typeof(OtherNonMonoBehaviourClass))]
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+    public class RegisterDebugCommandTypesAttribute : Attribute
+    {
+        public RegisterDebugCommandTypesAttribute(Type prefix, params Type[] morePrefixes)
+        {
+            FirstType = prefix;
+            OtherTypes = morePrefixes;
+        }
+        private Type FirstType { get; }
+        private Type[] OtherTypes { get; }
+
+        public IEnumerable<Type> DeclaredTypes => OtherTypes.Prepend(FirstType);
+    }
+
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
     public class DebugCommandPrefixAttribute : Attribute
     {
@@ -16,9 +37,9 @@ namespace ANU.IngameDebug.Console
     }
 
     /// <summary>
-    /// - When using <see cref="AllActive"/>, <see cref="AllIncludingInactive"/>, <see cref="FirstActive"/>, <see cref="FirstIncludingInactive"/> - you can execute DebugCommand as instanced command for target of any type derrived from Component. Because GameObject.Find.. used to find targets.
+    /// - When using <see cref="AllActive"/>, <see cref="AllIncludingInactive"/>, <see cref="FirstActive"/>, <see cref="FirstIncludingInactive"/> - you can register DebugCommand as instanced command for target of any type derrived from MonoBehaviour. Because GameObject.Find.. used to find targets.
     /// - For all instanced commands option names [--targets|t] are reserved. You can pass targets as optional parameter array. Argument targets has highest priority over any <see cref="InstanceTargetType"/>
-    /// - When using <see cref="Registry"/> or passing target as an argument - you can execute DebugCommand for target of any Type, since you manually provide the targets.
+    /// - When using <see cref="Registry"/> or passing target as an argument - you can register DebugCommand for target of any type derrived from MonoBehaviour and ScriptableObject, since you manually provide the targets.  Although technically we could register methods in ALY type but then the searching all these types takes too long time.
     /// </summary>
     public enum InstanceTargetType
     {
@@ -33,6 +54,9 @@ namespace ANU.IngameDebug.Console
         Registry,
     }
 
+    /// <summary>
+    /// All methods, properties and fields declared directly inside any MonoBehaviour automatically registered.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class DebugCommandAttribute : Attribute
     {
