@@ -67,11 +67,15 @@ Supported parameter types and some syntax flexibility:
   - parsed as `Vector3`
   - parsed as `Vector4`
   - parsed as [HtmlString](https://docs.unity3d.com/ScriptReference/ColorUtility.TryParseHtmlString.html), for example `#RGB`, `#RRGGBBAA`, `red`, `cyan`, etc..
-- vectors (`Vector2Int`, `Vector2`, `Vector3Int`, `Vector3`, `Vector4`)
+- array or list
   - `[]` or `()` are equivalented, so below listed samples for `[]` only
-  - `,` or ` `as component delimiter: `[1, 2, 3]` or `[1 2 3]` or `[1  , 2   ,3   ]` are equivalented
+  - `,` or ` ` as component delimiter: `[1, 2, 3]` or `[1 2 3]` or `[1  , 2   ,3   ]` are equivalented
+  - `[n]` or just `n` witout `[]`: single item `n`
+  - `[]`: empty colection
+- vectors (`Vector2Int`, `Vector2`, `Vector3Int`, `Vector3`, `Vector4`)
+  - parced as array of fixed size
   - `[]`: all components equals zero
-  - `[n]`: all components equals `n`
+  - `[n]` or just `n` witout `[]`: all components equals `n`
 - GameObject and Component, any type inherited from Component
   - used `GameObject.Find` and filtered by `name` for Component types
   - can pass `null` (non case sensitive)
