@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using NDesk.Options;
+using UnityEngine;
 
 namespace ANU.IngameDebug.Console.Commands.Implementations
 {
@@ -13,17 +14,25 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
         private readonly object _instance;
         private readonly MethodInfo _method;
 
+        private readonly DebugCommandAttribute _attribute;
+
         private readonly object[] _parameterValues;
         private readonly bool[] _isParameterValid;
-        private ParameterInfo[] _parameters;
+        private readonly ParameterInfo[] _parameters;
 
-        public MethodCommand(MethodInfo method, object instance)
-            : this(GetName(method), GetDescription(method), method, instance) { }
+        private object[] _dynamicInstances;
+
+        public MethodCommand(MethodInfo method, string prefix = "")
+            : this(method, (object)null, prefix) { }
+
+        public MethodCommand(MethodInfo method, object instance, string prefix = "")
+            : this(GetName(method, prefix), GetDescription(method), method, instance) { }
 
         public MethodCommand(string name, string description, MethodInfo method, object instance) : base(name, description)
         {
             _instance = instance;
             _method = method;
+            _attribute = method.GetCustomAttribute<DebugCommandAttribute>(); ;
 
             _parameters = method.GetParameters();
             _parameterValues = new object[_parameters.Length];
@@ -32,18 +41,29 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
             ResetParametersValues();
         }
 
-        public static string GetName(MethodInfo method)
+        public static string GetName(MethodInfo method, string prefix = "")
         {
             var attribute = method.GetCustomAttribute<DebugCommandAttribute>();
-            return string.IsNullOrEmpty(attribute.Name)
-                ? string.Join(
-                    "",
+            var prefixAttribute = method.DeclaringType.GetCustomAttribute<DebugCommandPrefixAttribute>();
+
+            var allPrefixes = prefixAttribute?.MorePrefixes?.Prepend(prefixAttribute.Prefix) ?? Array.Empty<string>();
+            if (!string.IsNullOrEmpty(prefix))
+                allPrefixes = allPrefixes.Prepend(prefix);
+
+            prefix = allPrefixes.Any()
+                ? string.Join(".", allPrefixes) + "."
+                : "";
+
+            var name = string.IsNullOrEmpty(attribute?.Name)
+                ? string.Join("",
                     method.Name
                         .Select(c =>
                             char.IsUpper(c) ? "-" + char.ToLower(c) : c.ToString()
                         )
-                ).Trim('-')
+                    ).Trim('-')
                 : attribute.Name;
+
+            return prefix + name;
         }
 
         public static string GetDescription(MethodInfo method)
@@ -54,6 +74,8 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
         private void ResetParametersValues()
         {
+            _dynamicInstances = Array.Empty<object>();
+
             for (int i = 0; i < _parameters.Length; i++)
             {
                 var parameter = _parameters[i];
@@ -68,25 +90,46 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
         protected override void OnParsed()
         {
-            var allParametersValide = true;
-            var builder = new StringBuilder();
-            for (int i = 0; i < _isParameterValid.Length; i++)
+            try
             {
-                var isValide = _isParameterValid[i];
-                if (isValide)
-                    continue;
-                allParametersValide = false;
-                builder.AppendLine(_parameters[i].Name);
-            }
+                var allParametersValide = true;
+                var builder = new StringBuilder();
+                for (int i = 0; i < _isParameterValid.Length; i++)
+                {
+                    var isValide = _isParameterValid[i];
+                    if (isValide)
+                        continue;
+                    allParametersValide = false;
+                    builder.AppendLine(_parameters[i].Name);
+                }
 
-            if (!allParametersValide)
+                if (!allParametersValide)
+                {
+                    builder.Insert(0, "There are some parameters not set" + Environment.NewLine);
+                    throw new ArgumentException(builder.ToString());
+                }
+
+                var instances = GetInstances();
+
+                if (!instances.Any())
+                    throw new Exception("There are no provided targets tor NonStatic method. For more information see InstanceTargetType documentation");
+
+                foreach (var item in instances)
+                {
+                    try
+                    {
+                        _method.Invoke(item, _parameterValues);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogException(ex);
+                    }
+                }
+            }
+            finally
             {
-                builder.Insert(0, "There are some parameters not set" + Environment.NewLine);
-                throw new ArgumentException(builder.ToString());
+                ResetParametersValues();
             }
-
-            _method.Invoke(_instance, _parameterValues);
-            ResetParametersValues();
         }
 
         protected override OptionSet CreateOptions(Dictionary<Option, AvailableValuesHint> valueHints)
@@ -103,14 +146,14 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
                 var optionName = parameter.Name;
 
-                var altNames = parameter.GetCustomAttribute<OptionAlternativeNamesAttribute>();
+                var altNames = parameter.GetCustomAttribute<OptAltNamesAttribute>();
                 if (altNames != null)
                     optionName = string.Join("|", altNames.AlternativeNames.Prepend(optionName));
 
                 if (!isFlag)
                     optionName += isOptional ? ":" : "=";
 
-                var optionDescription = parameter.GetCustomAttribute<OptionDescriptionAttribute>()?.Description;
+                var optionDescription = parameter.GetCustomAttribute<OptDescAttribute>()?.Description;
 
                 options.Add(
                     optionName,
@@ -125,20 +168,10 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                         }
                         else
                         {
-                            if (isFlag)
-                            {
-                                _parameterValues[parameterIndex] = value != null;
-                            }
-                            else if (DebugConsole.Converters.TryConvert(parameter.ParameterType, value, out var convertedValue))
-                            {
-                                _parameterValues[parameterIndex] = convertedValue;
-                            }
-                            else
-                            {
-                                _parameterValues[parameterIndex] = TypeDescriptor
-                                    .GetConverter(parameter.ParameterType)
-                                    .ConvertFromString(value);
-                            }
+                            _parameterValues[parameterIndex] = isFlag
+                                ? value != null
+                                : DebugConsole.Converters.Convert(parameter.ParameterType, value);
+
                             _isParameterValid[parameterIndex] = true;
                         }
                     }
@@ -148,7 +181,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
                 IEnumerable<string> hints = null;
 
-                var values = parameter.GetCustomAttribute<OptionValuesAttribute>();
+                var values = parameter.GetCustomAttribute<OptValAttribute>();
                 if (values != null)
                     hints = values.AvailableValues.Select(v => v.ToString());
                 else if (parameter.ParameterType.IsEnum)
@@ -160,7 +193,74 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                     valueHints[opt] = new AvailableValuesHint(hints);
             }
 
+            if (!_method.IsStatic && _instance == null)
+            {
+                // add optional parameter for dynamic targets
+                options.Add(
+                    "targets|t:",
+                    "Provide targets for instances command. This has highest priority over any `InstanceTargetType`",
+                    inputString => _dynamicInstances = DebugConsole.Converters.Convert(
+                        _method.DeclaringType.MakeArrayType(),
+                        inputString.Trim('"').Trim('\'')
+                    ) as object[]
+                );
+            }
+
             return options;
+        }
+
+        private IEnumerable<object> GetInstances()
+        {
+            if (_instance != null || _method.IsStatic)
+                return new object[] { _instance };
+
+            var targets = Array.Empty<object>().AsEnumerable();
+
+            if (_attribute == null)
+                return targets;
+
+            if (_dynamicInstances != null && _dynamicInstances.Any())
+                return _dynamicInstances;
+
+
+            var instanceTarget = _attribute.Target;
+            if (!typeof(UnityEngine.Component).IsAssignableFrom(_method.DeclaringType))
+                instanceTarget = InstanceTargetType.Registry;
+
+            var includeInactive = false
+                || instanceTarget == InstanceTargetType.AllIncludingInactive
+                || instanceTarget == InstanceTargetType.FirstIncludingInactive;
+
+            switch (instanceTarget)
+            {
+                case InstanceTargetType.AllActive:
+                case InstanceTargetType.AllIncludingInactive:
+                    targets = GameObject.FindObjectsByType(
+                        _method.DeclaringType,
+                        includeInactive
+                            ? FindObjectsInactive.Include
+                            : FindObjectsInactive.Exclude,
+                        FindObjectsSortMode.None
+                    );
+                    break;
+                case InstanceTargetType.FirstActive:
+                case InstanceTargetType.FirstIncludingInactive:
+                    var target = GameObject.FindFirstObjectByType(
+                        _method.DeclaringType,
+                        includeInactive
+                            ? FindObjectsInactive.Include
+                            : FindObjectsInactive.Exclude
+                    );
+                    targets = new object[] { target };
+                    break;
+                case InstanceTargetType.Registry:
+                    targets = DebugConsole.InstanceTargets.Get(_method.DeclaringType);
+                    break;
+                default:
+                    throw new System.NotImplementedException();
+            }
+
+            return targets;
         }
     }
 }

@@ -13,7 +13,7 @@ namespace ANU.IngameDebug.Console.Converters
 
         public ILogger Logger { get; }
 
-        public void Register<T>(Func<string, ConverterExtraArgs, T> converter)
+        public void Register<T>(Func<string, T> converter)
             => Register<T>(new LambdaConverter<T>(converter));
 
         public void Register<T>(IConverter<T> converter)
@@ -22,33 +22,34 @@ namespace ANU.IngameDebug.Console.Converters
         public void Register(IConverter converter)
             => _converters[converter.TargetType] = converter;
 
-        public bool TryConvert<T>(string option, out object value)
-            => TryConvert(typeof(T), option, out value);
+        public T Convert<T>(string option)
+            => (T)Convert(typeof(T), option);
 
-        public bool TryConvert(Type type, string option, out object value)
+        public object Convert(Type type, string option)
         {
             if (_converters.TryGetValue(type, out var converter) && converter.CanConvert(type))
             {
-                value = converter.ConvertFromString(option, type, new ConverterExtraArgs() { Logger = Logger });
-                return true;
+                converter.SetRegistry(this);
+                converter.SetLogger(Logger);
+                return converter.ConvertFromString(option, type);
             }
 
             converter = _converters.Values.FirstOrDefault(w => w.CanConvert(type));
             if (converter != null)
             {
-                value = converter.ConvertFromString(option, type, new ConverterExtraArgs() { Logger = Logger });
-                return true;
+                converter.SetLogger(Logger);
+                converter.SetRegistry(this);
+                return converter.ConvertFromString(option, type);
             }
 
-            value = null;
-            return false;
+            return null;
         }
 
         private class LambdaConverter<T> : IConverter<T>
         {
-            private readonly Func<string, ConverterExtraArgs, T> _lambda;
+            private readonly Func<string, T> _lambda;
 
-            public LambdaConverter(Func<string, ConverterExtraArgs, T> lambda)
+            public LambdaConverter(Func<string, T> lambda)
             {
                 if (lambda is null)
                     throw new ArgumentNullException(nameof(lambda));
@@ -56,7 +57,7 @@ namespace ANU.IngameDebug.Console.Converters
                 _lambda = lambda;
             }
 
-            public T ConvertFromString(string option, ConverterExtraArgs args) => _lambda.Invoke(option, args);
+            public T ConvertFromString(string option) => _lambda.Invoke(option);
         }
     }
 }

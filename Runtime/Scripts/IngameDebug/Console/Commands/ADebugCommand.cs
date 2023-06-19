@@ -152,13 +152,7 @@ namespace ANU.IngameDebug.Console.Commands
             }
             catch (Exception ex)
             {
-                var builder = new StringBuilder();
-                while (ex != null)
-                {
-                    builder.AppendLine(ex.Message);
-                    ex = ex.InnerException;
-                }
-                Logger?.LogError(builder.ToString());
+                Logger?.LogException(ex);
             }
         }
 

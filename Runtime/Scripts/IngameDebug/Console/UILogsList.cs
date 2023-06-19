@@ -12,6 +12,7 @@ namespace ANU.IngameDebug.Console
 {
     [DefaultExecutionOrder(100)]
     [ExecuteAlways]
+    [DebugCommandPrefix("console")]
     internal class UILogsList : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
     {
         [SerializeField] private UILogPresenter _logPresenterPrefab;
@@ -102,11 +103,13 @@ namespace ANU.IngameDebug.Console
             _scrollToEndEnabled = true;
         }
 
-        private void OnEnable() {
+        private void OnEnable()
+        {
             DebugConsole.ThemeChanged += UpdateTheme;
         }
 
-        private void OnDisable() {
+        private void OnDisable()
+        {
             DebugConsole.ThemeChanged -= UpdateTheme;
         }
 
@@ -150,7 +153,7 @@ namespace ANU.IngameDebug.Console
 
         private void LateUpdate()
         {
-               if (!Application.isPlaying)
+            if (!Application.isPlaying)
                 return;
 
             _scrollToEnd.gameObject.SetActive(!_scrollToEndEnabled);
@@ -392,7 +395,7 @@ namespace ANU.IngameDebug.Console
                 _content.GetChild(i).localPosition += Vector3.down * upH;
         }
 
-        [DebugCommand(Name = "console.fold-in", Description = "Fold in all messages")]
+        [DebugCommand(Name = "fold-in", Description = "Fold in all messages")]
         private void Expand(
             [OptDesc("Set this flag to expand all message instead"), OptAltNames("e")]
             bool expand = false
@@ -402,7 +405,7 @@ namespace ANU.IngameDebug.Console
                 item.IsExpanded = expand;
         }
 
-        [DebugCommand(Name = "console.filter", Description = "Filter console messages by message type or/and search string")]
+        [DebugCommand(Name = "filter", Description = "Filter console messages by message type or/and search string")]
         private void FilterItems(
             [OptDesc("Substring to search in all console messages"), OptAltNames("s")]
             string search = "",
@@ -431,7 +434,7 @@ namespace ANU.IngameDebug.Console
         }
 
 
-        [DebugCommand(Name = "console.scroll-auto", Description = "Enable auto scroll to last message in the console")]
+        [DebugCommand(Name = "scroll-auto", Description = "Enable auto scroll to last message in the console")]
         private void AutoScroll(
             [OptDesc("Set this flag to disable auto scroll instead")]
             [OptAltNames("d")]
@@ -444,7 +447,7 @@ namespace ANU.IngameDebug.Console
                 _scrollToEndEnabled = false;
         }
 
-        [DebugCommand(Name = "console.scroll-to", Description = "Scroll console to provided normalized position")]
+        [DebugCommand(Name = "scroll-to", Description = "Scroll console to provided normalized position")]
         private void ScrollNormalize(
             [OptDesc("Normalized position to scroll the console. in rage [0,1]")]
             [OptAltNames("n")]

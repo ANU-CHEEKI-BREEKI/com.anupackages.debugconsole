@@ -45,6 +45,7 @@ namespace ANU.IngameDebug.Console
         private static DebugConsole Instance { get; set; }
 
         private static Dictionary<string, ADebugCommand> _commands = new();
+
         internal static LogsContainer Logs { get; } = new();
 
         public static bool IsOpened => Instance._content.activeInHierarchy;
@@ -57,6 +58,7 @@ namespace ANU.IngameDebug.Console
 
         public static IConverterRegistry Converters { get; } = new ConverterRegistry(Logger);
         public static ICommandInputPreprocessorRegistry Preprocessors { get; } = new CommandInputPreprocessorRegistry(Logger);
+        public static IInstancesTargetRegistry InstanceTargets { get; } = new InstancesTargetRegistry();
 
         private static ISuggestionsContext SuggestionsContext
         {
@@ -132,14 +134,12 @@ namespace ANU.IngameDebug.Console
 
         private static void RegisterCommand(string name, string description, MethodInfo method, object target, Action<ICommandMetaData[]> metaDataCustomize)
         {
-            //TODO: add MethodCommand arguments support check
             var methodCommand = new MethodCommand(name, description, method, target);
             RegisterCommand(methodCommand, metaDataCustomize);
         }
 
         private static void RegisterCommand(MethodInfo method, object target, Action<ICommandMetaData[]> metaDataCustomize)
         {
-            //TODO: add MethodCommand arguments support check
             var methodCommand = new MethodCommand(method, target);
             RegisterCommand(methodCommand, metaDataCustomize);
         }
@@ -293,6 +293,8 @@ namespace ANU.IngameDebug.Console
 
         private void SetUpConverters()
         {
+            Converters.Register(new BaseConveerter());
+            Converters.Register(new ArrayConverter());
             Converters.Register(new Vector2IntConverter());
             Converters.Register(new Vector2Converter());
             Converters.Register(new Vector3IntConverter());
@@ -399,7 +401,6 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
                     return set;
                 })
             );
-            DebugConsole.RegisterCommand(new Action<int, string, bool>(SetConsoleTheme));
         }
 
         [DebugCommand(Name = "console.theme", Description = "Set console theme at runtime. Pass index or name of wanted UITheme listed in DebugConsole Themes list")]

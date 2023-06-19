@@ -7,44 +7,86 @@ using UnityEngine;
 
 namespace ANU.IngameDebug.Console.Converters
 {
-    public abstract class VectorConverterBase
+    public class BaseConveerter : IConverter
     {
-        protected IEnumerable<T> GetComponents<T>(string option)
+        public Type TargetType => typeof(object);
+
+        public object ConvertFromString(string option, Type targetType)
+            => TypeDescriptor.GetConverter(targetType).ConvertFromString(option);
+
+        bool IConverter.CanConvert(System.Type type) => !type.IsArray;
+    }
+
+    public abstract class VectorConverterBase : IConverter
+    {
+        Type IConverter.TargetType => throw new NotImplementedException();
+        object IConverter.ConvertFromString(string option, Type targetType)
+            => new NotImplementedException();
+
+        /// <summary>
+        /// pass count as null to take all available components
+        /// pass value to consider arrray aa fixed length array.
+        /// </summary>
+        protected IEnumerable<T> GetComponents<T>(string option, int? count)
+            => GetComponents(typeof(T), option, count).Select(t => (T)t);
+
+        /// <summary>
+        /// pass count as null to take all available components
+        /// pass value to consider arrray aa fixed length array.
+        /// </summary>
+        protected IEnumerable<object> GetComponents(Type type, string option, int? count)
         {
-            if ((!option.StartsWith('[') && !option.StartsWith('('))
-                || (!option.EndsWith(']') && !option.EndsWith(')')))
-                throw new System.Exception("Use [ ] or ( ) to wrap vector components. For Example [1, 2] or (3 4) or [] for zero or [n] for all components set to n."
-                    + "You can use ',' or just whitespace as components delimiters");
+            // no need to force user to type brackets 
+            // we can pare it like C# params T[]
+            // kind of
+            // so when user enter only one value N - it equivalent to [N]
+            //
+            // if ((!option.StartsWith('[') && !option.StartsWith('('))
+            //     || (!option.EndsWith(']') && !option.EndsWith(')')))
+            //     throw new System.Exception("Use [ ] or ( ) to wrap vector components. For Example [1, 2] or (3 4) or [] for zero or [n] for all components set to n."
+            //         + "You can use ',' or just whitespace as components delimiters");
 
             var components = option
                 .Trim('[', ']')
                 .Trim('(', ')')
+                //TODO: prevent splitting array of string values
                 .Split(new char[] { ' ', ',' }, System.StringSplitOptions.RemoveEmptyEntries)
-                .Select(c => (T)TypeDescriptor.GetConverter(typeof(T)).ConvertFromString(c));
+                .Select(c => this.GetRegistry().Convert(type, c));
 
-            const int dummyCount = 100;
+            if (count == null)
+                return components;
+
+            // if count provided - parse array as fixed size array
+            // so we can add some syntax sugar to fill all items wit same values
 
             if (!components.Any())
             {
-                var singleItem = (T)TypeDescriptor.GetConverter(typeof(T)).ConvertFromString("0");
-                return Enumerable.Range(0, dummyCount).Select(u => singleItem);
+                var singleItem = GetDefault(type);
+                return Enumerable.Range(0, count.Value).Select(u => singleItem);
             }
 
             if (!components.Skip(1).Any())
             {
                 var singleItem = components.First();
-                return Enumerable.Range(0, dummyCount).Select(u => singleItem);
+                return Enumerable.Range(0, count.Value).Select(u => singleItem);
             }
 
             return components;
+        }
+
+        public static object GetDefault(Type type)
+        {
+            if (type.IsValueType)
+                return Activator.CreateInstance(type);
+            return null;
         }
     }
 
     public class Vector2IntConverter : VectorConverterBase, IConverter<Vector2Int>
     {
-        public Vector2Int ConvertFromString(string option, ConverterExtraArgs args)
+        public Vector2Int ConvertFromString(string option)
         {
-            var components = GetComponents<int>(option);
+            var components = GetComponents<int>(option, 2);
             var vector = Vector2Int.zero;
             for (int i = 0; i < 2; i++)
                 vector[i] = components.ElementAt(i);
@@ -54,9 +96,9 @@ namespace ANU.IngameDebug.Console.Converters
 
     public class Vector2Converter : VectorConverterBase, IConverter<Vector2>
     {
-        public Vector2 ConvertFromString(string option, ConverterExtraArgs args)
+        public Vector2 ConvertFromString(string option)
         {
-            var components = GetComponents<float>(option);
+            var components = GetComponents<float>(option, 2);
             var vector = Vector2.zero;
             for (int i = 0; i < 2; i++)
                 vector[i] = components.ElementAt(i);
@@ -66,9 +108,9 @@ namespace ANU.IngameDebug.Console.Converters
 
     public class Vector3IntConverter : VectorConverterBase, IConverter<Vector3Int>
     {
-        public Vector3Int ConvertFromString(string option, ConverterExtraArgs args)
+        public Vector3Int ConvertFromString(string option)
         {
-            var components = GetComponents<int>(option);
+            var components = GetComponents<int>(option, 3);
             var vector = Vector3Int.zero;
             for (int i = 0; i < 3; i++)
                 vector[i] = components.ElementAt(i);
@@ -78,9 +120,9 @@ namespace ANU.IngameDebug.Console.Converters
 
     public class Vector3Converter : VectorConverterBase, IConverter<Vector3>
     {
-        public Vector3 ConvertFromString(string option, ConverterExtraArgs args)
+        public Vector3 ConvertFromString(string option)
         {
-            var components = GetComponents<float>(option);
+            var components = GetComponents<float>(option, 3);
             var vector = Vector3.zero;
             for (int i = 0; i < 3; i++)
                 vector[i] = components.ElementAt(i);
@@ -90,9 +132,9 @@ namespace ANU.IngameDebug.Console.Converters
 
     public class Vector4Converter : VectorConverterBase, IConverter<Vector4>
     {
-        public Vector4 ConvertFromString(string option, ConverterExtraArgs args)
+        public Vector4 ConvertFromString(string option)
         {
-            var components = GetComponents<float>(option);
+            var components = GetComponents<float>(option, 4);
             var vector = Vector4.zero;
             for (int i = 0; i < 4; i++)
                 vector[i] = components.ElementAt(i);
@@ -102,37 +144,32 @@ namespace ANU.IngameDebug.Console.Converters
 
     public class QuaternionConverter : IConverter<Quaternion>
     {
-        IConverter<Vector3> _vector3Converter = new Vector3Converter();
-
-        public Quaternion ConvertFromString(string option, ConverterExtraArgs args)
+        public Quaternion ConvertFromString(string option)
         {
-            var euler = _vector3Converter.ConvertFromString(option, args);
+            var euler = this.GetRegistry().Convert<Vector3>(option);
             return Quaternion.Euler(euler);
         }
     }
 
     public class ColorConverter : IConverter<Color>
     {
-        private static readonly IConverter<Vector3> _vector3Converter = new Vector3Converter();
-        private static readonly IConverter<Vector4> _vector4Converter = new Vector4Converter();
-
         private static readonly Dictionary<string, Color> byName = typeof(Color)
             .GetProperties(BindingFlags.Public | BindingFlags.Static)
             .Where(p => p.PropertyType == typeof(Color))
             .ToDictionary(p => p.Name, p => (Color)p.GetValue(null));
 
-        public Color ConvertFromString(string option, ConverterExtraArgs args)
+        public Color ConvertFromString(string option)
         {
             try
             {
-                var v4 = _vector4Converter.ConvertFromString(option, args);
+                var v4 = this.GetRegistry().Convert<Vector4>(option);
                 return new Color(v4.x, v4.y, v4.z, v4.w);
             }
             finally { }
 
             try
             {
-                var v3 = _vector3Converter.ConvertFromString(option, args);
+                var v3 = this.GetRegistry().Convert<Vector3>(option);
                 return new Color(v3.x, v3.y, v3.z);
             }
             finally { }
@@ -149,18 +186,16 @@ namespace ANU.IngameDebug.Console.Converters
 
     public class Color32Converter : IConverter<Color32>
     {
-        private static readonly IConverter<Color> _colorConverter = new ColorConverter();
-
-        public Color32 ConvertFromString(string option, ConverterExtraArgs args)
+        public Color32 ConvertFromString(string option)
         {
-            var color = _colorConverter.ConvertFromString(option, args);
+            var color = this.GetRegistry().Convert<Color>(option);
             return new Color32((byte)(color.r * 255), (byte)(color.g * 255), (byte)(color.b * 255), (byte)(color.a * 255));
         }
     }
 
     public class GameObjectConverter : IConverter<GameObject>
     {
-        public GameObject ConvertFromString(string option, ConverterExtraArgs args)
+        public GameObject ConvertFromString(string option)
             => option.ToLower() == "null"
                 ? null
                 : GameObject.Find(option);
@@ -170,7 +205,7 @@ namespace ANU.IngameDebug.Console.Converters
     {
         public Type TargetType => typeof(UnityEngine.Component);
 
-        object IConverter.ConvertFromString(string option, System.Type targetType, ConverterExtraArgs args)
+        object IConverter.ConvertFromString(string option, System.Type targetType)
             => option.ToLower() == "null"
                 ? null
                 : GameObject.FindObjectsByType(targetType, FindObjectsSortMode.None).FirstOrDefault(t => t.name == option);
@@ -178,7 +213,7 @@ namespace ANU.IngameDebug.Console.Converters
 
     public class BoolConverter : IConverter<bool>
     {
-        public bool ConvertFromString(string option, ConverterExtraArgs args)
+        public bool ConvertFromString(string option)
         {
             switch (option.ToLower())
             {
@@ -203,6 +238,18 @@ namespace ANU.IngameDebug.Console.Converters
                 default:
                     throw new Exception($"Not a valid input for Boolean: {option}");
             }
+        }
+    }
+
+    public class ArrayConverter : VectorConverterBase, IConverter
+    {
+        Type IConverter.TargetType => typeof(Array);
+        object IConverter.ConvertFromString(string option, System.Type targetType)
+        {
+            var components = GetComponents(targetType.GetElementType(), option, null).ToArray();
+            var array = Array.CreateInstance(targetType.GetElementType(), components.Length);
+            Array.Copy(components, array, array.Length);
+            return array;
         }
     }
 }

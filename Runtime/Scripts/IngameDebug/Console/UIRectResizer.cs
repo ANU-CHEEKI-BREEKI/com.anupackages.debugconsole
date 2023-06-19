@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 
 namespace ANU.IngameDebug.Console
 {
+    [DebugCommandPrefix("console")]
     public class UIRectResizer : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler
     {
         [SerializeField] private RectTransform _rect;
@@ -59,9 +60,6 @@ namespace ANU.IngameDebug.Console
 
         private void Awake()
         {
-            DebugConsole.RegisterCommand(new Action<Vector2Int>(ConsoleSize));
-            DebugConsole.RegisterCommand(new Action(RefreshConsoleSize));
-
             if (!HasSize)
                 Size = _rect.sizeDelta;
 
@@ -111,13 +109,13 @@ namespace ANU.IngameDebug.Console
             SizeYVPort = corner.y / Screen.height;
         }
 
-        [DebugCommand(Name = "console.refresh-size")]
+        [DebugCommand(Name = "refresh-size")]
         private void RefreshConsoleSize() => ConsoleSize(new Vector2Int(
             Mathf.RoundToInt(SizeXVPort * 100f),
             Mathf.RoundToInt(SizeYVPort * 100f)
         ));
 
-        [DebugCommand(Name = "console.size", Description = "Set console rect size relative to vieport. Values is Vector2Int in range [0, 100]")]
+        [DebugCommand(Name = "size", Description = "Set console rect size relative to vieport. Values is Vector2Int in range [0, 100]")]
         private void ConsoleSize(
             [OptAltNames("v")]
             [OptDesc("in range [10,100]")]
