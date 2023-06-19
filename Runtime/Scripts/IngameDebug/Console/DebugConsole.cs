@@ -295,6 +295,7 @@ namespace ANU.IngameDebug.Console
         {
             Converters.Register(new BaseConveerter());
             Converters.Register(new ArrayConverter());
+            Converters.Register(new ListConverter());
             Converters.Register(new Vector2IntConverter());
             Converters.Register(new Vector2Converter());
             Converters.Register(new Vector3IntConverter());

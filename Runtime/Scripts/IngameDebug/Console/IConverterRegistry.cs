@@ -5,6 +5,7 @@ namespace ANU.IngameDebug.Console.Converters
 {
     public interface IConverter
     {
+        int Priority => 0;
         Type TargetType { get; }
         bool CanConvert<TFrom>() => CanConvert(typeof(TFrom));
         bool CanConvert(Type type) => TargetType.IsAssignableFrom(type);

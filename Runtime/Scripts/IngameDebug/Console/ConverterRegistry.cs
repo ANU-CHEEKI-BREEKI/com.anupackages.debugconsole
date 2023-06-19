@@ -27,6 +27,12 @@ namespace ANU.IngameDebug.Console.Converters
 
         public object Convert(Type type, string option)
         {
+            if (type is null)
+                throw new ArgumentNullException(nameof(type));
+
+            if (option is null)
+                throw new ArgumentNullException(nameof(option));
+
             if (_converters.TryGetValue(type, out var converter) && converter.CanConvert(type))
             {
                 converter.SetRegistry(this);
@@ -34,7 +40,7 @@ namespace ANU.IngameDebug.Console.Converters
                 return converter.ConvertFromString(option, type);
             }
 
-            converter = _converters.Values.FirstOrDefault(w => w.CanConvert(type));
+            converter = _converters.Values.OrderBy(v => v.Priority).FirstOrDefault(w => w.CanConvert(type));
             if (converter != null)
             {
                 converter.SetLogger(Logger);
@@ -42,7 +48,7 @@ namespace ANU.IngameDebug.Console.Converters
                 return converter.ConvertFromString(option, type);
             }
 
-            return null;
+            throw new NotSupportedException($"There are no registered converter which can convert {type}");
         }
 
         private class LambdaConverter<T> : IConverter<T>

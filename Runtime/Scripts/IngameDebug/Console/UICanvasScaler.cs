@@ -33,25 +33,8 @@ namespace ANU.IngameDebug.Console
             set => PlayerPrefs.SetInt(PrefsSaveUIScale_ScaleValue, value);
         }
 
-        private class TestNonComponentClass
-        {
-            private string name = "none";
-
-            public TestNonComponentClass() { }
-            public TestNonComponentClass(string name) => this.name = name;
-
-            [DebugCommand] public static void TestMethodStaticArray(int[] lol) => Debug.Log($"Test_StaticMethod {string.Join(",", lol.Select(i => i))}");
-            [DebugCommand] public static void TestMethodStaticList(List<int> lol) => Debug.Log($"Test_StaticMethod {string.Join(",", lol.Select(i => i))}");
-            [DebugCommand] public static void TestMethodStaticIEnumerable(IEnumerable<int> lol) => Debug.Log($"Test_StaticMethod {string.Join(",", lol.Select(i => i))}");
-            [DebugCommand] public static void TestMethodStaticIList(IList<int> lol) => Debug.Log($"Test_StaticMethod {string.Join(",", lol.Select(i => i))}");
-            [DebugCommand] public void TestMethodInstance() => Debug.Log($"Test_InstanceMethod {name}");
-        }
-
         private void Awake()
         {
-            DebugConsole.InstanceTargets.Register(new TestNonComponentClass());
-            DebugConsole.Converters.Register<TestNonComponentClass>(s => new TestNonComponentClass(s));
-
             _exact.onValidateInput += (string text, int charIndex, char addedChar) => char.IsDigit(addedChar) ? addedChar : '\0';
             _exact.onSelect.AddListener(s => _exact.text = _exact.text.Replace('%', '\0'));
             _exact.onSubmit.AddListener(s =>

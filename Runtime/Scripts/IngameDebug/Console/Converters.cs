@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace ANU.IngameDebug.Console.Converters
 {
     public class BaseConveerter : IConverter
     {
+        int IConverter.Priority => int.MaxValue;
         public Type TargetType => typeof(object);
 
         public object ConvertFromString(string option, Type targetType)
@@ -17,12 +19,8 @@ namespace ANU.IngameDebug.Console.Converters
         bool IConverter.CanConvert(System.Type type) => !type.IsArray;
     }
 
-    public abstract class VectorConverterBase : IConverter
+    public abstract class VectorConverterBase
     {
-        Type IConverter.TargetType => throw new NotImplementedException();
-        object IConverter.ConvertFromString(string option, Type targetType)
-            => new NotImplementedException();
-
         /// <summary>
         /// pass count as null to take all available components
         /// pass value to consider arrray aa fixed length array.
@@ -51,7 +49,7 @@ namespace ANU.IngameDebug.Console.Converters
                 .Trim('(', ')')
                 //TODO: prevent splitting array of string values
                 .Split(new char[] { ' ', ',' }, System.StringSplitOptions.RemoveEmptyEntries)
-                .Select(c => this.GetRegistry().Convert(type, c));
+                .Select(c => (this as IConverter)?.GetRegistry()?.Convert(type, c));
 
             if (count == null)
                 return components;
@@ -250,6 +248,34 @@ namespace ANU.IngameDebug.Console.Converters
             var array = Array.CreateInstance(targetType.GetElementType(), components.Length);
             Array.Copy(components, array, array.Length);
             return array;
+        }
+    }
+
+    public class ListConverter : IConverter
+    {
+        Type IConverter.TargetType => typeof(List<>);
+
+        bool IConverter.CanConvert(System.Type type)
+            => type.IsGenericType
+            && (this as IConverter).TargetType.IsAssignableFrom(type.GetGenericTypeDefinition());
+
+        object IConverter.ConvertFromString(string option, System.Type targetType)
+        {
+            var array = this
+                .GetRegistry()
+                .Convert(
+                    targetType.GenericTypeArguments[0].MakeArrayType(),
+                    option
+                ) as Array;
+
+            var list = Activator.CreateInstance(targetType) as IList;
+            for (int i = 0; i < array.Length; i++)
+            {
+                var item = array.GetValue(i);
+                list.Add(item);
+            }
+
+            return list;
         }
     }
 }
