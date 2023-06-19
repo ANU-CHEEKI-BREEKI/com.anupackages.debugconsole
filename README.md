@@ -87,6 +87,8 @@ Infinite scroll
 
 ### Attributes
 
+InstanceTargetType
+
 #### Static 
 #### Instanced
 
