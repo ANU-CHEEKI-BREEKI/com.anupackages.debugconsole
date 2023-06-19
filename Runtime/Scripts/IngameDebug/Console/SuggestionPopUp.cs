@@ -38,7 +38,7 @@ namespace ANU.IngameDebug.Console
     }
 
     //TODO: suggestion presenter
-    // to contain suggestion ipem and display it
+    // to contain suggestion item and display it
     // so maybe suggestion item it just {string, Action} container
 
     [RequireComponent(typeof(LayoutElement))]
@@ -83,8 +83,8 @@ namespace ANU.IngameDebug.Console
 
         public Suggestion Selected => _current?.Value;
 
-        private float _preferedSuggestionsElementHeigth;
-        private float _preferedSuggestionsElementWidth;
+        private float _preferredSuggestionsElementHeight;
+        private float _preferredSuggestionsElementWidth;
         private LayoutElement _suggestionsElement;
         private RectTransform _suggestionsParent;
 
@@ -233,8 +233,8 @@ namespace ANU.IngameDebug.Console
 
             _suggestionsParent = _suggestionPresenterPrefab.transform.parent as RectTransform;
             _suggestionsElement = this.GetComponent<LayoutElement>();
-            _preferedSuggestionsElementHeigth = _suggestionsElement.preferredHeight;
-            _preferedSuggestionsElementWidth = _suggestionsElement.preferredWidth;
+            _preferredSuggestionsElementHeight = _suggestionsElement.preferredHeight;
+            _preferredSuggestionsElementWidth = _suggestionsElement.preferredWidth;
 
             _suggestionPresenterPrefab.gameObject.SetActive(false);
 
@@ -252,11 +252,11 @@ namespace ANU.IngameDebug.Console
 
             _suggestionsElement.preferredHeight = Math.Min(
                 _suggestionsParent.rect.height,
-                _preferedSuggestionsElementHeigth
+                _preferredSuggestionsElementHeight
             );
             _suggestionsElement.preferredWidth = Math.Min(
                 _contentWidth.Sum(r => r.rect.width),
-                _preferedSuggestionsElementWidth
+                _preferredSuggestionsElementWidth
             );
         }
     }

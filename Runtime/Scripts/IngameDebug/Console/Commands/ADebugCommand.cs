@@ -83,7 +83,15 @@ namespace ANU.IngameDebug.Console.Commands
             get
             {
                 if (_optionsHint == null)
-                    _optionsHint = string.Join(", ", Options.Select(option => option.Prototype));
+                {
+                    _optionsHint = string.Join(
+                        " ", 
+                        Options.Select(option => option.OptionValueType != OptionValueType.Required 
+                            ? $"[{option.Prototype}]" 
+                            : option.Prototype
+                        )
+                    );
+                }
                 return _optionsHint;
             }
         }
@@ -102,9 +110,6 @@ namespace ANU.IngameDebug.Console.Commands
         {
             var options = Options;
 
-            if (string.IsNullOrEmpty(args))
-                args = "<>";
-
             //TODO: preprocess command to define if there are any mandatory option leading -- or -
             // if no - add corresponding option names to match passed parameters
             // this way we will be able to use console like C# methods - pass mandatory parameters without option names
@@ -113,9 +118,9 @@ namespace ANU.IngameDebug.Console.Commands
             try
             {
                 var comandOptions = args.SplitCommandLine();
-                var notParsedOptions = options.Parse(comandOptions );
+                var notParsedOptions = options.Parse(comandOptions);
 
-                if (notParsedOptions.Any(p => p != "<>"))
+                if (notParsedOptions.Any())
                 {
                     var builder = new StringBuilder();
                     builder.AppendLine("there are no options with names:");

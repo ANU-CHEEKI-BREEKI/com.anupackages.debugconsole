@@ -160,9 +160,6 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                     valueHints[opt] = new AvailableValuesHint(hints);
             }
 
-            if (!options.Any())
-                options.Add("<>", v => { });
-
             return options;
         }
     }

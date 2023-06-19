@@ -17,7 +17,7 @@ namespace ANU.IngameDebug.Console
 
         protected override IEnumerable<ADebugCommand> Collection => _commands.Values;
 
-        protected override string GetDisplayName(ADebugCommand item) => $"{item.Name} [{item.OptionsHint}]";
+        protected override string GetDisplayName(ADebugCommand item) => $"{item.Name} {item.OptionsHint}";
         protected override string GetFilteringName(ADebugCommand item) => item.Name;
         protected override string GetFullSuggestedText(Suggestion item, string fullInput) => (item.Source as ADebugCommand).Name + " ";
 

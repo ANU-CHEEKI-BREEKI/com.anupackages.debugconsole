@@ -15,11 +15,8 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
             _onParsed = onParsed;
         }
 
-        public LambdaCommand(string name, string description, Action noOptions) : base(name, description)
-            => _optionsGetter = valueHints => new OptionSet()
-            {
-                { "<>", v => noOptions?.Invoke() }
-            };
+        public LambdaCommand(string name, string description, Action noOptions)
+            : this(name, description, valueHints => new OptionSet(), noOptions) { }
 
         protected override OptionSet CreateOptions(Dictionary<Option, AvailableValuesHint> valueHints) => _optionsGetter.Invoke(InternalValueHints);
         protected override void OnParsed() => _onParsed?.Invoke();
