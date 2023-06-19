@@ -13,6 +13,12 @@ namespace ANU.IngameDebug.Console
     {
         private void Start()
         {
+#if DEBUG
+            var timer = new System.Diagnostics.Stopwatch();
+            timer.Start();
+            DebugConsole.Logger.Log("Start searching commands declared by attributes...");
+#endif
+
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             DebugConsole.RegisterCommands(
                 AppDomain.CurrentDomain.GetAssemblies()
@@ -43,6 +49,17 @@ namespace ANU.IngameDebug.Console
                     })
                     .ToArray()
             );
+
+#if DEBUG
+            timer.Stop();
+            var log = $"Searching commands declared by attributes ended.\nOperation elapsed duration: {timer.Elapsed:ss's :'fff'ms'}, ticks: {timer.ElapsedTicks}";
+            if (timer.Elapsed.Seconds < 3)
+                DebugConsole.Logger.Log(log);
+            else if (timer.Elapsed.Seconds < 5)
+                DebugConsole.Logger.LogWarning(log);
+            else
+                DebugConsole.Logger.LogError(log);
+#endif
         }
     }
 }

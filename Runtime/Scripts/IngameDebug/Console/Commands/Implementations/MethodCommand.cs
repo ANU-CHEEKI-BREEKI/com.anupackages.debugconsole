@@ -11,6 +11,9 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 {
     public class MethodCommand : ADebugCommand
     {
+        private static readonly Dictionary<MethodInfo, DebugCommandAttribute> _cachedAttributes = new();
+        private static readonly Dictionary<Type, DebugCommandPrefixAttribute> _cachedAttributes2 = new();
+
         private readonly object _instance;
         private readonly MethodInfo _method;
 
@@ -32,7 +35,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
         {
             _instance = instance;
             _method = method;
-            _attribute = method.GetCustomAttribute<DebugCommandAttribute>(); ;
+            _attribute = GetCachedCommandAttribute(_method);
 
             _parameters = method.GetParameters();
             _parameterValues = new object[_parameters.Length];
@@ -41,10 +44,17 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
             ResetParametersValues();
         }
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ClearStatic()
+        {
+            _cachedAttributes?.Clear();
+            _cachedAttributes2?.Clear();
+        }
+
         public static string GetName(MethodInfo method, string prefix = "")
         {
-            var attribute = method.GetCustomAttribute<DebugCommandAttribute>();
-            var prefixAttribute = method.DeclaringType.GetCustomAttribute<DebugCommandPrefixAttribute>();
+            var attribute = GetCachedCommandAttribute(method);
+            var prefixAttribute = GetCachedPrefixAttribute(method);
 
             var allPrefixes = prefixAttribute?.MorePrefixes?.Prepend(prefixAttribute.Prefix) ?? Array.Empty<string>();
             if (!string.IsNullOrEmpty(prefix))
@@ -66,9 +76,25 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
             return prefix + name;
         }
 
+        private static DebugCommandPrefixAttribute GetCachedPrefixAttribute(MethodInfo method)
+        {
+            if (!_cachedAttributes2.ContainsKey(method.DeclaringType))
+                _cachedAttributes2[method.DeclaringType] = method.DeclaringType.GetCustomAttribute<DebugCommandPrefixAttribute>();
+
+            var prefixAttribute = _cachedAttributes2[method.DeclaringType];
+            return prefixAttribute;
+        }
+
+        private static DebugCommandAttribute GetCachedCommandAttribute(MethodInfo method)
+        {
+            if (!_cachedAttributes.ContainsKey(method))
+                _cachedAttributes[method] = method.GetCustomAttribute<DebugCommandAttribute>();
+            return _cachedAttributes[method];
+        }
+
         public static string GetDescription(MethodInfo method)
         {
-            var attribute = method.GetCustomAttribute<DebugCommandAttribute>();
+            var attribute = GetCachedCommandAttribute(method);
             return attribute?.Description;
         }
 

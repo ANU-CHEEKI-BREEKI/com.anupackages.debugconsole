@@ -281,8 +281,6 @@ namespace ANU.IngameDebug.Console
 
         private void Start()
         {
-            ExecuteCommand("clear", true);
-            ExecuteCommand("list", true);
             ExecuteCommand("help", true);
         }
 
@@ -375,6 +373,7 @@ To choose suggestion            - press Tab or Enter
 To choose first suggestion      - press Tab when no selected suggestions
 To search history               - use ArrowUp and ArrowDown when suggestions not shown
 ---------------------------------
+Enter ""list"" to print all registered commands
 ")),
                 new LambdaCommand("list", "print all command names with descriptions", () =>
                 {
