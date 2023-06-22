@@ -269,7 +269,7 @@ namespace ANU.IngameDebug.Console
 
         private void SetupConsoleCommands()
         {
-            DebugConsole.Commands.RegisterCommand("help", "Print help", () => Logger.Log(
+            Commands.RegisterCommand("help", "Print help", () => Logger.Log(
 $@"To call command               - enter command name and parameters
 for example: ""command_name -param_name_1 -param_name_2""
 To see all commands              - enter command ""list""
@@ -285,7 +285,7 @@ To search history               - use ArrowUp and ArrowDown when suggestions not
 ---------------------------------
 Enter ""list"" to print all registered commands
 "));
-            DebugConsole.Commands.RegisterCommand("list", "Print all command names with descriptions", () =>
+            Commands.RegisterCommand("list", "Print all command names with descriptions", () =>
             {
                 var maxLength = _commands.Commands.Values.Max(n => n.Name.Length);
                 var nameLength = Mathf.Max(maxLength, maxLength + 5);
@@ -303,8 +303,8 @@ Enter ""list"" to print all registered commands
                 Logger.Log(builder.ToString());
             });
 
-            DebugConsole.Commands.RegisterCommand("clear", "Clear console log", Logs.Clear);
-            DebugConsole.Commands.RegisterCommand("suggestions-context", "Switch suggestions context", SwitchContext);
+            Commands.RegisterCommand("clear", "Clear console log", Logs.Clear);
+            Commands.RegisterCommand("suggestions-context", "Switch suggestions context", SwitchContext);
         }
 
         [DebugCommand(Name = "time", Description = "Set time scale")]
