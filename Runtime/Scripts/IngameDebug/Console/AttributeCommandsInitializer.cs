@@ -21,7 +21,7 @@ namespace ANU.IngameDebug.Console
 #endif
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            DebugConsole.RegisterCommands(
+            DebugConsole.Commands.RegisterCommands(
                 assemblies
                     .SelectMany(asm => asm.GetTypes())
                     .Where(t => typeof(UnityEngine.MonoBehaviour).IsAssignableFrom(t))

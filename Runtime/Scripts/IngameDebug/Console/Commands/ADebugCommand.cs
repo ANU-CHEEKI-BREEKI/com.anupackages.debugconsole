@@ -19,6 +19,7 @@ namespace ANU.IngameDebug.Console.Commands
         private bool _printHelp = false;
 
         private readonly Dictionary<Option, AvailableValuesHint> _valueHints = new Dictionary<Option, AvailableValuesHint>();
+        private readonly Dictionary<Option, Action<string>> _optionActions = new();
 
         public OptionSet Options
         {
@@ -85,9 +86,9 @@ namespace ANU.IngameDebug.Console.Commands
                 if (_optionsHint == null)
                 {
                     _optionsHint = string.Join(
-                        " ", 
-                        Options.Select(option => option.OptionValueType != OptionValueType.Required 
-                            ? $"[{option.Prototype}]" 
+                        " ",
+                        Options.Select(option => option.OptionValueType != OptionValueType.Required
+                            ? $"[{option.Prototype}]"
                             : option.Prototype
                         )
                     );
@@ -148,11 +149,16 @@ namespace ANU.IngameDebug.Console.Commands
             }
             catch (OptionException oex)
             {
-                Logger?.LogError($"{Name}: {oex.Message}.\r\nTry `{Name} --help' for more information.");
+                if (Logger != null)
+                    Logger.LogError($"{Name}: {oex.Message}.\r\nTry `{Name} --help' for more information.");
+                else
+                    throw oex;
             }
             catch (Exception ex)
             {
-                Logger?.LogException(ex);
+                if (Logger != null)
+                    Logger.LogException(ex);
+                throw ex;
             }
         }
 
@@ -169,6 +175,23 @@ namespace ANU.IngameDebug.Console.Commands
                     _options.Add("help|?|h", "see this command help", v => _printHelp = v != null);
             }
         }
+
+        // public void SetOptionAction(Option key, Action<string> action)
+        //     => _optionActions[key] = action;
+
+        // public Action<string> GetOptionAction(Option key)
+        //     => _optionActions.TryGetValue(key, out var action)
+        //         ? action
+        //         : null;
+
+        // public void ReplaceOptionActionKey(Option key, Option newKey)
+        // {
+        //     if (_optionActions.TryGetValue(key, out var action))
+        //     {
+        //         _optionActions.Remove(key);
+        //         _optionActions[newKey] = action;
+        //     }
+        // }
     }
 
     public class AvailableValuesHint : List<string>

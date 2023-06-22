@@ -41,10 +41,11 @@ namespace ANU.IngameDebug.Console
         private static ISuggestionsContext _suggestionsContext;
         private static CommandsSuggestionsContext _commandsContext;
         private static HistorySuggestionsContext _historyContext;
+        private static readonly ILogger _logger = new UnityLogger(ConsoleLogType.Output);
 
         private static DebugConsole Instance { get; set; }
 
-        private static Dictionary<string, ADebugCommand> _commands = new();
+        private static readonly CommandsRegistry _commands = new(_logger);
 
         internal static LogsContainer Logs { get; } = new();
 
@@ -54,11 +55,12 @@ namespace ANU.IngameDebug.Console
         public static bool ShowLogs { get; set; } = true;
 
         private static ILogger InputLogger { get; } = new UnityLogger(ConsoleLogType.Input);
-        public static ILogger Logger { get; } = new UnityLogger(ConsoleLogType.Output);
+        public static ILogger Logger => _logger;
 
         public static IConverterRegistry Converters { get; } = new ConverterRegistry(Logger);
         public static ICommandInputPreprocessorRegistry Preprocessors { get; } = new CommandInputPreprocessorRegistry(Logger);
         public static IInstancesTargetRegistry InstanceTargets { get; } = new InstancesTargetRegistry();
+        public static ICommandsRegistry Commands => _commands;
 
         private static ISuggestionsContext SuggestionsContext
         {
@@ -82,97 +84,6 @@ namespace ANU.IngameDebug.Console
                 Instance._currentTheme = value;
                 ThemeChanged?.Invoke(CurrentTheme);
             }
-        }
-
-        public static void RegisterCommands(params ADebugCommand[] commands)
-        {
-            foreach (var command in commands)
-                RegisterCommand(command);
-        }
-
-        public static void RegisterCommand(ADebugCommand command)
-        {
-            _commands[command.Name] = command;
-            command.Logger = Logger;
-        }
-
-        public static void RegisterCommand(string name, string description, Action command, Action<ICommandMetaData[]> metaDataCustomize = null)
-            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
-
-        public static void RegisterCommand(Delegate command, Action<ICommandMetaData[]> metaDataCustomize = null)
-            => RegisterCommand(command.Method, command.Target, metaDataCustomize);
-
-        public static void RegisterCommand(string name, string description, Delegate command, Action<ICommandMetaData[]> metaDataCustomize = null)
-            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
-
-        public static void RegisterCommand<T1>(string name, string description, Action<T1> command, Action<ICommandMetaData[]> metaDataCustomize = null)
-            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
-
-        public static void RegisterCommand<T1, T2>(string name, string description, Action<T1, T2> command, Action<ICommandMetaData[]> metaDataCustomize = null)
-            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
-
-        public static void RegisterCommand<T1, T2, T3>(string name, string description, Action<T1, T2, T3> command, Action<ICommandMetaData[]> metaDataCustomize = null)
-            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
-
-        public static void RegisterCommand<T1, T2, T3, T4>(string name, string description, Action<T1, T2, T3, T4> command, Action<ICommandMetaData[]> metaDataCustomize = null)
-            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
-
-        public static void RegisterCommand<T1>(string name, string description, Func<T1> command, Action<ICommandMetaData[]> metaDataCustomize = null)
-            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
-
-        public static void RegisterCommand<T1, T2>(string name, string description, Func<T1, T2> command, Action<ICommandMetaData[]> metaDataCustomize = null)
-            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
-
-        public static void RegisterCommand<T1, T2, T3>(string name, string description, Func<T1, T2, T3> command, Action<ICommandMetaData[]> metaDataCustomize = null)
-            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
-
-        public static void RegisterCommand<T1, T2, T3, T4>(string name, string description, Func<T1, T2, T3, T4> command, Action<ICommandMetaData[]> metaDataCustomize = null)
-            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
-
-        public static void RegisterCommand<T1, T2, T3, T4, T5>(string name, string description, Func<T1, T2, T3, T4, T5> command, Action<ICommandMetaData[]> metaDataCustomize = null)
-            => RegisterCommand(name, description, command.Method, command.Target, metaDataCustomize);
-
-        private static void RegisterCommand(string name, string description, MethodInfo method, object target, Action<ICommandMetaData[]> metaDataCustomize)
-        {
-            var methodCommand = new MethodCommand(name, description, method, target);
-            RegisterCommand(methodCommand, metaDataCustomize);
-        }
-
-        private static void RegisterCommand(MethodInfo method, object target, Action<ICommandMetaData[]> metaDataCustomize)
-        {
-            var methodCommand = new MethodCommand(method, target);
-            RegisterCommand(methodCommand, metaDataCustomize);
-        }
-
-        private static void RegisterCommand(MethodCommand command, Action<ICommandMetaData[]> metaDataCustomize)
-        {
-            var methodCommand = command;
-            var metaData = methodCommand.Options.Select(v => new CommandMetaData
-            {
-                Key = v,
-                // CustomName = v.Key.Prototype,
-                AvailableValues = methodCommand.ValueHints.TryGetValue(v, out var av) ? av : new AvailableValuesHint()
-            }).ToArray();
-            metaDataCustomize?.Invoke(metaData);
-            for (int i = 0; i < metaData.Length; i++)
-            {
-                var item = metaData[i];
-                methodCommand.ValueHints[item.Key] = item.AvailableValues;
-            }
-            RegisterCommand(methodCommand);
-        }
-
-        public interface ICommandMetaData
-        {
-            // public string CustomName { get; set; }
-            public AvailableValuesHint AvailableValues { get; set; }
-
-        }
-        private class CommandMetaData : ICommandMetaData
-        {
-            public Option Key { get; set; }
-            // public string CustomName { get; set; }
-            public AvailableValuesHint AvailableValues { get; set; }
         }
 
         public static void ExecuteCommand(string commandLine, bool silent = false)
@@ -234,7 +145,7 @@ namespace ANU.IngameDebug.Console
 
             Application.logMessageReceived += LogMessageReceived;
 
-            _commandsContext = new CommandsSuggestionsContext(_commands);
+            _commandsContext = new CommandsSuggestionsContext(_commands.Commands);
             _historyContext = new HistorySuggestionsContext(_commandsHistory);
             _content.SetActive(false);
 
@@ -321,13 +232,13 @@ namespace ANU.IngameDebug.Console
                 commandLine = Preprocessors.Preprocess(commandLine);
                 var commandName = ExtractCommandName(commandLine);
 
-                if (!_commands.ContainsKey(commandName) && !silent)
+                if (!_commands.Commands.ContainsKey(commandName) && !silent)
                 {
                     Logger.LogError($"There is no command with name \"{commandName}\". Enter \"help\" to see command usage.");
                     return;
                 }
 
-                var command = _commands[commandName];
+                var command = _commands.Commands[commandName];
 
                 // remove command name from command line input
                 if (commandLine != null)
@@ -358,10 +269,9 @@ namespace ANU.IngameDebug.Console
 
         private void SetupConsoleCommands()
         {
-            DebugConsole.RegisterCommands(
-                new LambdaCommand("help", "print help", () => Logger.Log(
-    $@"To call command               - enter command name and parameters
-    for example: ""command_name -param_name_1 -param_name_2""
+            DebugConsole.Commands.RegisterCommand("help", "Print help", () => Logger.Log(
+$@"To call command               - enter command name and parameters
+for example: ""command_name -param_name_1 -param_name_2""
 To see all commands              - enter command ""list""
 To see concrete command help     - enter command name with parameter ""-help""
 ---------------------------------
@@ -374,34 +284,34 @@ To choose first suggestion      - press Tab when no selected suggestions
 To search history               - use ArrowUp and ArrowDown when suggestions not shown
 ---------------------------------
 Enter ""list"" to print all registered commands
-")),
-                new LambdaCommand("list", "print all command names with descriptions", () =>
-                {
-                    var maxLength = _commands.Values.Max(n => n.Name.Length);
-                    var nameLength = Mathf.Max(maxLength, maxLength + 5);
+"));
+            DebugConsole.Commands.RegisterCommand("list", "Print all command names with descriptions", () =>
+            {
+                var maxLength = _commands.Commands.Values.Max(n => n.Name.Length);
+                var nameLength = Mathf.Max(maxLength, maxLength + 5);
 
-                    var builder = new StringBuilder();
-                    builder.AppendLine("Available commands:");
-                    foreach (var command in _commands.Values.OrderBy(cmd => cmd.Name))
-                    {
-                        builder.Append("  - ");
-                        builder.Append(command.Name);
-                        builder.Append(new string('-', nameLength - command.Name.Length));
-                        builder.AppendLine(command.Description);
-                    }
-
-                    Logger.Log(builder.ToString());
-                }),
-                new LambdaCommand("clear", "clear console log", Logs.Clear),
-                new LambdaCommand("suggestions-context", "switch suggestions context", SwitchContext),
-                new LambdaCommand("time", "", optionValuesHint =>
+                var builder = new StringBuilder();
+                builder.AppendLine("Available commands:");
+                foreach (var command in _commands.Commands.Values.OrderBy(cmd => cmd.Name))
                 {
-                    var set = new OptionSet();
-                    set.Add<float>("scale=", scale => Time.timeScale = Mathf.Max(0, scale));
-                    return set;
-                })
-            );
+                    builder.Append("  - ");
+                    builder.Append(command.Name);
+                    builder.Append(new string('-', nameLength - command.Name.Length));
+                    builder.AppendLine(command.Description);
+                }
+
+                Logger.Log(builder.ToString());
+            });
+
+            DebugConsole.Commands.RegisterCommand("clear", "Clear console log", Logs.Clear);
+            DebugConsole.Commands.RegisterCommand("suggestions-context", "Switch suggestions context", SwitchContext);
         }
+
+        [DebugCommand(Name = "time", Description = "Set time scale")]
+        private void SetTimeScale(
+            [OptAltNames("s")]
+            float scale
+        ) => Time.timeScale = Mathf.Max(0, scale);
 
         [DebugCommand(Name = "console.theme", Description = "Set console theme at runtime. Pass index or name of wanted UITheme listed in DebugConsole Themes list")]
         private void SetConsoleTheme(

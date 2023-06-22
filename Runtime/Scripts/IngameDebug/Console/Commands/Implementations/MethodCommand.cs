@@ -189,6 +189,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                     var isFlag = parameter.ParameterType == typeof(bool) && isOptional && ((bool)parameter.DefaultValue == false);
 
                     var optionName = parameter.Name;
+                    // var optionKey = optionName;
 
                     var altNames = parameter.GetCustomAttribute<OptAltNamesAttribute>();
                     if (altNames != null)
@@ -199,27 +200,32 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
                     var optionDescription = parameter.GetCustomAttribute<OptDescAttribute>()?.Description;
 
+                    Action<string> action = value =>
+                    {
+                        value = value.Trim('"').Trim('\'');
+
+                        if (isOptional && value == null)
+                        {
+                            // do nothing
+                        }
+                        else
+                        {
+                            _parameterValues[parameterIndex] = isFlag
+                                ? value != null
+                                : DebugConsole.Converters.Convert(parameter.ParameterType, value);
+
+                            _isParameterValid[parameterIndex] = true;
+                        }
+                    };
+
                     options.Add(
                         optionName,
                         optionDescription,
-                        value =>
-                        {
-                            value = value.Trim('"').Trim('\'');
-
-                            if (isOptional && value == null)
-                            {
-                                // do nothing
-                            }
-                            else
-                            {
-                                _parameterValues[parameterIndex] = isFlag
-                                    ? value != null
-                                    : DebugConsole.Converters.Convert(parameter.ParameterType, value);
-
-                                _isParameterValid[parameterIndex] = true;
-                            }
-                        }
+                        action
                     );
+                    // var option = options[optionKey];
+                    // SetOptionAction(option, action);
+
                     var valAsKey = optionName.Split(new string[] { "|" }, StringSplitOptions.RemoveEmptyEntries);
                     var opt = options[valAsKey.Last().TrimEnd('=', ':')];
 

@@ -44,11 +44,6 @@ namespace ANU.IngameDebug.Console
             if (!Application.isPlaying)
                 return;
 
-            DebugConsole.RegisterCommand(new Action<bool>(Expand));
-            DebugConsole.RegisterCommand(new Action<bool>(AutoScroll));
-            DebugConsole.RegisterCommand(new Action<float>(ScrollNormalize));
-            DebugConsole.RegisterCommand(new Action<string, bool, bool, bool, bool>(FilterItems));
-
             _logsPool = new UnityEngine.Pool.ObjectPool<UILogPresenter>(
                 () => Instantiate(_logPresenterPrefab),
                 actionOnGet: p =>
