@@ -8,17 +8,11 @@ namespace ANU.IngameDebug.Console
 {
     public class NamedParametersPreprocessor : ICommandInputPreprocessor
     {
-        private readonly Regex _regexFromcommandToFirstNamedParameter;
-
-        public NamedParametersPreprocessor()
-            => _regexFromcommandToFirstNamedParameter = new Regex(@"^(?<command>\s*[\.\w_\d\-]*).*?(?<named_parameter>\s+-{1,2}[\.\w_\d]*).*$");
-
         public int Priority => 100;
 
         public string Preprocess(string input, PreprocessorExtraArgs args)
         {
-            var match = _regexFromcommandToFirstNamedParameter.Match(input);
-            var namedParameterGroup = match.Groups["named_parameter"];
+            var namedParameterGroup = input.GetFirstNamedParameter();
 
             var inputToAddParameterNames = input;
             var concatInput = "";

@@ -251,7 +251,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                         "Provide targets for instances command. This has highest priority over any `InstanceTargetType`",
                         inputString => _dynamicInstances = DebugConsole.Converters.Convert(
                             _method.DeclaringType.MakeArrayType(),
-                            inputString.Trim('"').Trim('\'')
+                            inputString?.Trim('"')?.Trim('\'') ?? ""
                         ) as object[]
                     );
                 }

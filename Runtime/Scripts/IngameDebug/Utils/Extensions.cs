@@ -2,12 +2,21 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace ANU.IngameDebug.Utils
 {
     public static class Extensions
     {
+        private static readonly Regex RegexFromcommandToFirstNamedParameter = new Regex(@"^(?<command>\s*[\.\w_\d\-]*).*?(?<named_parameter>\s+-{1,2}[\.\w_\d]*).*$");
+
+        public static Group GetFirstNamedParameter(this string commandLine)
+        {
+            var match = RegexFromcommandToFirstNamedParameter.Match(commandLine);
+            return match.Groups["named_parameter"];
+        }
+
         public static IEnumerable<string> SplitCommandLine(this string commandLine)
         {
             var inQuotes = false;

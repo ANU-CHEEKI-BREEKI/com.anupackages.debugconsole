@@ -456,9 +456,7 @@ Enter ""list"" to print all registered commands
 
             _suggestions.Deselect();
 
-            var suggestions = SuggestionsContext?.GetSuggestions(
-                DebugConsole.Preprocessors.Preprocess(input)
-            );
+            var suggestions = SuggestionsContext?.GetSuggestions(input);
             _suggestions.Suggestions = suggestions;
 
             if (suggestions.Any())

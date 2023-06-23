@@ -28,7 +28,7 @@ namespace ANU.IngameDebug.Console
         protected abstract string GetFilteringName(T item);
         protected abstract string GetFullSuggestedText(Suggestion item, string fullInput);
 
-        private protected virtual IOrderedEnumerable<T> FilterItems(IEnumerable<T> items, string input, Func<T, string> filteredStringGetter)
+        private protected virtual IEnumerable<T> FilterItems(IEnumerable<T> items, string input, Func<T, string> filteredStringGetter)
         {
             return items
                 .Where(c => filteredStringGetter.Invoke(c).Contains(input))
