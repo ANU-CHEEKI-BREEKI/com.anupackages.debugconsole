@@ -163,14 +163,14 @@ namespace ANU.IngameDebug.Console.Converters
                 var v4 = this.GetRegistry().Convert<Vector4>(option);
                 return new Color(v4.x, v4.y, v4.z, v4.w);
             }
-            finally { }
+            catch { }
 
             try
             {
                 var v3 = this.GetRegistry().Convert<Vector3>(option);
                 return new Color(v3.x, v3.y, v3.z);
             }
-            finally { }
+            catch { }
 
             if (ColorUtility.TryParseHtmlString(option, out var color))
                 return color;

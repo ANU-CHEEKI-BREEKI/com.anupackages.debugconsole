@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace ANU.IngameDebug.Console
 {
-    internal class resizeSectionTheme : SectionThemeBase
+    internal class ResizeSectionTheme : SectionThemeBase
     {
         protected override void UpdateTheme(UITheme obj)
         {
