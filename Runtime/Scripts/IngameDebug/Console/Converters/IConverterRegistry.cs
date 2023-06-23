@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace ANU.IngameDebug.Console.Converters
 {
     /// <summary>
-    /// Implement this buy IConverter and  IReadOnlyConverterRegistry will be injected before ConvertFromString called
+    /// Implement this by IConverter and  IReadOnlyConverterRegistry will be injected before ConvertFromString called
     /// </summary>
     public interface IInjectConverterRegistry
     {

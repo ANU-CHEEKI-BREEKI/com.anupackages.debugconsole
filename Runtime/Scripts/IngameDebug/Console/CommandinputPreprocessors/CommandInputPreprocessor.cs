@@ -2,8 +2,6 @@ using System.Collections.Generic;
 
 namespace ANU.IngameDebug.Console.CommandLinePreprocessors
 {
-
-
     public interface ICommandInputPreprocessor
     {
         int Priority => 0;
