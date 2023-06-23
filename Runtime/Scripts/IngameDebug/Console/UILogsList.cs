@@ -270,7 +270,7 @@ namespace ANU.IngameDebug.Console
                 if (_content.childCount > 0)
                 {
                     firstIndex = _content.GetChild(0).GetComponent<UILogPresenter>().Node.Value.FilteredIndex;
-                    lastIndex = _content.GetChild(_content.childCount - 1).GetComponent<UILogPresenter>().Node.Value.FilteredIndex; ;
+                    lastIndex = _content.GetChild(_content.childCount - 1).GetComponent<UILogPresenter>().Node.Value.FilteredIndex;
                     range = lastIndex - firstIndex;
                 }
 

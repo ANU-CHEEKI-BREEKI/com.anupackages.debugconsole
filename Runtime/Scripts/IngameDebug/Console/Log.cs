@@ -40,7 +40,13 @@ namespace ANU.IngameDebug.Console
         public string DisplayString => _selectedMessage;
 
         public void Select(string substring)
-            => _selectedMessage = Regex.Replace(Message, $"(?<g>{_selectionSubstring})", "<mark=#ffff00aa>${g}</mark>");
+        {
+            _selectionSubstring = substring;
+            if (string.IsNullOrEmpty(_selectionSubstring))
+                _selectedMessage = Message;
+            else
+                _selectedMessage = Regex.Replace(Message, $"(?<g>{_selectionSubstring})", "<mark=#ffff00aa>${g}</mark>");
+        }
 
         public void Deselect() => _selectedMessage = Message;
     }

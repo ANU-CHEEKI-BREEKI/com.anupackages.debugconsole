@@ -86,6 +86,7 @@ namespace ANU.IngameDebug.Console
                 return;
 
             log.FilteredIndex = _filteredLogs.Count;
+            log.Select(SearchString);
             _filteredLogs.AddLast(log);
         }
 
