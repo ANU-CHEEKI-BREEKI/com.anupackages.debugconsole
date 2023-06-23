@@ -158,7 +158,8 @@ namespace ANU.IngameDebug.Console.Commands
             {
                 if (Logger != null)
                     Logger.LogException(ex);
-                throw ex;
+                else
+                    throw ex;
             }
         }
 
