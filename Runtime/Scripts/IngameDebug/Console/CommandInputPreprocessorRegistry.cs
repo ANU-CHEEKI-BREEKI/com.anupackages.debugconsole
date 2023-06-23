@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ANU.IngameDebug.Console.CommandLinePreprocessors
 {
@@ -16,7 +17,7 @@ namespace ANU.IngameDebug.Console.CommandLinePreprocessors
         public string Preprocess(string input)
         {
             var args = new PreprocessorExtraArgs() { Logger = Logger };
-            foreach (var item in _preprocessors)
+            foreach (var item in _preprocessors.OrderBy(r => r.Priority))
                 input = item.Preprocess(input, args);
 
             return input;

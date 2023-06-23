@@ -25,6 +25,8 @@ namespace ANU.IngameDebug.Console.Converters
 
     public interface ICommandsRegistry
     {
+        IReadOnlyDictionary<string, ADebugCommand> Commands { get; }
+
         void RegisterCommands(params ADebugCommand[] commands);
         void RegisterCommand(ADebugCommand command);
 

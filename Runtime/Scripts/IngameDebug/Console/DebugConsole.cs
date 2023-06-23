@@ -198,6 +198,7 @@ namespace ANU.IngameDebug.Console
         private void SetUpPreprocessors()
         {
             Preprocessors.Add(new BracketsToStringPreprocessor());
+            Preprocessors.Add(new NamedParametersPreprocessor());
         }
 
         private void SetUpConverters()
