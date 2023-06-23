@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ANU.IngameDebug.Console.Commands;
+using ANU.IngameDebug.Utils;
 using NDesk.Options;
 
 namespace ANU.IngameDebug.Console
@@ -24,34 +25,57 @@ namespace ANU.IngameDebug.Console
         public override IEnumerable<Suggestion> GetSuggestions(string input)
         {
             input = input.Trim(' ');
-            var names = input.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            if (names.Length == 1)
+
+            var names = input.SplitCommandLine();
+            if (!names.Any() || !names.Skip(1).Any())
                 return base.GetSuggestions(input);
 
-            var command = _commands.FirstOrDefault(c => c.Value.Name == names.FirstOrDefault()).Value;
-            if (command != null)
+            if (!_commands.TryGetValue(names.First(), out var command))
+                return base.GetSuggestions(input);
+
+            var last = names.Last();
+
+            // if last is named parameter with value
+
+            var optionName = "";
+            var valueName = "";
+
+            if (last.Contains("="))
             {
-                var last = names.Last();
-                var options = last.Split(new string[] { "=" }, StringSplitOptions.RemoveEmptyEntries);
-
-                if (last.Contains('='))
-                    options = options.Append("").ToArray();
-
-                var optionName = options.First().TrimStart('-').Trim(' ');
-                if (options.Length == 1)
+                var split = last.Split(new string[] { "=" }, StringSplitOptions.RemoveEmptyEntries);
+                optionName = split.FirstOrDefault();
+                valueName = split.Skip(1).LastOrDefault();
+            }
+            else
+            {
+                if (last.StartsWith("-"))
                 {
-                    if (options.First().StartsWith("--"))
-                        return new ComandParameterNameSuggestionContext(command).GetSuggestions(optionName);
+                    optionName = last;
+                    valueName = null;
                 }
                 else
                 {
-                    var param = command.Options.FirstOrDefault(o => Array.IndexOf(o.GetNames(), optionName) > -1);
-                    if (param != null)
-                        return new ComandParameterValueSuggestionContext(command, param).GetSuggestions(options.Last().Trim(' '));
+                    valueName = last;
+                    var prev = names.Reverse().Skip(1).Take(1).FirstOrDefault();
+                    if (prev != null)
+                    {
+                        optionName = prev;
+                    }
+                    else
+                    {
+                        optionName = last;
+                        valueName = null;
+                    }
                 }
             }
 
-            return base.GetSuggestions(input);
+            optionName = optionName?.TrimStart('-');
+
+            var option = command.Options.FirstOrDefault(o => Array.IndexOf(o.GetNames(), optionName) > -1);
+            if (option != null)
+                return new ComandParameterValueSuggestionContext(command, option).GetSuggestions(valueName?.Trim(' ') ?? "");
+
+            return new ComandParameterNameSuggestionContext(command).GetSuggestions(optionName ?? "");
         }
     }
 
@@ -74,10 +98,28 @@ namespace ANU.IngameDebug.Console
         protected override string GetFullSuggestedText(Suggestion item, string fullInput)
         {
             var paramStr = " --";
-            var last = fullInput.LastIndexOf(paramStr);
-            if (last > -1)
-                fullInput = fullInput.Substring(0, last);
-            return fullInput + paramStr + (item.Source as Option).GetNames().First();
+            var optString = " -";
+
+            var lastParam = fullInput.LastIndexOf(paramStr);
+            var lastOpt = fullInput.LastIndexOf(optString);
+
+            var delimiter = "";
+            var name = "";
+
+            if (lastParam > -1)
+            {
+                fullInput = fullInput.Substring(0, lastParam);
+                delimiter = paramStr;
+                name = (item.Source as Option).GetNames().First();
+            }
+            else if (lastOpt > -1)
+            {
+                fullInput = fullInput.Substring(0, lastOpt);
+                delimiter = optString;
+                name = (item.Source as Option).GetNames().OrderBy(d => d.Length).First();
+            }
+
+            return $"{fullInput}{delimiter}{name}";
         }
     }
 
@@ -114,7 +156,10 @@ namespace ANU.IngameDebug.Console
             var last = fullInput.LastIndexOf(paramStr);
             if (last > -1)
                 fullInput = fullInput.Substring(0, last);
-            return fullInput + paramStr + item.Source as string + " ";
+
+            fullInput = fullInput.Trim();
+
+            return $"{fullInput}{paramStr}{item.Source} ";
         }
     }
 

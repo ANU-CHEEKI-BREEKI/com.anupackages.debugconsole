@@ -175,23 +175,6 @@ namespace ANU.IngameDebug.Console.Commands
                     _options.Add("help|?|h", "see this command help", v => _printHelp = v != null);
             }
         }
-
-        // public void SetOptionAction(Option key, Action<string> action)
-        //     => _optionActions[key] = action;
-
-        // public Action<string> GetOptionAction(Option key)
-        //     => _optionActions.TryGetValue(key, out var action)
-        //         ? action
-        //         : null;
-
-        // public void ReplaceOptionActionKey(Option key, Option newKey)
-        // {
-        //     if (_optionActions.TryGetValue(key, out var action))
-        //     {
-        //         _optionActions.Remove(key);
-        //         _optionActions[newKey] = action;
-        //     }
-        // }
     }
 
     public class AvailableValuesHint : List<string>
