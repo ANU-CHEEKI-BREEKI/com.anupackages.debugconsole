@@ -172,7 +172,7 @@ namespace ANU.IngameDebug.Console.Commands
                 _options = CreateOptions(_valueHints);
                 // add help if already not defined
                 if (!_options.Contains("help"))
-                    _options.Add("help|?|h", "see this command help", v => _printHelp = v != null);
+                    _options.Add("help|h|?", "see this command help", v => _printHelp = v != null);
             }
         }
     }

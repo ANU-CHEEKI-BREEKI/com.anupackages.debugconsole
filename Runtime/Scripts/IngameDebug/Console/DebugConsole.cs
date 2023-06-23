@@ -30,6 +30,7 @@ namespace ANU.IngameDebug.Console
         [SerializeField] private Button _close;
         [Space]
         [SerializeField] private SuggestionPopUp _suggestions;
+        [SerializeField] private InputFieldSuggestions _inputSuggestions;
         [Space]
         [SerializeField] private UITheme[] _themes;
         [SerializeField] private UITheme _currentTheme;

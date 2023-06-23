@@ -28,18 +28,16 @@ namespace ANU.IngameDebug.Console
             var commandName = commandLine.First();
 
             if (!DebugConsole.Commands.Commands.TryGetValue(commandName, out var command))
-            {
-                // Debug.Log($"There are no command: {commandName}");
                 return input;
-            }
 
             var namedParameters = commandLine.Skip(1).Zip(command.Options, (p, o) =>
             {
-                return $"--{o.GetNames().First()}=\"{p}\"";
+                return o.OptionValueType == NDesk.Options.OptionValueType.None
+                    ? p
+                    : $"--{o.GetNames().First()}=\"{p}\"";
             });
 
             input = string.Join(" ", namedParameters.Prepend(commandName).Append(concatInput));
-            // Debug.Log($"NamedParametersPreprocessor: {input}");
 
             return input;
         }
