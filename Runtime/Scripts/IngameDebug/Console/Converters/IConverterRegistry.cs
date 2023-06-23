@@ -3,6 +3,14 @@ using System.Collections.Generic;
 
 namespace ANU.IngameDebug.Console.Converters
 {
+    /// <summary>
+    /// Implement this buy IConverter and  IReadOnlyConverterRegistry will be injected before ConvertFromString called
+    /// </summary>
+    public interface IInjectConverterRegistry
+    {
+        IReadOnlyConverterRegistry Converters { get; set; }
+    }
+
     public interface IConverter
     {
         int Priority => 0;
@@ -32,23 +40,5 @@ namespace ANU.IngameDebug.Console.Converters
         void Register<T>(Func<string, T> converter);
         void Register<T>(IConverter<T> converter);
         void Register(IConverter converter);
-    }
-
-    public static class IConverterExtensions
-    {
-        private static readonly Dictionary<IConverter, IReadOnlyConverterRegistry> _converterRegistry = new();
-        private static readonly Dictionary<IConverter, ILogger> _loggers = new();
-
-        public static void SetRegistry(this IConverter converter, IReadOnlyConverterRegistry registry)
-            => _converterRegistry[converter] = registry;
-
-        public static IReadOnlyConverterRegistry GetRegistry(this IConverter converter)
-            => _converterRegistry.TryGetValue(converter, out var registry) ? registry : null;
-
-        public static void SetLogger(this IConverter converter, ILogger registry)
-            => _loggers[converter] = registry;
-
-        public static ILogger GetLogger(this IConverter converter)
-            => _loggers.TryGetValue(converter, out var registry) ? registry : null;
     }
 }

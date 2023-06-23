@@ -35,16 +35,23 @@ namespace ANU.IngameDebug.Console.Converters
 
             if (_converters.TryGetValue(type, out var converter) && converter.CanConvert(type))
             {
-                converter.SetRegistry(this);
-                converter.SetLogger(Logger);
+                if (converter is IInjectConverterRegistry injectRegistry)
+                    injectRegistry.Converters = this;
+
+                if (converter is IInjectLogger injectLogger)
+                    injectLogger.Logger = Logger;
                 return converter.ConvertFromString(option, type);
             }
 
             converter = _converters.Values.OrderBy(v => v.Priority).FirstOrDefault(w => w.CanConvert(type));
             if (converter != null)
             {
-                converter.SetLogger(Logger);
-                converter.SetRegistry(this);
+                if (converter is IInjectLogger injectLogger)
+                    injectLogger.Logger = Logger;
+
+                if (converter is IInjectConverterRegistry injectRegistry)
+                    injectRegistry.Converters = this;
+
                 return converter.ConvertFromString(option, type);
             }
 

@@ -7,12 +7,9 @@ namespace ANU.IngameDebug.Console
 {
     public class BracketsToStringPreprocessor : ICommandInputPreprocessor
     {
-        private readonly Regex _regex;
+        private readonly Regex _regex = new Regex(@"(?<!""|')(?<content>(\[.*?\])|(\(.*?\)))");
 
-        public BracketsToStringPreprocessor()
-            => _regex = new Regex(@"(?<!""|')(?<content>(\[.*?\])|(\(.*?\)))");
-
-        public string Preprocess(string input, PreprocessorExtraArgs args)
+        public string Preprocess(string input)
         {
             var matches = _regex.Matches(input);
             input = _regex.Replace(input, @"""${content}""");

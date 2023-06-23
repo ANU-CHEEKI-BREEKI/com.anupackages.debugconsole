@@ -10,7 +10,7 @@ namespace ANU.IngameDebug.Console
     {
         public int Priority => 100;
 
-        public string Preprocess(string input, PreprocessorExtraArgs args)
+        public string Preprocess(string input)
         {
             var namedParameterGroup = input.GetFirstNamedParameter();
 

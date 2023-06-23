@@ -19,8 +19,10 @@ namespace ANU.IngameDebug.Console.Converters
         bool IConverter.CanConvert(System.Type type) => !type.IsArray;
     }
 
-    public abstract class VectorConverterBase
+    public abstract class VectorConverterBase : IInjectConverterRegistry
     {
+        public IReadOnlyConverterRegistry Converters { get; set; }
+
         /// <summary>
         /// pass count as null to take all available components
         /// pass value to consider arrray aa fixed length array.
@@ -49,7 +51,7 @@ namespace ANU.IngameDebug.Console.Converters
                 .Trim('(', ')')
                 //TODO: prevent splitting array of string values
                 .Split(new char[] { ' ', ',' }, System.StringSplitOptions.RemoveEmptyEntries)
-                .Select(c => (this as IConverter)?.GetRegistry()?.Convert(type, c));
+                .Select(c => Converters.Convert(type, c));
 
             if (count == null)
                 return components;
@@ -140,17 +142,21 @@ namespace ANU.IngameDebug.Console.Converters
         }
     }
 
-    public class QuaternionConverter : IConverter<Quaternion>
+    public class QuaternionConverter : IConverter<Quaternion>, IInjectConverterRegistry
     {
+        public IReadOnlyConverterRegistry Converters { get; set; }
+
         public Quaternion ConvertFromString(string option)
         {
-            var euler = this.GetRegistry().Convert<Vector3>(option);
+            var euler = Converters.Convert<Vector3>(option);
             return Quaternion.Euler(euler);
         }
     }
 
-    public class ColorConverter : IConverter<Color>
+    public class ColorConverter : IConverter<Color>, IInjectConverterRegistry
     {
+        public IReadOnlyConverterRegistry Converters { get; set; }
+
         private static readonly Dictionary<string, Color> byName = typeof(Color)
             .GetProperties(BindingFlags.Public | BindingFlags.Static)
             .Where(p => p.PropertyType == typeof(Color))
@@ -160,14 +166,14 @@ namespace ANU.IngameDebug.Console.Converters
         {
             try
             {
-                var v4 = this.GetRegistry().Convert<Vector4>(option);
+                var v4 = Converters.Convert<Vector4>(option);
                 return new Color(v4.x, v4.y, v4.z, v4.w);
             }
             catch { }
 
             try
             {
-                var v3 = this.GetRegistry().Convert<Vector3>(option);
+                var v3 = Converters.Convert<Vector3>(option);
                 return new Color(v3.x, v3.y, v3.z);
             }
             catch { }
@@ -182,11 +188,13 @@ namespace ANU.IngameDebug.Console.Converters
         }
     }
 
-    public class Color32Converter : IConverter<Color32>
+    public class Color32Converter : IConverter<Color32>, IInjectConverterRegistry
     {
+        public IReadOnlyConverterRegistry Converters { get; set; }
+
         public Color32 ConvertFromString(string option)
         {
-            var color = this.GetRegistry().Convert<Color>(option);
+            var color = Converters.Convert<Color>(option);
             return new Color32((byte)(color.r * 255), (byte)(color.g * 255), (byte)(color.b * 255), (byte)(color.a * 255));
         }
     }
@@ -251,8 +259,10 @@ namespace ANU.IngameDebug.Console.Converters
         }
     }
 
-    public class ListConverter : IConverter
+    public class ListConverter : IConverter, IInjectConverterRegistry
     {
+        public IReadOnlyConverterRegistry Converters { get; set; }
+
         Type IConverter.TargetType => typeof(List<>);
 
         bool IConverter.CanConvert(System.Type type)
@@ -261,8 +271,7 @@ namespace ANU.IngameDebug.Console.Converters
 
         object IConverter.ConvertFromString(string option, System.Type targetType)
         {
-            var array = this
-                .GetRegistry()
+            var array = Converters
                 .Convert(
                     targetType.GenericTypeArguments[0].MakeArrayType(),
                     option
