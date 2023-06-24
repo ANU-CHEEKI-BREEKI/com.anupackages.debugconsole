@@ -17,6 +17,7 @@ using System.Text.RegularExpressions;
 namespace ANU.IngameDebug.Console
 {
     [DisallowMultipleComponent]
+    [DebugCommandPrefix("console")]
     public class DebugConsole : MonoBehaviour
     {
         private const float ColsoleInputHeightPercentage = 0.1f;
@@ -97,7 +98,7 @@ namespace ANU.IngameDebug.Console
                 if (!silent)
                 {
                     _commandsHistory.Record(commandLine);
-                    InputLogger.Log(commandLine);
+                    InputLogger.LogInfo(commandLine);
                 }
 
                 if (Router != null)
@@ -271,7 +272,7 @@ namespace ANU.IngameDebug.Console
 
         private void SetupConsoleCommands()
         {
-            Commands.RegisterCommand("help", "Print help", () => Logger.Log(
+            Commands.RegisterCommand("help", "Print help", () => Logger.LogInfo(
 $@"To call command               - enter command name and parameters
 for example: ""command_name -param_name_1 -param_name_2""
 To see all commands              - enter command ""list""
@@ -302,20 +303,14 @@ Enter ""list"" to print all registered commands
                     builder.AppendLine(command.Description);
                 }
 
-                Logger.Log(builder.ToString());
+                Logger.LogInfo(builder.ToString());
             });
 
             Commands.RegisterCommand("clear", "Clear console log", Logs.Clear);
             Commands.RegisterCommand("suggestions-context", "Switch suggestions context", SwitchContext);
         }
 
-        [DebugCommand(Name = "time", Description = "Set time scale")]
-        private void SetTimeScale(
-            [OptAltNames("s")]
-            float scale
-        ) => Time.timeScale = Mathf.Max(0, scale);
-
-        [DebugCommand(Name = "console.theme", Description = "Set console theme at runtime. Pass index or name of wanted UITheme listed in DebugConsole Themes list")]
+        [DebugCommand(Name = "theme", Description = "Set console theme at runtime. Pass index or name of wanted UITheme listed in DebugConsole Themes list")]
         private void SetConsoleTheme(
             [OptAltNames("i")]
             int index = -1,
@@ -334,7 +329,7 @@ Enter ""list"" to print all registered commands
                     var item = _themes[i];
                     sb.AppendLine($"[{i}]: {item.name}");
                 }
-                Logger.Log(sb.ToString());
+                Logger.LogInfo(sb.ToString());
                 return;
             }
 
@@ -528,7 +523,8 @@ Enter ""list"" to print all registered commands
             public UnityLogger(ConsoleLogType consoleLogType)
                 => _consoleLogType = consoleLogType;
 
-            public void Log(string message, UnityEngine.Object context) => Debug.Log($"[console:{_consoleLogType}] {message}", context);
+            public void LogReturnValue(object value, UnityEngine.Object context = null) => Debug.Log($"[console:{_consoleLogType}] {value}", context);
+            public void LogInfo(string message, UnityEngine.Object context) => Debug.Log($"[console:{_consoleLogType}] {message}", context);
             public void LogWarning(string message, UnityEngine.Object context) => Debug.LogWarning($"[console:{_consoleLogType}] {message}", context);
             public void LogError(string message, UnityEngine.Object context) => Debug.LogError($"[console:{_consoleLogType}] {message}", context);
             public void LogException(Exception exception, UnityEngine.Object context) => Debug.LogException(new Exception($"[console:{_consoleLogType}] {exception.Message}", exception), context);

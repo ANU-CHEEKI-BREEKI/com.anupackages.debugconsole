@@ -65,7 +65,7 @@ namespace ANU.IngameDebug.Console.Commands
                     writer.WriteLine(opt.Description);
                 }
 
-                Logger.Log(writer.ToString());
+                Logger.LogInfo(writer.ToString());
             }
         }
 

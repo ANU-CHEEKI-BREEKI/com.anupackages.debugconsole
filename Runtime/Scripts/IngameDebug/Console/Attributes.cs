@@ -65,14 +65,14 @@ namespace ANU.IngameDebug.Console
         public InstanceTargetType Target { get; set; }
     }
 
-    [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class OptDescAttribute : Attribute
     {
         public string Description { get; }
         public OptDescAttribute(string description) => Description = description;
     }
 
-    [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class OptValAttribute : Attribute
     {
         public object[] AvailableValues { get; }
@@ -81,7 +81,7 @@ namespace ANU.IngameDebug.Console
             => AvailableValues = allOtherAvailableValues.Prepend(firstAvailableValue).ToArray();
     }
 
-    [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class OptAltNamesAttribute : Attribute
     {
         public string[] AlternativeNames { get; }
