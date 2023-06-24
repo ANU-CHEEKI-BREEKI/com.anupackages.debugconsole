@@ -15,7 +15,8 @@ namespace ANU.IngameDebug.Console
     {
         private void Start()
         {
-            var timer = StartLog("");
+            DebugConsole.Logger.LogInfo($"Start searching {name} commands declared by attributes...");
+            var timer = StartLog(null);
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
@@ -58,7 +59,7 @@ namespace ANU.IngameDebug.Console
                     .ToArray()
             );
 
-            Log(timer, "method");
+            Log(timerMethods, "method");
 
             var timerProperty = StartLog("property");
 
@@ -142,12 +143,21 @@ namespace ANU.IngameDebug.Console
 
             Log(timerfield, "field");
 
-            Log(timer, "");
+            Log(timer, null);
+            var log = $"Searching {name} commands declared by attributes ended.\nOperation elapsed duration: {timer.Elapsed:ss's.'fff'ms'}, ticks: {timer.ElapsedTicks}";
+            if (timer.Elapsed.Seconds < 1)
+                DebugConsole.Logger.LogInfo(log);
+            else if (timer.Elapsed.Seconds < 2)
+                DebugConsole.Logger.LogWarning(log);
+            else
+                DebugConsole.Logger.LogError(log);
         }
 
         private Stopwatch StartLog(string name)
         {
-            DebugConsole.Logger.LogInfo($"Start searching {name} commands declared by attributes...");
+            if (name != null)
+                DebugConsole.Logger.LogInfo($"Start searching {name}...");
+
             var timer = new System.Diagnostics.Stopwatch();
             timer.Start();
             return timer;
@@ -155,7 +165,11 @@ namespace ANU.IngameDebug.Console
         private void Log(Stopwatch timer, string name)
         {
             timer.Stop();
-            var log = $"Searching {name} commands declared by attributes ended.\nOperation elapsed duration: {timer.Elapsed:ss's.'fff'ms'}, ticks: {timer.ElapsedTicks}";
+
+            if (name == null)
+                return;
+
+            var log = $"Searching {name} ended. Operation elapsed duration: {timer.Elapsed:ss's.'fff'ms'}, ticks: {timer.ElapsedTicks}";
             if (timer.Elapsed.Seconds < 3)
                 DebugConsole.Logger.LogInfo(log);
             else if (timer.Elapsed.Seconds < 5)
