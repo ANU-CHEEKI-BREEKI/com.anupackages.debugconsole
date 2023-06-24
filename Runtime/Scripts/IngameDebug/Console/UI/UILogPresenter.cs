@@ -28,7 +28,7 @@ namespace ANU.IngameDebug.Console
 
         private Action _onClick;
 
-        public Log Log => Node.Value ?? new Log(_debugConsoleLogType, _debugMessageType, $"{_debugConsoleLogType} {_debugMessageType} {_message.text}", _stacktrace.text) { IsExpanded = _debugExpanded };
+        public Log Log => Node.Value ?? new Log(_debugConsoleLogType, _debugMessageType, $"{_debugConsoleLogType} {_debugMessageType} {_message.text.Trim()}", _stacktrace.text.Trim()) { IsExpanded = _debugExpanded };
         public LogNode Node { get; private set; }
         public RectTransform RectTransform => transform as RectTransform;
 
@@ -64,8 +64,11 @@ namespace ANU.IngameDebug.Console
         {
             Node = node;
             _onClick = onClick;
-            _message.text = "                      " + Log.DisplayString;
+
+            var noTime = "     ";
+            _message.text = noTime + Log.DisplayString;
             _receivedTime.text = $"[{Log.ReceivedTime:hh:mm:ss}]";
+
             UpdateIcon();
             UpdateTheme(DebugConsole.CurrentTheme);
             UpdateStacktrace();
@@ -128,7 +131,8 @@ namespace ANU.IngameDebug.Console
         {
             if (Log.IsExpanded && !string.IsNullOrEmpty(Log.StackTrace))
             {
-                _stacktrace.text = Log.StackTrace;
+                var withTime = "                 ";
+                _stacktrace.text = withTime + Log.StackTrace;
                 _stacktrace.gameObject.SetActive(true);
             }
             else
