@@ -46,9 +46,12 @@ namespace ANU.IngameDebug.Console.Converters
             //     throw new System.Exception("Use [ ] or ( ) to wrap vector components. For Example [1, 2] or (3 4) or [] for zero or [n] for all components set to n."
             //         + "You can use ',' or just whitespace as components delimiters");
 
+            if (option.StartsWith("[") && option.EndsWith("]"))
+                option = option.Trim('[', ']');
+            else if (option.StartsWith("(") && option.EndsWith(")"))
+                option = option.Trim('(', ')');
+
             var components = option
-                .Trim('[', ']')
-                .Trim('(', ')')
                 //TODO: prevent splitting array of string values
                 .Split(new char[] { ' ', ',' }, System.StringSplitOptions.RemoveEmptyEntries)
                 .Select(c => Converters.Convert(type, c));

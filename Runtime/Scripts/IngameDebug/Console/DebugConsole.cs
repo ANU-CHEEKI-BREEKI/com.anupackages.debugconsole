@@ -45,7 +45,7 @@ namespace ANU.IngameDebug.Console
         private static HistorySuggestionsContext _historyContext;
         private static readonly ILogger _logger = new UnityLogger(ConsoleLogType.Output);
 
-        private static DebugConsole Instance { get; set; }
+        internal static DebugConsole Instance { get; set; }
 
         private static readonly CommandsRegistry _commands = new(_logger);
 
