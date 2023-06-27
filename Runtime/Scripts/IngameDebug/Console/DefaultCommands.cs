@@ -135,11 +135,11 @@ namespace ANU.IngameDebug.Console
         public static void LoadScene(
             [OptAltNames("n")]
             [OptDesc("Load scene by name")]
-            [OptVal(dynamicValuesCommand: "default.list-scene-names")]
+            [OptValDynamic("default.list-scene-names")]
             string name = "",
             [OptAltNames("i")]
             [OptDesc("Load scene by index")]
-            [OptVal(dynamicValuesCommand: "default.list-scene-indices")]
+            [OptValDynamic("default.list-scene-indices")]
             int index = -1,
             [OptAltNames("r")]
             [OptDesc("Set only this flag to reload current scene")]

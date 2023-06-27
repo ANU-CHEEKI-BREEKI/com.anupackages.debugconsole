@@ -346,6 +346,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                 IEnumerable<string> hints = Array.Empty<string>();
 
                 var values = parameter.GetCustomAttribute<OptValAttribute>();
+                var valuesDynamic = parameter.GetCustomAttribute<OptValDynamicAttribute>();
 
                 if (values != null)
                     hints = values.AvailableValues.Select(v => v.ToString());
@@ -354,7 +355,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                 else if (parameter.ParameterType == typeof(bool))
                     hints = new string[] { "true", "false" };
 
-                valueHints[opt] = new AvailableValuesHint(hints, values?.DynamicValuesProviderCommandNames);
+                valueHints[opt] = new AvailableValuesHint(hints, valuesDynamic?.DynamicValuesProviderCommandNames);
             }
         }
 
