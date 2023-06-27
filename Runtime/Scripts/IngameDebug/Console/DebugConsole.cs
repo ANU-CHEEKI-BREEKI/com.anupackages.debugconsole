@@ -13,6 +13,8 @@ using System.Reflection;
 using ANU.IngameDebug.Console.Converters;
 using ANU.IngameDebug.Console.CommandLinePreprocessors;
 using System.Text.RegularExpressions;
+using System.Collections;
+using UnityEngine.EventSystems;
 
 namespace ANU.IngameDebug.Console
 {
@@ -88,11 +90,19 @@ namespace ANU.IngameDebug.Console
             }
         }
 
-        public static void ExecuteCommand(string commandLine, bool silent = false)
+        /// <summary>
+        /// if void - returns null
+        /// if have one target - returns result as object
+        /// if have multiple targets - returns IEnumerable<object> as object
+        /// </summary>
+        /// <param name="commandLine"></param>
+        /// <param name="silent"></param>
+        /// <returns></returns>
+        public static ExecutionResult ExecuteCommand(string commandLine, bool silent = false)
         {
             try
             {
-                if (Instance != null)
+                if (Instance != null && !silent)
                     Instance._input.text = "";
 
                 if (!silent)
@@ -104,13 +114,15 @@ namespace ANU.IngameDebug.Console
                 if (Router != null)
                     Router.SendCommand(commandLine);
                 else
-                    ExecuteCommandInternal(commandLine, silent);
+                    return ExecuteCommandInternal(commandLine, silent);
             }
             finally
             {
-                if (Instance != null)
+                if (Instance != null && !silent)
                     Instance._input.ActivateInputField();
             }
+
+            return default;
         }
 
         private void OnValidate()
@@ -223,7 +235,7 @@ namespace ANU.IngameDebug.Console
 
         private void OnApplicationQuit() => SaveCommandsHistory(_commandsHistory);
 
-        private static void ExecuteCommandInternal(string commandLine, bool silent)
+        private static ExecutionResult ExecuteCommandInternal(string commandLine, bool silent)
         {
             try
             {
@@ -233,7 +245,7 @@ namespace ANU.IngameDebug.Console
                 if (!_commands.Commands.ContainsKey(commandName) && !silent)
                 {
                     Logger.LogError($"There is no command with name \"{commandName}\". Enter \"help\" to see command usage.");
-                    return;
+                    return default;
                 }
 
                 var command = _commands.Commands[commandName];
@@ -247,13 +259,23 @@ namespace ANU.IngameDebug.Console
                         .Trim();
                 }
 
-                command.Execute(commandLine);
+                var result = command.Execute(commandLine);
+
+                if (!silent && result.ReturnType != typeof(void))
+                {
+                    foreach (var item in result.ReturnValues)
+                        Logger.LogReturnValue(item.ReturnValue, item.Target as UnityEngine.Object);
+                }
+
+                return result;
             }
             catch (Exception ex)
             {
                 if (!silent)
                     Logger.LogException(ex);
             }
+
+            return default;
         }
 
         private static string ExtractCommandName(string commandLine)
@@ -518,11 +540,52 @@ Enter ""list"" to print all registered commands
             public UnityLogger(ConsoleLogType consoleLogType)
                 => _consoleLogType = consoleLogType;
 
-            public void LogReturnValue(object value, UnityEngine.Object context = null) => Debug.Log($"[console:{_consoleLogType}] {value}", context);
+            public void LogReturnValue(object value, UnityEngine.Object context = null)
+            {
+                var val = "";
+                if (value is IEnumerable enumerable)
+                    val = "[" + string.Join(", ", enumerable.Cast<object>().Select(o => o?.ToString())) + "]";
+                else if (value is IEnumerator enumerator)
+                    val = "[" + string.Join(", ", AsEnumerable(enumerator).Select(o => o?.ToString())) + "]";
+                else
+                    val = value?.ToString();
+
+                Debug.Log($"[console:{_consoleLogType}] {val}", context);
+            }
             public void LogInfo(string message, UnityEngine.Object context) => Debug.Log($"[console:{_consoleLogType}] {message}", context);
             public void LogWarning(string message, UnityEngine.Object context) => Debug.LogWarning($"[console:{_consoleLogType}] {message}", context);
             public void LogError(string message, UnityEngine.Object context) => Debug.LogError($"[console:{_consoleLogType}] {message}", context);
             public void LogException(Exception exception, UnityEngine.Object context) => Debug.LogException(new Exception($"[console:{_consoleLogType}] {exception.Message}", exception), context);
+
+            private IEnumerable<object> AsEnumerable(IEnumerator enumerator)
+            {
+                while (enumerator.MoveNext())
+                    yield return enumerator.Current;
+            }
+        }
+    }
+
+    public struct ExecutionResult
+    {
+        public readonly Type ReturnType;
+        public readonly IReadOnlyList<SingleExecutionResult> ReturnValues;
+
+        public ExecutionResult(Type returnType, IReadOnlyList<SingleExecutionResult> returnValues)
+        {
+            ReturnType = returnType;
+            ReturnValues = returnValues;
+        }
+    }
+
+    public struct SingleExecutionResult
+    {
+        public readonly object Target;
+        public readonly object ReturnValue;
+
+        public SingleExecutionResult(object target, object returnValue)
+        {
+            Target = target;
+            ReturnValue = returnValue;
         }
     }
 }

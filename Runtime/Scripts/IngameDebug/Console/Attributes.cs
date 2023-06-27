@@ -75,10 +75,14 @@ namespace ANU.IngameDebug.Console
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class OptValAttribute : Attribute
     {
-        public object[] AvailableValues { get; }
+        public object[] AvailableValues { get; } = Array.Empty<object>();
+        public string[] DynamicValuesProviderCommandNames { get; }
 
         public OptValAttribute(object firstAvailableValue, params object[] allOtherAvailableValues)
             => AvailableValues = allOtherAvailableValues.Prepend(firstAvailableValue).ToArray();
+
+        public OptValAttribute(string dynamicValuesCommand, params string[] allOtherDynamicValuesCommand)
+            => DynamicValuesProviderCommandNames = allOtherDynamicValuesCommand.Prepend(dynamicValuesCommand).ToArray();
     }
 
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]

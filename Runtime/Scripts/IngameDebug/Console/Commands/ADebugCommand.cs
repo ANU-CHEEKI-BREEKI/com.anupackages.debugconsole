@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using NDesk.Options;
 using ANU.IngameDebug.Utils;
+using System.Collections;
 
 namespace ANU.IngameDebug.Console.Commands
 {
@@ -107,7 +108,7 @@ namespace ANU.IngameDebug.Console.Commands
             }
         }
 
-        public void Execute(string args = null)
+        public ExecutionResult Execute(string args = null)
         {
             var options = Options;
 
@@ -142,7 +143,7 @@ namespace ANU.IngameDebug.Console.Commands
                     }
                     else
                     {
-                        OnParsed();
+                        return OnParsed();
                     }
                 }
 
@@ -161,10 +162,12 @@ namespace ANU.IngameDebug.Console.Commands
                 else
                     throw ex;
             }
+
+            return default;
         }
 
         protected abstract OptionSet CreateOptions(Dictionary<Option, AvailableValuesHint> valueHints);
-        protected abstract void OnParsed();
+        protected abstract ExecutionResult OnParsed();
 
         private void CacheOptions()
         {
@@ -178,9 +181,51 @@ namespace ANU.IngameDebug.Console.Commands
         }
     }
 
-    public class AvailableValuesHint : List<string>
+    public class AvailableValuesHint : IEnumerable<string>
     {
-        public AvailableValuesHint() { }
-        public AvailableValuesHint(IEnumerable<string> items) : base(items) { }
+        public AvailableValuesHint(IEnumerable<string> items = null, IEnumerable<string> dynamicValuesProviderCommandNames = null)
+        {
+            if (items != null)
+                Values = new List<string>(items);
+
+            if (dynamicValuesProviderCommandNames != null)
+                DynamicValuesProviderCommandNames = new List<string>(dynamicValuesProviderCommandNames);
+        }
+
+        private List<string> Values { get; } = new();
+        public List<string> DynamicValuesProviderCommandNames { get; } = new();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public IEnumerator<string> GetEnumerator()
+        {
+            foreach (var item in Values)
+                yield return item;
+
+            foreach (var comand in DynamicValuesProviderCommandNames)
+            {
+                IEnumerable<string> values = null;
+                try
+                {
+                    var result = DebugConsole.ExecuteCommand(comand, silent: true);
+                    values = result.ReturnValues
+                        .Select(b => b.ReturnValue as IEnumerable)
+                        .Where(b => b != null)
+                        .SelectMany(b => b.Cast<object>())
+                        .Select(b => b?.ToString())
+                        .Where(b => b != null);
+                }
+                catch (Exception ex)
+                {
+                    DebugConsole.Logger.LogException(ex);
+                }
+
+                if (values == null)
+                    continue;
+
+                foreach (var item in values)
+                    yield return item;
+            }
+        }
+
     }
 }

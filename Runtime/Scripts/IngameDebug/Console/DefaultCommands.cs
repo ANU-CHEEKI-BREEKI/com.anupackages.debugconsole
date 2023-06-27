@@ -1,4 +1,7 @@
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using ANU.IngameDebug.Console;
 using UnityEngine;
@@ -126,6 +129,49 @@ namespace ANU.IngameDebug.Console
             sb.Append(propName);
             sb.Append(": ");
             sb.AppendLine(v3.ToString());
+        }
+
+        [DebugCommand]
+        public static void LoadScene(
+            [OptAltNames("n")]
+            [OptDesc("Load scene by name")]
+            [OptVal(dynamicValuesCommand: "default.list-scene-names")]
+            string name = "",
+            [OptAltNames("i")]
+            [OptDesc("Load scene by index")]
+            [OptVal(dynamicValuesCommand: "default.list-scene-indices")]
+            int index = -1,
+            [OptAltNames("r")]
+            [OptDesc("Set only this flag to reload current scene")]
+            bool reload = false
+        )
+        {
+            if (!string.IsNullOrEmpty(name))
+                SceneManager.LoadScene(name);
+            else if (index >= 0)
+                SceneManager.LoadScene(index);
+            else if (reload)
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            else
+                throw new System.Exception("Pass at least one parameter");
+        }
+
+        [DebugCommand]
+        public static IEnumerable<string> ListSceneNames()
+            => ListSceneIndices().Select(i => SceneUtility
+                .GetScenePathByBuildIndex(i)
+                .Split('/')
+                .LastOrDefault()
+                ?.Split('.')
+                ?.FirstOrDefault()
+            );
+
+        [DebugCommand]
+        public static IEnumerable<int> ListSceneIndices()
+        {
+            var cnt = SceneManager.sceneCountInBuildSettings;
+            for (int i = 0; i < cnt; i++)
+                yield return i;
         }
     }
 }

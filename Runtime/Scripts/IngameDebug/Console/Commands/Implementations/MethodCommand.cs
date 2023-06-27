@@ -85,8 +85,10 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
         protected virtual void ResetParametersValues() => _dynamicInstances = Array.Empty<object>();
 
-        protected sealed override void OnParsed()
+        protected sealed override ExecutionResult OnParsed()
         {
+            var returnValues = new List<SingleExecutionResult>();
+
             try
             {
                 ValidateParameters();
@@ -96,11 +98,15 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                 if (!instances.Any())
                     throw new Exception("There are no provided targets tor NonStatic method. For more information see InstanceTargetType documentation");
 
-                foreach (var item in instances)
+                foreach (var target in instances)
                 {
                     try
                     {
-                        Invoke(_member, item);
+                        returnValues.Add(new SingleExecutionResult(
+                            target,
+                            Invoke(_member, target)
+
+                        ));
                     }
                     catch (Exception ex)
                     {
@@ -112,10 +118,16 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
             {
                 ResetParametersValues();
             }
+
+            return new ExecutionResult(
+                ReturnValueType,
+                returnValues
+            );
         }
 
-        protected abstract void Invoke(T member, object item);
+        protected abstract object Invoke(T member, object item);
         protected abstract void ValidateParameters();
+        protected abstract Type ReturnValueType { get; }
 
         protected sealed override OptionSet CreateOptions(Dictionary<Option, AvailableValuesHint> valueHints)
         {
@@ -235,6 +247,8 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
             ResetParametersValues();
         }
 
+        protected override Type ReturnValueType => _member.ReturnType;
+
         protected override void ResetParametersValues()
         {
             base.ResetParametersValues();
@@ -254,11 +268,10 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
             }
         }
 
-        protected override void Invoke(MethodInfo method, object instance)
+        protected override object Invoke(MethodInfo method, object instance)
         {
             var returnValue = method.Invoke(instance, _parameterValues);
-            if (method.ReturnType != typeof(void))
-                Logger.LogReturnValue(returnValue, instance as UnityEngine.Object);
+            return returnValue;
         }
 
         protected override void ValidateParameters()
@@ -330,9 +343,10 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                 var valAsKey = optionName.Split(new string[] { "|" }, StringSplitOptions.RemoveEmptyEntries);
                 var opt = options[valAsKey.Last().TrimEnd('=', ':')];
 
-                IEnumerable<string> hints = null;
+                IEnumerable<string> hints = Array.Empty<string>();
 
                 var values = parameter.GetCustomAttribute<OptValAttribute>();
+
                 if (values != null)
                     hints = values.AvailableValues.Select(v => v.ToString());
                 else if (parameter.ParameterType.IsEnum)
@@ -340,8 +354,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                 else if (parameter.ParameterType == typeof(bool))
                     hints = new string[] { "true", "false" };
 
-                if (hints != null)
-                    valueHints[opt] = new AvailableValuesHint(hints);
+                valueHints[opt] = new AvailableValuesHint(hints, values?.DynamicValuesProviderCommandNames);
             }
         }
 
@@ -419,16 +432,16 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
         protected override void ValidateParameters() { }
 
-        protected sealed override void Invoke(T member, object instance)
+        protected sealed override object Invoke(T member, object instance)
         {
             if (_invokeType == InvikeType.Get)
             {
-                var returnValue = GetValue(member, instance);
-                Logger.LogReturnValue(returnValue, instance as UnityEngine.Object);
+                return GetValue(member, instance);
             }
             else
             {
                 SetValue(member, instance, _parameterValue);
+                return null;
             }
         }
 
@@ -447,6 +460,8 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
         public FieldCommand(string name, string description, FieldInfo field, object instance)
             : base(name, description, field, instance) { }
 
+        protected override Type ReturnValueType => _member.FieldType;
+
         protected override Type GetMemberType() => _member.FieldType;
         protected override bool IsStatic(FieldInfo member) => member.IsStatic;
         protected override object GetValue(FieldInfo member, object instance) => member.GetValue(instance);
@@ -463,6 +478,8 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
         public PropertyCommand(string name, string description, PropertyInfo property, object instance)
             : base(name, description, property, instance) { }
+
+        protected override Type ReturnValueType => _member.PropertyType;
 
         protected override Type GetMemberType() => _member.PropertyType;
         protected override bool IsStatic(PropertyInfo member) => member.GetAccessors()[0].IsStatic;
