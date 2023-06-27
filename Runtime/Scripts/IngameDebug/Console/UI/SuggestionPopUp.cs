@@ -174,6 +174,7 @@ namespace ANU.IngameDebug.Console
                     .GetComponent<SuggestionPresenter>();
                 suggestionPresenter.transform.SetParent(_parent);
                 suggestionPresenter.transform.SetAsLastSibling();
+                suggestionPresenter.transform.localScale = Vector3.one;
 
                 suggestionPresenter.Present(
                     suggestion,

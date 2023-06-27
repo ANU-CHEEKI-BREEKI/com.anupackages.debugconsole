@@ -171,6 +171,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
             {
                 case InstanceTargetType.AllActive:
                 case InstanceTargetType.AllIncludingInactive:
+#if UNITY_2023_0_OR_NEWER
                     targets = GameObject.FindObjectsByType(
                         _member.DeclaringType,
                         includeInactive
@@ -178,15 +179,28 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                             : FindObjectsInactive.Exclude,
                         FindObjectsSortMode.None
                     );
+#else
+                    targets = GameObject.FindObjectsOfType(
+                        _member.DeclaringType,
+                        includeInactive
+                    );
+#endif
                     break;
                 case InstanceTargetType.FirstActive:
                 case InstanceTargetType.FirstIncludingInactive:
+#if UNITY_2023_0_OR_NEWER
                     var target = GameObject.FindFirstObjectByType(
                         _member.DeclaringType,
                         includeInactive
                             ? FindObjectsInactive.Include
                             : FindObjectsInactive.Exclude
                     );
+#else
+                    var target = GameObject.FindObjectOfType(
+                        _member.DeclaringType,
+                        includeInactive
+                    );
+#endif
                     targets = new object[] { target };
                     break;
                 case InstanceTargetType.Registry:

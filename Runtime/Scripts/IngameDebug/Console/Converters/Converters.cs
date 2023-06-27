@@ -212,9 +212,16 @@ namespace ANU.IngameDebug.Console.Converters
         public Type TargetType => typeof(UnityEngine.Component);
 
         object IConverter.ConvertFromString(string option, System.Type targetType)
-            => option.ToLower() == "null"
-                ? null
-                : GameObject.FindObjectsByType(targetType, FindObjectsSortMode.None).FirstOrDefault(t => t.name == option);
+        {
+            if (option.ToLower() == "null")
+                return null;
+
+#if UNITY_2023_0_OR_NEWER
+            return  GameObject.FindObjectsByType(targetType, FindObjectsSortMode.None).FirstOrDefault(t => t.name == option);
+#else
+            return GameObject.FindObjectsOfType(targetType).FirstOrDefault(t => t.name == option);
+#endif
+        }
     }
 
     public class BoolConverter : IConverter<bool>
