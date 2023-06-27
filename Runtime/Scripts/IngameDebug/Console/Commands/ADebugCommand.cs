@@ -183,17 +183,17 @@ namespace ANU.IngameDebug.Console.Commands
 
     public class AvailableValuesHint : IEnumerable<string>
     {
-        public AvailableValuesHint(IEnumerable<string> items = null, IEnumerable<string> dynamicValuesProviderCommandNames = null)
+        public AvailableValuesHint(IEnumerable<string> items = null, IEnumerable<string> dynamicValuesProviderCommands = null)
         {
             if (items != null)
                 Values = new List<string>(items);
 
-            if (dynamicValuesProviderCommandNames != null)
-                DynamicValuesProviderCommandNames = new List<string>(dynamicValuesProviderCommandNames);
+            if (dynamicValuesProviderCommands != null)
+                DynamicValueProviderCommands = new List<string>(dynamicValuesProviderCommands);
         }
 
         private List<string> Values { get; } = new();
-        public List<string> DynamicValuesProviderCommandNames { get; } = new();
+        public List<string> DynamicValueProviderCommands { get; } = new();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         public IEnumerator<string> GetEnumerator()
@@ -201,7 +201,7 @@ namespace ANU.IngameDebug.Console.Commands
             foreach (var item in Values)
                 yield return item;
 
-            foreach (var comand in DynamicValuesProviderCommandNames)
+            foreach (var comand in DynamicValueProviderCommands)
             {
                 IEnumerable<string> values = null;
                 try
