@@ -25,10 +25,21 @@ namespace ANU.IngameDebug.Console
         [SerializeField] private ConsoleLogType _debugConsoleLogType;
         [SerializeField] private LogType _debugMessageType;
         [SerializeField] private bool _debugExpanded;
+        [Space]
+        [SerializeField] private string _iconSpace = "     ";
+        [SerializeField] private string _timeSpace = "                 ";
 
         private Action _onClick;
 
-        public Log Log => Node.Value ?? new Log(_debugConsoleLogType, _debugMessageType, $"{_debugConsoleLogType} {_debugMessageType} {_message.text.Trim()}", _stacktrace.text.Trim()) { IsExpanded = _debugExpanded };
+        public Log Log => Node.Value ?? new Log(
+            _debugConsoleLogType,
+            _debugMessageType,
+            $"{_debugConsoleLogType} {_debugMessageType} {_message.text.Replace(_debugConsoleLogType.ToString(), "").Replace(_debugMessageType.ToString(), "").Trim()}",
+            _stacktrace.text.Trim())
+        {
+            IsExpanded = _debugExpanded
+        };
+
         public LogNode Node { get; private set; }
         public RectTransform RectTransform => transform as RectTransform;
 
@@ -64,15 +75,15 @@ namespace ANU.IngameDebug.Console
         {
             Node = node;
             _onClick = onClick;
-
-            var noTime = "     ";
-            _message.text = noTime + Log.DisplayString;
+            UpdateMessage();
             _receivedTime.text = $"[{Log.ReceivedTime:hh:mm:ss}]";
 
             UpdateIcon();
             UpdateTheme(DebugConsole.CurrentTheme);
             UpdateStacktrace();
         }
+
+        private void UpdateMessage() => _message.text = _iconSpace + Log.DisplayString;
 
         private void UpdateIcon()
         {
@@ -131,8 +142,7 @@ namespace ANU.IngameDebug.Console
         {
             if (Log.IsExpanded && !string.IsNullOrEmpty(Log.StackTrace))
             {
-                var withTime = "                 ";
-                _stacktrace.text = withTime + Log.StackTrace;
+                _stacktrace.text = _timeSpace + Log.StackTrace;
                 _stacktrace.gameObject.SetActive(true);
             }
             else
@@ -144,8 +154,10 @@ namespace ANU.IngameDebug.Console
         private void Update()
         {
             UpdateStacktrace();
-            if (!Application.isPlaying)
-                UpdateIcon();
+            if (Application.isPlaying)
+                return;
+            UpdateMessage();
+            UpdateIcon();
         }
     }
 }

@@ -192,11 +192,6 @@ namespace ANU.IngameDebug.Console
             }
         }
 
-        private void Start()
-        {
-            ExecuteCommand("help", true);
-        }
-
         private void SetUpPreprocessors()
         {
             Preprocessors.Add(new BracketsToStringPreprocessor());
