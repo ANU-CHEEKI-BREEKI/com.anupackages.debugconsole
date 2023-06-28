@@ -42,9 +42,25 @@ User interface is created with uGUI and packed in a single SpriteAtlas.
 
 ## How to Install
 
-- via Unity Package Manager
+- through Unity Package Manager
   - git url: `https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole.git`
-  - npm package: ``
+  - npm package: add following to your Scoped Registries
+```
+  "scopedRegistries": [
+    {
+      "name": "ANU",
+      "url": "https://registry.npmjs.org/",
+      "scopes": [
+        "com.anupackages"
+      ]
+    }
+  ]
+```
+<img width="809" alt="Screenshot 2023-06-28 at 19 28 06" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/a967a238-a5d5-41d8-8bcc-23e8c575dfcc">
+
+Then you will be able to search all available packages directly in Unity Package Manager window
+<img width="717" alt="Screenshot 2023-06-28 at 19 28 52" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/d8aa5f5c-8911-4d03-a648-2351083dc764">
+
 - download sources as zip archive and import to your project
 - asset store?
   
