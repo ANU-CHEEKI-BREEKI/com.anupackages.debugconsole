@@ -208,6 +208,7 @@ namespace ANU.IngameDebug.Console
         {
             Preprocessors.Add(new BracketsToStringPreprocessor());
             Preprocessors.Add(new NamedParametersPreprocessor());
+            Preprocessors.Add(new ExpressionEvaluatorPreprocessor());
         }
 
         private void SetUpConverters()
@@ -543,7 +544,9 @@ Enter ""list"" to print all registered commands
             public void LogReturnValue(object value, UnityEngine.Object context = null)
             {
                 var val = "";
-                if (value is IEnumerable enumerable)
+                if (value is string str)
+                    val = str;
+                else if (value is IEnumerable enumerable)
                     val = "[" + string.Join(", ", enumerable.Cast<object>().Select(o => o?.ToString())) + "]";
                 else if (value is IEnumerator enumerator)
                     val = "[" + string.Join(", ", AsEnumerable(enumerator).Select(o => o?.ToString())) + "]";

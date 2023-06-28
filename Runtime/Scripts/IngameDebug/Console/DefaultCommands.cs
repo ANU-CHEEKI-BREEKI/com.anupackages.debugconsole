@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 [assembly: RegisterDebugCommandTypes(typeof(DefaultCommands))]
+[assembly: RegisterDebugCommandTypes(typeof(DefaultCommandsNoPrefix))]
 
 namespace ANU.IngameDebug.Console
 {
@@ -139,7 +140,7 @@ namespace ANU.IngameDebug.Console
         }
 
         [DebugCommand]
-        public static void LoadScene(
+        private static void LoadScene(
             [OptAltNames("n")]
             [OptDesc("Load scene by name")]
             [OptValDynamic("default.list-scene-names")]
@@ -164,7 +165,7 @@ namespace ANU.IngameDebug.Console
         }
 
         [DebugCommand]
-        public static IEnumerable<string> ListSceneNames()
+        private static IEnumerable<string> ListSceneNames()
             => ListSceneIndices().Select(i => SceneUtility
                 .GetScenePathByBuildIndex(i)
                 .Split('/')
@@ -174,11 +175,17 @@ namespace ANU.IngameDebug.Console
             );
 
         [DebugCommand]
-        public static IEnumerable<int> ListSceneIndices()
+        private static IEnumerable<int> ListSceneIndices()
         {
             var cnt = SceneManager.sceneCountInBuildSettings;
             for (int i = 0; i < cnt; i++)
                 yield return i;
         }
+    }
+
+    internal class DefaultCommandsNoPrefix
+    {
+        [DebugCommand]
+        private static string Echo(string value) => value;
     }
 }
