@@ -80,6 +80,14 @@ Supported parameter types and some syntax flexibility:
   - used `GameObject.Find` and filtered by `name` for Component types
   - can pass `null` (non case sensitive)
 
+
+### NCalc
+
+`ATTENTION:` to use ExpressionEvaluation install package:
+
+original repo: https://github.com/ncalc/ncalc
+
+
 ### command line syntax
 NDeskOptions + C# optional and named parameters style
 
