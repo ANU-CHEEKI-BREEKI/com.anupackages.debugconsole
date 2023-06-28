@@ -24,6 +24,15 @@ namespace ANU.IngameDebug.Console
         public IEnumerable<Type> DeclaredTypes => OtherTypes.Prepend(FirstType);
     }
 
+    // /// <summary>
+    // /// Mask static method, declared in type registered by <see cref="RegisterDebugCommandTypesAttribute"/> to call it BEFORE any commands are registered
+    // /// </summary>
+    // [AttributeUsage(AttributeTargets.Method)]
+    // public class ConsoleInitializationCallbackAttribute : Attribute
+    // {
+
+    // }
+
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
     public class DebugCommandPrefixAttribute : Attribute
     {

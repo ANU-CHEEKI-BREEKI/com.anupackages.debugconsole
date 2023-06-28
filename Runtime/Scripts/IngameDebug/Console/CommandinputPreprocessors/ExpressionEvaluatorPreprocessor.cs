@@ -1,3 +1,4 @@
+#if USE_NCALC
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -18,10 +19,6 @@ namespace ANU.IngameDebug.Console
 
         public string Preprocess(string input)
         {
-            // #if !USE_NCALC
-            //             return input;
-            // #else
-
             var args = input.SplitCommandLine();
             var name = args.FirstOrDefault();
             args = args.Skip(1).Select(a =>
@@ -44,8 +41,10 @@ namespace ANU.IngameDebug.Console
             });
 
             return string.Join(" ", args.Prepend(name));
-            // #endif
         }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        private static void RegisterSelf() => DebugConsole.Preprocessors.Add(new ExpressionEvaluatorPreprocessor());
 
         private static string EvaluateIfMathes(string input)
         {
@@ -56,18 +55,26 @@ namespace ANU.IngameDebug.Console
                 return input;
         }
 
-        [DebugCommand(Name = "$", Description = "Alias for Evaluate command")]
-        private static string EvaluateAlias(string value) => Evaluate(value);
+        [DebugCommand(Name = "$", Description = @"Alias for Evaluate command
+You can call this command as nested command to pass expression as parameter. 
+Use: ""${expression}""
+For example: ""echo ${1+4}""")]
+        private static string EvaluateAlias(string expression) => Evaluate(expression);
 
-        [DebugCommand(Description = "Evaluate expression")]
-        private static string Evaluate(string value)
+        [DebugCommand(Description = @"Evaluate expression
+You can call this command as nested command to pass expression as parameter. 
+Use short syntax for this command: ""${expression}""
+For example: ""echo ${1+4}""")]
+        private static string Evaluate(
+            [OptDesc(@"String expression. For example: ""5 * (2 + 3) / 2""")]
+            string expression
+        )
         {
-            // #if USE_NCALC
 
             try
             {
                 var exp = new NCalc.Expression(
-                    value.ToLower(),
+                    expression.ToLower(),
                     NCalc.EvaluateOptions.RoundAwayFromZero | NCalc.EvaluateOptions.NoCache | NCalc.EvaluateOptions.IgnoreCase
                 );
 
@@ -91,11 +98,9 @@ namespace ANU.IngameDebug.Console
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                return value;
+                return expression;
             }
-            // #else
-            //             return "";
-            // #endif
         }
     }
 }
+#endif
