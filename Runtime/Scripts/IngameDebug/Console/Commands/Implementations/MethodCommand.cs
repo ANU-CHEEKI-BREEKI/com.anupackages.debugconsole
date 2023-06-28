@@ -483,7 +483,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
         protected override Type ReturnValueType => _member.PropertyType;
 
         protected override Type GetMemberType() => _member.PropertyType;
-        protected override bool IsStatic(PropertyInfo member) => member.GetAccessors()[0].IsStatic;
+        protected override bool IsStatic(PropertyInfo member) => member.GetAccessors(true)[0].IsStatic;
         protected override object GetValue(PropertyInfo member, object instance) => member.GetValue(instance);
         protected override void SetValue(PropertyInfo member, object instance, object value) => member.SetValue(instance, value);
     }

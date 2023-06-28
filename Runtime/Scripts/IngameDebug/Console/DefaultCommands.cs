@@ -14,6 +14,13 @@ namespace ANU.IngameDebug.Console
     [DebugCommandPrefix("default")]
     internal class DefaultCommands
     {
+        [DebugCommand]
+        private static float TimeScale
+        {
+            get => Time.timeScale;
+            set => Time.timeScale = Mathf.Clamp01(value);
+        }
+
         [DebugCommand(Description = "Print all Scenes GameObjects hierarchy")]
         private static void DisplayHierarchy(
             [OptAltNames("i")]

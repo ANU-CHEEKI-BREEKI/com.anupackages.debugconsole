@@ -261,7 +261,7 @@ namespace ANU.IngameDebug.Console
 
                 var result = command.Execute(commandLine);
 
-                if (!silent && result.ReturnType != typeof(void))
+                if (!silent && result.ReturnType != typeof(void) && result.ReturnValues != null)
                 {
                     foreach (var item in result.ReturnValues)
                         Logger.LogReturnValue(item.ReturnValue, item.Target as UnityEngine.Object);
