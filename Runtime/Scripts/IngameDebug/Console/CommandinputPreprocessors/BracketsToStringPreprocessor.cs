@@ -12,7 +12,7 @@ namespace ANU.IngameDebug.Console
         public string Preprocess(string input)
         {
             var matches = _regex.Matches(input);
-            input = _regex.Replace(input, @"""${content}""");
+            input = _regex.Replace(input, @" ""${content}""");
             return input;
         }
     }
