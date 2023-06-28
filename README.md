@@ -19,6 +19,11 @@ This Asset is depends of other [repo](https://github.com/ANU-CHEEKI-BREEKI/com.a
 
 If you install this asset as package by Unity Package Manager, than packcage com.anupackages.ndesk-options will be installed automatically.
 
+Optional dependency:
+- if you want to use Expression Evaluation, you need to install following packages. Whis are also redistribution for Unity Package Manager usage. See more in [How to Install](#How-to-Install)
+  - [NCalc](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.ncalc)
+  - [ANTLR v4](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.antlr4)
+
 ## About
 Provides easy way to create and invoke debug commands in game console at runtime.
 Also it displays console messages (logs, warnings, errors, exceptions, assertions) at runtime in a build.
