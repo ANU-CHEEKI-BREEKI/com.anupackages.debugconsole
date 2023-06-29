@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using ANU.IngameDebug.Console.CommandLinePreprocessors;
 using ANU.IngameDebug.Utils;
 using UnityEditor;
@@ -13,47 +14,47 @@ namespace ANU.IngameDebug.Console
 {
     public class ExpressionEvaluatorPreprocessor : ICommandInputPreprocessor
     {
-        private static readonly Regex _expressionRegex = new(@"\${(?<expression>.*?)}");
+        private static readonly Regex _expressionRegex = new(@"\${(?!.*?\${)(?<expression>.*?)(?<!.*?})}");
 
         int ICommandInputPreprocessor.Priority => 1_000;
 
         public string Preprocess(string input)
         {
-            var args = input.SplitCommandLine();
-            var name = args.FirstOrDefault();
-            args = args.Skip(1).Select(a =>
+            input = input.Trim();
+
+            // skip evaluation for #define commands
+            if (input.StartsWith("#"))
+                return input;
+
+            if(!_expressionRegex.IsMatch(input))
+                return input;
+
+            using (var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2)))
+            using (var waiter = new AutoResetEvent(false))
             {
-                if (a.StartsWith("-"))
+                ThreadPool.QueueUserWorkItem(obj =>
                 {
-                    var values = a.Split('=', System.StringSplitOptions.RemoveEmptyEntries);
-                    if (values.Length <= 1)
-                        return EvaluateIfMathes(a);
+                    while (_expressionRegex.IsMatch(input) && !tokenSource.IsCancellationRequested)
+                    {
+                        input = _expressionRegex.Replace(
+                            input,
+                            m => Evaluate(m.Groups["expression"].Value)
+                        );
+                    }
+                    waiter.Set();
+                });
 
-                    var opt = values.FirstOrDefault();
-                    var val = values.LastOrDefault();
+                waiter.WaitOne();
 
-                    return $"{opt}={EvaluateIfMathes(val)}";
-                }
-                else
-                {
-                    return EvaluateIfMathes(a);
-                }
-            });
+                if (tokenSource.IsCancellationRequested)
+                    Debug.LogWarning($"Expresion evaluation timeout hitted. End result are invalid: {input}");
+            }
 
-            return string.Join(" ", args.Prepend(name));
+            return input;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void RegisterSelf() => DebugConsole.Preprocessors.Add(new ExpressionEvaluatorPreprocessor());
-
-        private static string EvaluateIfMathes(string input)
-        {
-            var match = _expressionRegex.Match(input);
-            if (match.Success)
-                return Evaluate(match.Groups["expression"].Value);
-            else
-                return input;
-        }
 
         [DebugCommand(Name = "$", Description = @"Alias for Evaluate command
 You can call this command as nested command to pass expression as parameter. 
@@ -61,7 +62,9 @@ Use: ""${expression}""
 For example: ""echo ${1+4}""")]
         private static string EvaluateAlias(string expression) => Evaluate(expression);
 
-        [DebugCommand(Description = @"Evaluate expression
+        [DebugCommand(
+            Name = "$evaluate",
+            Description = @"Evaluate expression
 You can call this command as nested command to pass expression as parameter. 
 Use short syntax for this command: ""${expression}""
 For example: ""echo ${1+4}""")]

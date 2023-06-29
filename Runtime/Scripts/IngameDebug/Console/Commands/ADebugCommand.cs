@@ -35,7 +35,7 @@ namespace ANU.IngameDebug.Console.Commands
         {
             using (var writer = new StringWriter())
             {
-                writer.WriteLine($"Help for {Name} command usage:");
+                writer.WriteLine();
                 writer.WriteLine($"{"Name:",-15} {Name}");
                 writer.WriteLine($"{"Description:",-15} {Description}");
                 writer.WriteLine("Options:");

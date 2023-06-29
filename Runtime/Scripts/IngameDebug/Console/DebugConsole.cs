@@ -25,6 +25,7 @@ namespace ANU.IngameDebug.Console
         private const float ColsoleInputHeightPercentage = 0.1f;
         private const float Padding = 10f;
         private const string PrefsHistoryKey = nameof(CommandLineHistory) + "-save";
+        private const string PrefsDefinesKey = nameof(DefinesRegistry) + "-save";
 
         [SerializeField] private GameObject _content;
         [SerializeField] private TMP_InputField _input;
@@ -65,6 +66,7 @@ namespace ANU.IngameDebug.Console
         public static ICommandInputPreprocessorRegistry Preprocessors { get; } = new CommandInputPreprocessorRegistry(Logger);
         public static IInstancesTargetRegistry InstanceTargets { get; } = new InstancesTargetRegistry();
         public static ICommandsRegistry Commands => _commands;
+        public static IDefinesRegistry Defines { get; } = new DefinesRegistry();
 
         private static ISuggestionsContext SuggestionsContext
         {
@@ -194,6 +196,7 @@ namespace ANU.IngameDebug.Console
             _suggestions.Hided += () => SuggestionsContext = _commandsContext;
 
             LoadCommandsHistory(_commandsHistory);
+            LoadDefines(Defines);
 
             void Submit()
             {
@@ -208,6 +211,7 @@ namespace ANU.IngameDebug.Console
         {
             Preprocessors.Add(new BracketsToStringPreprocessor());
             Preprocessors.Add(new NamedParametersPreprocessor());
+            Preprocessors.Add(new DefinesPreprocessor());
         }
 
         private void SetUpConverters()
@@ -233,7 +237,11 @@ namespace ANU.IngameDebug.Console
             Application.logMessageReceived -= LogMessageReceived;
         }
 
-        private void OnApplicationQuit() => SaveCommandsHistory(_commandsHistory);
+        private void OnApplicationQuit()
+        {
+            SaveCommandsHistory(_commandsHistory);
+            SaveDefines(Defines);
+        }
 
         private static ExecutionResult ExecuteCommandInternal(string commandLine, bool silent)
         {
@@ -528,9 +536,49 @@ Enter ""list"" to print all registered commands
             }
         }
 
+        private void LoadDefines(IDefinesRegistry defines)
+        {
+            var dict = JsonUtility.FromJson<SerializedDictionary<string, string>>(
+                PlayerPrefs.GetString(PrefsDefinesKey)
+            );
+            defines.Clear();
+
+            if (dict == null || dict.Pairs == null)
+                return;
+
+            foreach (var item in dict.Pairs)
+                defines.Add(item.Key, item.Value);
+        }
+
+        private void SaveDefines(IDefinesRegistry defines)
+        {
+            var dict = new SerializedDictionary<string, string>
+            {
+                Pairs = new List<SerializedDictionary<string, string>.Pair>(defines.Defines.Select(kvp => new SerializedDictionary<string, string>.Pair
+                {
+                    Key = kvp.Key,
+                    Value = kvp.Value
+                }))
+            };
+            var json = JsonUtility.ToJson(dict);
+            PlayerPrefs.SetString(PrefsDefinesKey, json);
+        }
+
         private class SerializedCommandsHistory
         {
             public List<string> _list;
+        }
+
+        private class SerializedDictionary<TKey, TValue>
+        {
+            public List<Pair> Pairs;
+
+            [Serializable]
+            public class Pair
+            {
+                public TKey Key;
+                public TValue Value;
+            }
         }
 
         private class UnityLogger : ILogger
