@@ -7,23 +7,31 @@ namespace ANU.IngameDebug.Console.CommandLinePreprocessors
     {
         private readonly List<ICommandInputPreprocessor> _preprocessors = new();
 
-        public CommandInputPreprocessorRegistry(ILogger logger) => Logger = logger;
+        public CommandInputPreprocessorRegistry(IReadOnlyDebugConsoleProcessor context) => Context = context;
 
-        public ILogger Logger { get; }
+        public IReadOnlyDebugConsoleProcessor Context { get; }
         public IReadOnlyList<ICommandInputPreprocessor> Preprocessors => _preprocessors;
 
-        public void Add(ICommandInputPreprocessor preprocessor) => _preprocessors.Add(preprocessor);
-        public bool Remove(ICommandInputPreprocessor preprocessor) => _preprocessors.Remove(preprocessor);
+        public void Add(ICommandInputPreprocessor preprocessor)
+        {
+            if (preprocessor is IInjectDebugConsoleContext consoleContext)
+                consoleContext.Context = Context;
+
+            _preprocessors.Add(preprocessor);
+        }
+
+        public bool Remove(ICommandInputPreprocessor preprocessor)
+        {
+            if (preprocessor is IInjectDebugConsoleContext consoleContext)
+                consoleContext.Context = null;
+
+            return _preprocessors.Remove(preprocessor);
+        }
 
         public string Preprocess(string input)
         {
             foreach (var item in _preprocessors.OrderBy(r => r.Priority))
-            {
-                if (item is IInjectLogger injectLogger)
-                    injectLogger.Logger = Logger;
-
                 input = item.Preprocess(input);
-            }
 
             return input;
         }

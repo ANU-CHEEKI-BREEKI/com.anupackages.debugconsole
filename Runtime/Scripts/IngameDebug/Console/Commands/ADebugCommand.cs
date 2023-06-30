@@ -9,7 +9,7 @@ using System.Collections;
 
 namespace ANU.IngameDebug.Console.Commands
 {
-    public abstract class ADebugCommand
+    public abstract class ADebugCommand : IInjectDebugConsoleContext
     {
         private readonly string _name;
         private readonly string _description;
@@ -107,6 +107,9 @@ namespace ANU.IngameDebug.Console.Commands
                 return _valueHints;
             }
         }
+
+        IReadOnlyDebugConsoleProcessor IInjectDebugConsoleContext.Context { get; set; }
+        protected IReadOnlyDebugConsoleProcessor Context => (this as IInjectDebugConsoleContext).Context;
 
         public ExecutionResult Execute(string args = null)
         {

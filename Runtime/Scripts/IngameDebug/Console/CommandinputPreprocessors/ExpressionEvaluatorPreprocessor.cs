@@ -37,7 +37,7 @@ namespace ANU.IngameDebug.Console
 
                     var option = a.Substring(0, indOfEq);
                     var value = a.Substring(indOfEq + 1).Trim('"').Trim('\'');
-                    value = Evaluate(value, silent: true);
+                    value = Evaluate(value, silent: true)?.ToString();
 
                     return @$"{option}=""{value}""";
                 }
@@ -51,19 +51,13 @@ namespace ANU.IngameDebug.Console
             return result;
         }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-        private static void RegisterSelf() => DebugConsole.Preprocessors.Add(new ExpressionEvaluatorPreprocessor());
-
-        [DebugCommand(Name = "$", Description = @"Alias for Evaluate command
-You can call this command as nested command to pass expression as parameter. 
-Use: ""${expression}""
-For example: ""echo ${1+4}""")]
-        private static string EvaluateAlias(string expression) => Evaluate(expression);
+        [DebugCommand(Name = "$", Description = @"Alias for evaluate command")]
+        private static object EvaluateAlias(string expression) => Evaluate(expression);
 
         [DebugCommand(
             Name = "$evaluate",
             Description = @"Evaluate expression")]
-        private static string Evaluate(
+        private static object Evaluate(
             [OptDesc(@"String expression. For example: ""5 * (2 + 3) / 2""")]
             string expression,
             [OptDesc(@"Do not print any Log messages")]
@@ -92,7 +86,7 @@ For example: ""echo ${1+4}""")]
                 };
 
                 var result = exp.Evaluate();
-                return result?.ToString();
+                return result;
             }
             catch (Exception ex)
             {
