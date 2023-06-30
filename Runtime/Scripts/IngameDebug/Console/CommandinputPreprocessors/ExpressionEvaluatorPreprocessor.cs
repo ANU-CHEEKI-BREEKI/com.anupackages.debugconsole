@@ -1,8 +1,6 @@
 #if USE_NCALC
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
 using ANU.IngameDebug.Console.CommandLinePreprocessors;
 using ANU.IngameDebug.Utils;
 using UnityEditor;
@@ -14,8 +12,6 @@ namespace ANU.IngameDebug.Console
 {
     public class ExpressionEvaluatorPreprocessor : ICommandInputPreprocessor
     {
-        private static readonly Regex _expressionRegex = new(@"\${(?!.*?\${)(?<expression>.*?)(?<!.*?})}");
-
         int ICommandInputPreprocessor.Priority => 1_000;
 
         public string Preprocess(string input)
@@ -26,31 +22,33 @@ namespace ANU.IngameDebug.Console
             if (input.StartsWith("#"))
                 return input;
 
-            if(!_expressionRegex.IsMatch(input))
+            var cmdLine = input.SplitCommandLine();
+            if (!cmdLine.Any())
                 return input;
 
-            using (var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2)))
-            using (var waiter = new AutoResetEvent(false))
+            var evaluatedArgs = cmdLine.Select(a =>
             {
-                ThreadPool.QueueUserWorkItem(obj =>
+                a = a.Trim();
+                if (a.StartsWith("-"))
                 {
-                    while (_expressionRegex.IsMatch(input) && !tokenSource.IsCancellationRequested)
-                    {
-                        input = _expressionRegex.Replace(
-                            input,
-                            m => Evaluate(m.Groups["expression"].Value)
-                        );
-                    }
-                    waiter.Set();
-                });
+                    var indOfEq = a.IndexOf("=");
+                    if (indOfEq <= 0)
+                        return a;
 
-                waiter.WaitOne();
+                    var option = a.Substring(0, indOfEq);
+                    var value = a.Substring(indOfEq + 1).Trim('"').Trim('\'');
+                    value = Evaluate(value, silent: true);
 
-                if (tokenSource.IsCancellationRequested)
-                    Debug.LogWarning($"Expresion evaluation timeout hitted. End result are invalid: {input}");
-            }
+                    return @$"{option}=""{value}""";
+                }
+                else
+                {
+                    return Evaluate(a, silent: true);
+                }
+            });
 
-            return input;
+            var result = string.Join(" ", evaluatedArgs);
+            return result;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
@@ -70,10 +68,10 @@ Use short syntax for this command: ""${expression}""
 For example: ""echo ${1+4}""")]
         private static string Evaluate(
             [OptDesc(@"String expression. For example: ""5 * (2 + 3) / 2""")]
-            string expression
+            string expression,
+            bool silent = false
         )
         {
-
             try
             {
                 var exp = new NCalc.Expression(
@@ -100,7 +98,8 @@ For example: ""echo ${1+4}""")]
             }
             catch (Exception ex)
             {
-                Debug.LogException(ex);
+                if (!silent)
+                    Debug.LogException(ex);
                 return expression;
             }
         }

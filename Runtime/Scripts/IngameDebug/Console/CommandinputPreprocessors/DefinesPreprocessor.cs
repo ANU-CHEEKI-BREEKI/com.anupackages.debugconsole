@@ -18,6 +18,8 @@ namespace ANU.IngameDebug.Console
     {
         private readonly Regex _defineNameRegex = new(@"(?<name>#[\w\d\-\._]+?)(?![\w\d\-\._])");
 
+        private int _forceProcess;
+
         int ICommandInputPreprocessor.Priority => 500;
 
         public string Preprocess(string input)
@@ -25,15 +27,12 @@ namespace ANU.IngameDebug.Console
             input = input.Trim();
 
             // skip evaluation for #define commands
-            if (input.StartsWith("#"))
+            if (_forceProcess <= 0 && input.StartsWith("#"))
             {
                 var name = input.SplitCommandLine().FirstOrDefault();
                 if (DebugConsole.Commands.Commands.ContainsKey(name))
                     return input;
             }
-
-            if (input.StartsWith("#") && input.Skip(1).FirstOrDefault() != ' ')
-                return $"#echo --name=\"{input}\"";
 
             if (!_defineNameRegex.IsMatch(input))
                 return input;
@@ -47,10 +46,19 @@ namespace ANU.IngameDebug.Console
                     {
                         input = _defineNameRegex.Replace(input, m =>
                         {
-                            if (DebugConsole.Defines.Defines.TryGetValue(m.Value.Trim('"').Trim('#'), out var val))
-                                return $"{val}";
-                            else
-                                return m.Value;
+                            try
+                            {
+                                _forceProcess++;
+
+                                if (DebugConsole.Defines.Defines.TryGetValue(m.Value.Trim('"').Trim('#'), out var val))
+                                    return DebugConsole.Preprocessors.Preprocess(val);
+                                else
+                                    return m.Value;
+                            }
+                            finally
+                            {
+                                _forceProcess--;
+                            }
                         });
                     }
                     waiter.Set();
@@ -65,7 +73,6 @@ namespace ANU.IngameDebug.Console
             return input;
         }
 
-        //  echo --value="#2x2x2"
         [DebugCommand(
             Name = "#echo",
             Description = @"Print defined value without evaluation.
