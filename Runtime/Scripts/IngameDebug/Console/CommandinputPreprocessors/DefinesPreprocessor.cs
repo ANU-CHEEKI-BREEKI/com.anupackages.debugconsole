@@ -33,7 +33,7 @@ namespace ANU.IngameDebug.Console
             }
 
             if (input.StartsWith("#") && input.Skip(1).FirstOrDefault() != ' ')
-                return $"# --name=\"{input}\"";
+                return $"#echo --name=\"{input}\"";
 
             if (!_defineNameRegex.IsMatch(input))
                 return input;
@@ -67,7 +67,7 @@ namespace ANU.IngameDebug.Console
 
         //  echo --value="#2x2x2"
         [DebugCommand(
-            Name = "#",
+            Name = "#echo",
             Description = @"Print defined value without evaluation.
 You can use this command as ""#name"" or ""# name"""
         )]
