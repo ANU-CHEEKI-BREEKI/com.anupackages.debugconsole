@@ -19,7 +19,6 @@ using UnityEngine.EventSystems;
 namespace ANU.IngameDebug.Console
 {
     [DisallowMultipleComponent]
-    [DebugCommandPrefix("console")]
     public class DebugConsole : MonoBehaviour
     {
         private const float ColsoleInputHeightPercentage = 0.1f;
@@ -39,34 +38,14 @@ namespace ANU.IngameDebug.Console
         [SerializeField] private UITheme[] _themes;
         [SerializeField] private UITheme _currentTheme;
 
-        private static CommandLineHistory _commandsHistory = new CommandLineHistory();
-
         private static readonly Regex _receivedMessageTypeRegex = new Regex(@"\[console:(?<type>.*?)\] ");
-
         private static ISuggestionsContext _suggestionsContext;
         private static CommandsSuggestionsContext _commandsContext;
         private static HistorySuggestionsContext _historyContext;
-        private static readonly ILogger _logger = new UnityLogger(ConsoleLogType.Output);
+        private static DebugConsoleProcessor _processor = new DebugConsoleProcessor();
 
         internal static DebugConsole Instance { get; set; }
-
-        private static readonly CommandsRegistry _commands = new(_logger);
-
-        internal static LogsContainer Logs { get; } = new();
-
         public static bool IsOpened => Instance._content.activeInHierarchy;
-        public static ICommandsRouter Router { get; set; } = null;
-
-        public static bool ShowLogs { get; set; } = true;
-
-        private static ILogger InputLogger { get; } = new UnityLogger(ConsoleLogType.Input);
-        public static ILogger Logger => _logger;
-
-        public static IConverterRegistry Converters { get; } = new ConverterRegistry(Logger);
-        public static ICommandInputPreprocessorRegistry Preprocessors { get; } = new CommandInputPreprocessorRegistry(Logger);
-        public static IInstancesTargetRegistry InstanceTargets { get; } = new InstancesTargetRegistry();
-        public static ICommandsRegistry Commands => _commands;
-        public static IDefinesRegistry Defines { get; } = new DefinesRegistry();
 
         private static ISuggestionsContext SuggestionsContext
         {
@@ -92,6 +71,19 @@ namespace ANU.IngameDebug.Console
             }
         }
 
+        public static ICommandsRouter Router { get => _processor.Router; set => _processor.Router = value; }
+        public static bool ShowLogs { get => _processor.ShowLogs; set => _processor.ShowLogs = value; }
+        public static ILogger Logger => _processor.Logger;
+        public static IConverterRegistry Converters => _processor.Converters;
+        public static ICommandInputPreprocessorRegistry Preprocessors => _processor.Preprocessors;
+        public static IInstancesTargetRegistry InstanceTargets => _processor.InstanceTargets;
+        public static ICommandsRegistry Commands => _processor.Commands;
+        public static IDefinesRegistry Defines => _processor.Defines;
+
+        private static CommandLineHistory CommandsHistory => _processor.CommandsHistory;
+        internal static ILogger InputLogger => _processor.InputLogger;
+        internal static LogsContainer Logs { get; } = new();
+
         /// <summary>
         /// if void - returns null
         /// if have one target - returns result as object
@@ -101,31 +93,7 @@ namespace ANU.IngameDebug.Console
         /// <param name="silent"></param>
         /// <returns></returns>
         public static ExecutionResult ExecuteCommand(string commandLine, bool silent = false)
-        {
-            try
-            {
-                if (Instance != null && !silent)
-                    Instance._input.text = "";
-
-                if (!silent)
-                {
-                    _commandsHistory.Record(commandLine);
-                    InputLogger.LogInfo(commandLine);
-                }
-
-                if (Router != null)
-                    Router.SendCommand(commandLine);
-                else
-                    return ExecuteCommandInternal(commandLine, silent);
-            }
-            finally
-            {
-                if (Instance != null && !silent)
-                    Instance._input.ActivateInputField();
-            }
-
-            return default;
-        }
+            => _processor.ExecuteCommand(commandLine, silent);
 
         private void OnValidate()
         {
@@ -161,19 +129,17 @@ namespace ANU.IngameDebug.Console
 
             Application.logMessageReceived += LogMessageReceived;
 
-            _commandsContext = new CommandsSuggestionsContext(_commands.Commands);
-            _historyContext = new HistorySuggestionsContext(_commandsHistory);
+            _commandsContext = new CommandsSuggestionsContext(Commands.Commands);
+            _historyContext = new HistorySuggestionsContext(CommandsHistory);
             _content.SetActive(false);
 
-            SetUpPreprocessors();
-            SetUpConverters();
-            SetupConsoleCommands();
+            _processor.Initialize();
 
             _input.onSubmit.AddListener(text => Submit());
             _input.onValueChanged.AddListener(text =>
             {
-                if (text != _commandsHistory.Current)
-                    _commandsHistory.Reset();
+                if (text != CommandsHistory.Current)
+                    CommandsHistory.Reset();
 
                 DisplaySuggestions(text);
             });
@@ -195,7 +161,7 @@ namespace ANU.IngameDebug.Console
 
             _suggestions.Hided += () => SuggestionsContext = _commandsContext;
 
-            LoadCommandsHistory(_commandsHistory);
+            LoadCommandsHistory(CommandsHistory);
             LoadDefines(Defines);
 
             void Submit()
@@ -203,33 +169,12 @@ namespace ANU.IngameDebug.Console
                 var text = _input.text;
                 if (string.IsNullOrEmpty(text))
                     return;
+
                 ExecuteCommand(text);
+
+                _input.text = "";
+                _input.ActivateInputField();
             }
-        }
-
-        private void SetUpPreprocessors()
-        {
-            Preprocessors.Add(new BracketsToStringPreprocessor());
-            Preprocessors.Add(new NamedParametersPreprocessor());
-            Preprocessors.Add(new DefinesPreprocessor());
-        }
-
-        private void SetUpConverters()
-        {
-            Converters.Register(new BaseConveerter());
-            Converters.Register(new ArrayConverter());
-            Converters.Register(new ListConverter());
-            Converters.Register(new Vector2IntConverter());
-            Converters.Register(new Vector2Converter());
-            Converters.Register(new Vector3IntConverter());
-            Converters.Register(new Vector3Converter());
-            Converters.Register(new Vector4Converter());
-            Converters.Register(new QuaternionConverter());
-            Converters.Register(new ColorConverter());
-            Converters.Register(new Color32Converter());
-            Converters.Register(new GameObjectConverter());
-            Converters.Register(new ComponentConverter());
-            Converters.Register(new BoolConverter());
         }
 
         private void OnDestroy()
@@ -239,103 +184,11 @@ namespace ANU.IngameDebug.Console
 
         private void OnApplicationQuit()
         {
-            SaveCommandsHistory(_commandsHistory);
+            SaveCommandsHistory(CommandsHistory);
             SaveDefines(Defines);
         }
 
-        private static ExecutionResult ExecuteCommandInternal(string commandLine, bool silent)
-        {
-            try
-            {
-                commandLine = Preprocessors.Preprocess(commandLine);
-                var commandName = ExtractCommandName(commandLine);
-
-                if (!_commands.Commands.ContainsKey(commandName) && !silent)
-                {
-                    Logger.LogError($"There is no command with name \"{commandName}\". Enter \"help\" to see command usage.");
-                    return default;
-                }
-
-                var command = _commands.Commands[commandName];
-
-                // remove command name from command line input
-                if (commandLine != null)
-                {
-                    var nameIndex = commandLine.IndexOf(command.Name);
-                    commandLine = commandLine
-                        .Remove(0, command.Name.Length)
-                        .Trim();
-                }
-
-                var result = command.Execute(commandLine);
-
-                if (!silent && result.ReturnType != typeof(void) && result.ReturnValues != null)
-                {
-                    foreach (var item in result.ReturnValues)
-                        Logger.LogReturnValue(item.ReturnValue, item.Target as UnityEngine.Object);
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                if (!silent)
-                    Logger.LogException(ex);
-            }
-
-            return default;
-        }
-
-        private static string ExtractCommandName(string commandLine)
-        {
-            var commandName = commandLine;
-            var spaceindex = commandLine.IndexOf(" ");
-            if (spaceindex >= 0)
-                commandName = commandLine.Substring(0, spaceindex);
-            return commandName;
-        }
-
-        private void SetupConsoleCommands()
-        {
-            Commands.RegisterCommand("help", "Print help", () => Logger.LogInfo(
-$@"To call command               - enter command name and parameters
-for example: ""command_name -param_name_1 -param_name_2""
-To see all commands              - enter command ""list""
-To see concrete command help     - enter command name with parameter ""-help""
----------------------------------
-To force show suggestions       - press ""Ctrl + .""
-To switch suggestions context   - press ""Ctrl + ~""
-    available contexts: commands, history
-To select suggestions           - use ArrowUp and ArrowDown
-To choose suggestion            - press Tab or Enter
-To choose first suggestion      - press Tab when no selected suggestions
-To search history               - use ArrowUp and ArrowDown when suggestions not shown
----------------------------------
-Enter ""list"" to print all registered commands
-"));
-            Commands.RegisterCommand("list", "Print all command names with descriptions", () =>
-            {
-                var maxLength = _commands.Commands.Values.Max(n => n.Name.Length);
-                var nameLength = Mathf.Max(maxLength, maxLength + 5);
-
-                var builder = new StringBuilder();
-                builder.AppendLine("Available commands:");
-                foreach (var command in _commands.Commands.Values.OrderBy(cmd => cmd.Name))
-                {
-                    builder.Append("  - ");
-                    builder.Append(command.Name);
-                    builder.Append(new string('-', nameLength - command.Name.Length));
-                    builder.AppendLine(command.Description);
-                }
-
-                Logger.LogInfo(builder.ToString());
-            });
-
-            Commands.RegisterCommand("clear", "Clear console log", Logs.Clear);
-            Commands.RegisterCommand("suggestions-context", "Switch suggestions context", SwitchContext);
-        }
-
-        [DebugCommand(Name = "theme", Description = "Set console theme at runtime. Pass index or name of wanted UITheme listed in DebugConsole Themes list")]
+        [DebugCommand(Name = "console.theme", Description = "Set console theme at runtime. Pass index or name of wanted UITheme listed in DebugConsole Themes list")]
         private void SetConsoleTheme(
             [OptAltNames("i")]
             int index = -1,
@@ -448,8 +301,8 @@ Enter ""list"" to print all registered commands
             }
             else
             {
-                if ((Input.GetKeyDown(KeyCode.UpArrow) && _commandsHistory.TryMoveUp(out var command))
-                || (Input.GetKeyDown(KeyCode.DownArrow) && _commandsHistory.TryMoveDown(out command)))
+                if ((Input.GetKeyDown(KeyCode.UpArrow) && CommandsHistory.TryMoveUp(out var command))
+                || (Input.GetKeyDown(KeyCode.DownArrow) && CommandsHistory.TryMoveDown(out command)))
                 {
                     _input.text = command;
                     _input.caretPosition = _input.text.Length;
@@ -457,6 +310,10 @@ Enter ""list"" to print all registered commands
             }
         }
 
+        [DebugCommand(Description = "Clear console logs")]
+        private void Clear() => Logs.Clear();
+
+        [DebugCommand(Name = "suggestions-context", Description = "Switch suggestions context")]
         private void SwitchContext()
         {
             if (SuggestionsContext == _historyContext)
@@ -580,38 +437,38 @@ Enter ""list"" to print all registered commands
                 public TValue Value;
             }
         }
+    }
 
-        private class UnityLogger : ILogger
+    internal class UnityLogger : ILogger
+    {
+        private readonly ConsoleLogType _consoleLogType;
+
+        public UnityLogger(ConsoleLogType consoleLogType)
+            => _consoleLogType = consoleLogType;
+
+        public void LogReturnValue(object value, UnityEngine.Object context = null)
         {
-            private readonly ConsoleLogType _consoleLogType;
+            var val = "";
+            if (value is string str)
+                val = str;
+            else if (value is IEnumerable enumerable)
+                val = "[" + string.Join(", ", enumerable.Cast<object>().Select(o => o?.ToString())) + "]";
+            else if (value is IEnumerator enumerator)
+                val = "[" + string.Join(", ", AsEnumerable(enumerator).Select(o => o?.ToString())) + "]";
+            else
+                val = value?.ToString();
 
-            public UnityLogger(ConsoleLogType consoleLogType)
-                => _consoleLogType = consoleLogType;
+            Debug.Log($"[console:{_consoleLogType}] {val}", context);
+        }
+        public void LogInfo(string message, UnityEngine.Object context) => Debug.Log($"[console:{_consoleLogType}] {message}", context);
+        public void LogWarning(string message, UnityEngine.Object context) => Debug.LogWarning($"[console:{_consoleLogType}] {message}", context);
+        public void LogError(string message, UnityEngine.Object context) => Debug.LogError($"[console:{_consoleLogType}] {message}", context);
+        public void LogException(Exception exception, UnityEngine.Object context) => Debug.LogException(new Exception($"[console:{_consoleLogType}] {exception.Message}", exception), context);
 
-            public void LogReturnValue(object value, UnityEngine.Object context = null)
-            {
-                var val = "";
-                if (value is string str)
-                    val = str;
-                else if (value is IEnumerable enumerable)
-                    val = "[" + string.Join(", ", enumerable.Cast<object>().Select(o => o?.ToString())) + "]";
-                else if (value is IEnumerator enumerator)
-                    val = "[" + string.Join(", ", AsEnumerable(enumerator).Select(o => o?.ToString())) + "]";
-                else
-                    val = value?.ToString();
-
-                Debug.Log($"[console:{_consoleLogType}] {val}", context);
-            }
-            public void LogInfo(string message, UnityEngine.Object context) => Debug.Log($"[console:{_consoleLogType}] {message}", context);
-            public void LogWarning(string message, UnityEngine.Object context) => Debug.LogWarning($"[console:{_consoleLogType}] {message}", context);
-            public void LogError(string message, UnityEngine.Object context) => Debug.LogError($"[console:{_consoleLogType}] {message}", context);
-            public void LogException(Exception exception, UnityEngine.Object context) => Debug.LogException(new Exception($"[console:{_consoleLogType}] {exception.Message}", exception), context);
-
-            private IEnumerable<object> AsEnumerable(IEnumerator enumerator)
-            {
-                while (enumerator.MoveNext())
-                    yield return enumerator.Current;
-            }
+        private IEnumerable<object> AsEnumerable(IEnumerator enumerator)
+        {
+            while (enumerator.MoveNext())
+                yield return enumerator.Current;
         }
     }
 

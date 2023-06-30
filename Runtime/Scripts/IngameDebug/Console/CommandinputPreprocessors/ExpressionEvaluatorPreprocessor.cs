@@ -54,10 +54,7 @@ namespace ANU.IngameDebug.Console
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void RegisterSelf() => DebugConsole.Preprocessors.Add(new ExpressionEvaluatorPreprocessor());
 
-        [DebugCommand(Name = "$", Description = @"Alias for Evaluate command
-You can call this command as nested command to pass expression as parameter. 
-Use: ""${expression}""
-For example: ""echo ${1+4}""")]
+        [DebugCommand(Name = "$", Description = @"Alias for evaluate command")]
         private static string EvaluateAlias(string expression) => Evaluate(expression);
 
         [DebugCommand(

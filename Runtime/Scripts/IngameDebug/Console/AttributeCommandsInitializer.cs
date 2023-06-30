@@ -8,6 +8,7 @@ using ANU.IngameDebug.Console.Commands.Implementations;
 using NDesk.Options;
 using UnityEngine;
 using System.Diagnostics;
+using ANU.IngameDebug.Console.Converters;
 
 namespace ANU.IngameDebug.Console
 {
@@ -15,14 +16,35 @@ namespace ANU.IngameDebug.Console
     {
         private void Start()
         {
-            DebugConsole.Logger.LogInfo($"Start searching {name} commands declared by attributes...");
+            var init = new AttributeCommandsInitializerProcessor(
+                DebugConsole.Logger,
+                DebugConsole.Commands
+            );
+            init.Initialize();
+        }
+    }
+
+    public class AttributeCommandsInitializerProcessor
+    {
+        public ILogger Logger { get; }
+        public ICommandsRegistry Commands { get; set; }
+
+        public AttributeCommandsInitializerProcessor(ILogger logger, ICommandsRegistry commands)
+        {
+            Commands = commands;
+            Logger = logger;
+        }
+
+        public void Initialize()
+        {
+            Logger.LogInfo($"Start searching commands declared by attributes...");
             var timer = StartLog(null);
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
             var timerMethods = StartLog("method");
 
-            DebugConsole.Commands.RegisterCommands(
+            Commands.RegisterCommands(
                 assemblies
                     .SelectMany(asm => asm.GetTypes())
                     .Where(t => typeof(UnityEngine.MonoBehaviour).IsAssignableFrom(t))
@@ -63,7 +85,7 @@ namespace ANU.IngameDebug.Console
 
             var timerProperty = StartLog("property");
 
-            DebugConsole.Commands.RegisterCommands(
+            Commands.RegisterCommands(
                 assemblies
                     .SelectMany(asm => asm.GetTypes())
                     .Where(t => typeof(UnityEngine.MonoBehaviour).IsAssignableFrom(t))
@@ -104,7 +126,7 @@ namespace ANU.IngameDebug.Console
 
             var timerfield = StartLog("field");
 
-            DebugConsole.Commands.RegisterCommands(
+            Commands.RegisterCommands(
                 assemblies
                     .SelectMany(asm => asm.GetTypes())
                     .Where(t => typeof(UnityEngine.MonoBehaviour).IsAssignableFrom(t))
@@ -144,24 +166,25 @@ namespace ANU.IngameDebug.Console
             Log(timerfield, "field");
 
             Log(timer, null);
-            var log = $"Searching {name} commands declared by attributes ended.\nOperation elapsed duration: {timer.Elapsed:ss's.'fff'ms'}, ticks: {timer.ElapsedTicks}";
+            var log = $"Searching commands declared by attributes ended.\nOperation elapsed duration: {timer.Elapsed:ss's.'fff'ms'}, ticks: {timer.ElapsedTicks}";
             if (timer.Elapsed.Seconds < 1)
-                DebugConsole.Logger.LogInfo(log);
+                Logger.LogInfo(log);
             else if (timer.Elapsed.Seconds < 2)
-                DebugConsole.Logger.LogWarning(log);
+                Logger.LogWarning(log);
             else
-                DebugConsole.Logger.LogError(log);
+                Logger.LogError(log);
         }
 
         private Stopwatch StartLog(string name)
         {
             if (name != null)
-                DebugConsole.Logger.LogInfo($"Start searching {name}...");
+                Logger.LogInfo($"Start searching {name}...");
 
             var timer = new System.Diagnostics.Stopwatch();
             timer.Start();
             return timer;
         }
+
         private void Log(Stopwatch timer, string name)
         {
             timer.Stop();
@@ -171,11 +194,11 @@ namespace ANU.IngameDebug.Console
 
             var log = $"Searching {name} ended. Operation elapsed duration: {timer.Elapsed:ss's.'fff'ms'}, ticks: {timer.ElapsedTicks}";
             if (timer.Elapsed.Seconds < 3)
-                DebugConsole.Logger.LogInfo(log);
+                Logger.LogInfo(log);
             else if (timer.Elapsed.Seconds < 5)
-                DebugConsole.Logger.LogWarning(log);
+                Logger.LogWarning(log);
             else
-                DebugConsole.Logger.LogError(log);
+                Logger.LogError(log);
         }
     }
 }
