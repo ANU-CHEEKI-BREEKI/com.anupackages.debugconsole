@@ -23,10 +23,13 @@ namespace ANU.IngameDebug.Console.Converters
         public HashSet<string> AvailableValues { get; set; }
     }
 
-    public interface ICommandsRegistry
+    public interface IReadOnlyCommandsRegistry
     {
         IReadOnlyDictionary<string, ADebugCommand> Commands { get; }
+    }
 
+    public interface ICommandsRegistry : IReadOnlyCommandsRegistry
+    {
         void RegisterCommands(params ADebugCommand[] commands);
         void RegisterCommand(ADebugCommand command);
 
@@ -57,9 +60,9 @@ namespace ANU.IngameDebug.Console.Converters
     {
         private readonly Dictionary<string, ADebugCommand> _commands = new();
 
-        public CommandsRegistry(ILogger logger) => Logger = logger;
+        public CommandsRegistry(IReadOnlyDebugConsoleProcessor context) => Context= context;
 
-        public ILogger Logger { get; }
+        private IReadOnlyDebugConsoleProcessor Context{ get; }
         public IReadOnlyDictionary<string, ADebugCommand> Commands => _commands;
 
         private class CommandMetaData : ICommandMetaData
@@ -84,7 +87,10 @@ namespace ANU.IngameDebug.Console.Converters
         public void RegisterCommand(ADebugCommand command)
         {
             _commands[command.Name] = command;
-            command.Logger = Logger;
+            command.Logger = Context.Logger;
+            
+            if(command is IInjectDebugConsoleContext consoleContext)
+                consoleContext.Context = Context;
         }
 
         public void RegisterCommand(string name, string description, Action command, Action<ICommandMetaData> metaDataCustomize = null)

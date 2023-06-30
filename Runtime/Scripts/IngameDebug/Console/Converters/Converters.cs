@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using ANU.IngameDebug.Console.CommandLinePreprocessors;
 using UnityEngine;
 
 namespace ANU.IngameDebug.Console.Converters
@@ -19,9 +20,10 @@ namespace ANU.IngameDebug.Console.Converters
         bool IConverter.CanConvert(System.Type type) => !type.IsArray;
     }
 
-    public abstract class VectorConverterBase : IInjectConverterRegistry
+    public abstract class VectorConverterBase : IInjectDebugConsoleContext
     {
-        public IReadOnlyConverterRegistry Converters { get; set; }
+        public IReadOnlyConverterRegistry Converters => Context?.Converters;
+        public IReadOnlyDebugConsoleProcessor Context { get; set; }
 
         /// <summary>
         /// pass count as null to take all available components
@@ -145,9 +147,10 @@ namespace ANU.IngameDebug.Console.Converters
         }
     }
 
-    public class QuaternionConverter : IConverter<Quaternion>, IInjectConverterRegistry
+    public class QuaternionConverter : IConverter<Quaternion>, IInjectDebugConsoleContext
     {
-        public IReadOnlyConverterRegistry Converters { get; set; }
+        public IReadOnlyConverterRegistry Converters => Context?.Converters;
+        public IReadOnlyDebugConsoleProcessor Context { get; set; }
 
         public Quaternion ConvertFromString(string option)
         {
@@ -156,9 +159,10 @@ namespace ANU.IngameDebug.Console.Converters
         }
     }
 
-    public class ColorConverter : IConverter<Color>, IInjectConverterRegistry
+    public class ColorConverter : IConverter<Color>, IInjectDebugConsoleContext
     {
-        public IReadOnlyConverterRegistry Converters { get; set; }
+        public IReadOnlyConverterRegistry Converters => Context?.Converters;
+        public IReadOnlyDebugConsoleProcessor Context { get; set; }
 
         private static readonly Dictionary<string, Color> byName = typeof(Color)
             .GetProperties(BindingFlags.Public | BindingFlags.Static)
@@ -191,9 +195,10 @@ namespace ANU.IngameDebug.Console.Converters
         }
     }
 
-    public class Color32Converter : IConverter<Color32>, IInjectConverterRegistry
+    public class Color32Converter : IConverter<Color32>, IInjectDebugConsoleContext
     {
-        public IReadOnlyConverterRegistry Converters { get; set; }
+        public IReadOnlyConverterRegistry Converters => Context?.Converters;
+        public IReadOnlyDebugConsoleProcessor Context { get; set; }
 
         public Color32 ConvertFromString(string option)
         {
@@ -269,9 +274,10 @@ namespace ANU.IngameDebug.Console.Converters
         }
     }
 
-    public class ListConverter : IConverter, IInjectConverterRegistry
+    public class ListConverter : IConverter, IInjectDebugConsoleContext
     {
-        public IReadOnlyConverterRegistry Converters { get; set; }
+        public IReadOnlyConverterRegistry Converters => Context?.Converters;
+        public IReadOnlyDebugConsoleProcessor Context { get; set; }
 
         Type IConverter.TargetType => typeof(List<>);
 

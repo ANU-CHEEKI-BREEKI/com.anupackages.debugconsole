@@ -6,9 +6,11 @@ using UnityEngine;
 
 namespace ANU.IngameDebug.Console
 {
-    public class NamedParametersPreprocessor : ICommandInputPreprocessor
+    public class NamedParametersPreprocessor : ICommandInputPreprocessor, IInjectDebugConsoleContext
     {
         public int Priority => 100;
+
+        public IReadOnlyDebugConsoleProcessor Context{ get; set; }
 
         public string Preprocess(string input)
         {
@@ -27,7 +29,7 @@ namespace ANU.IngameDebug.Console
 
             var commandName = commandLine.First();
 
-            if (!DebugConsole.Commands.Commands.TryGetValue(commandName, out var command))
+            if (!Context.Commands.Commands.TryGetValue(commandName, out var command))
                 return input;
 
             var namedParameters = commandLine.Skip(1).Zip(command.Options, (p, o) =>

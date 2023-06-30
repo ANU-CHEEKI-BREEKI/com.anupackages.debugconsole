@@ -8,13 +8,16 @@ namespace ANU.IngameDebug.Console.CommandLinePreprocessors
         string Preprocess(string input);
     }
 
-    public interface ICommandInputPreprocessorRegistry
+    public interface IReadOnlyCommandInputPreprocessorRegistry
+    {
+        string Preprocess(string input);
+    }
+
+    public interface ICommandInputPreprocessorRegistry : IReadOnlyCommandInputPreprocessorRegistry
     {
         IReadOnlyList<ICommandInputPreprocessor> Preprocessors { get; }
 
         void Add(ICommandInputPreprocessor preprocessor);
         bool Remove(ICommandInputPreprocessor preprocessor);
-
-        string Preprocess(string input);
     }
 }

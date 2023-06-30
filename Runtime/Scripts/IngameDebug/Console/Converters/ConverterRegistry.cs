@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ANU.IngameDebug.Console.CommandLinePreprocessors;
 
 namespace ANU.IngameDebug.Console.Converters
 {
@@ -8,19 +9,28 @@ namespace ANU.IngameDebug.Console.Converters
     {
         private readonly Dictionary<Type, IConverter> _converters = new();
 
-        public ConverterRegistry(ILogger logger)
-            => Logger = logger;
+        public ConverterRegistry(DebugConsoleProcessor context) => Context = context;
 
-        public ILogger Logger { get; }
+        public DebugConsoleProcessor Context { get; }
 
         public void Register<T>(Func<string, T> converter)
             => Register<T>(new LambdaConverter<T>(converter));
 
         public void Register<T>(IConverter<T> converter)
-            => _converters[typeof(T)] = converter;
+        {
+            if (converter is IInjectDebugConsoleContext consoleContext)
+                consoleContext.Context = Context;
+
+            _converters[typeof(T)] = converter;
+        }
 
         public void Register(IConverter converter)
-            => _converters[converter.TargetType] = converter;
+        {
+            if (converter is IInjectDebugConsoleContext consoleContext)
+                consoleContext.Context = Context;
+
+            _converters[converter.TargetType] = converter;
+        }
 
         public T Convert<T>(string option)
             => (T)Convert(typeof(T), option);
@@ -34,26 +44,11 @@ namespace ANU.IngameDebug.Console.Converters
                 throw new ArgumentNullException(nameof(option));
 
             if (_converters.TryGetValue(type, out var converter) && converter.CanConvert(type))
-            {
-                if (converter is IInjectConverterRegistry injectRegistry)
-                    injectRegistry.Converters = this;
-
-                if (converter is IInjectLogger injectLogger)
-                    injectLogger.Logger = Logger;
                 return converter.ConvertFromString(option, type);
-            }
 
             converter = _converters.Values.OrderBy(v => v.Priority).FirstOrDefault(w => w.CanConvert(type));
             if (converter != null)
-            {
-                if (converter is IInjectLogger injectLogger)
-                    injectLogger.Logger = Logger;
-
-                if (converter is IInjectConverterRegistry injectRegistry)
-                    injectRegistry.Converters = this;
-
                 return converter.ConvertFromString(option, type);
-            }
 
             throw new NotSupportedException($"There are no registered converter which can convert {type}");
         }

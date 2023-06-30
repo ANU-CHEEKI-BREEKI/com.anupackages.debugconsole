@@ -14,13 +14,23 @@ using ANU.IngameDebug.Utils;
 
 namespace ANU.IngameDebug.Console
 {
-    public class DefinesPreprocessor : ICommandInputPreprocessor
+    public class DefinesPreprocessor : ICommandInputPreprocessor, IInjectDebugConsoleContext
     {
         private readonly Regex _defineNameRegex = new(@"(?<name>#[\w\d\-\._]+?)(?![\w\d\-\._])");
 
         private int _forceProcess;
+        private IReadOnlyDebugConsoleProcessor _context;
 
         int ICommandInputPreprocessor.Priority => 500;
+        public IReadOnlyDebugConsoleProcessor Context
+        {
+            get => _context;
+            set
+            {
+                _context = value;
+                _context.InstanceTargets.Register(this);
+            }
+        }
 
         public string Preprocess(string input)
         {
@@ -30,7 +40,7 @@ namespace ANU.IngameDebug.Console
             if (_forceProcess <= 0 && input.StartsWith("#"))
             {
                 var name = input.SplitCommandLine().FirstOrDefault();
-                if (DebugConsole.Commands.Commands.ContainsKey(name))
+                if (Context.Commands.Commands.ContainsKey(name))
                     return input;
             }
 
@@ -50,8 +60,8 @@ namespace ANU.IngameDebug.Console
                             {
                                 _forceProcess++;
 
-                                if (DebugConsole.Defines.Defines.TryGetValue(m.Value.Trim('"').Trim('#'), out var val))
-                                    return DebugConsole.Preprocessors.Preprocess(val);
+                                if (Context.Defines.Defines.TryGetValue(m.Value.Trim('"').Trim('#'), out var val))
+                                    return Context.Preprocessors.Preprocess(val);
                                 else
                                     return m.Value;
                             }
@@ -78,9 +88,9 @@ namespace ANU.IngameDebug.Console
             Description = @"Print defined value without evaluation.
 You can use this command as ""#name"" or ""# name"""
         )]
-        private static string EchoDefine(string name)
+        private string EchoDefine(string name)
         {
-            if (DebugConsole.Defines.Defines.TryGetValue(name.Trim('#'), out var val))
+            if (Context.Defines.Defines.TryGetValue(name.Trim('#'), out var val))
                 return val;
 
             throw new Exception($"{name} not defined");
@@ -91,25 +101,25 @@ You can use this command as ""#name"" or ""# name"""
             Description = @"Define custom value by given name.
 Later you can enter ""#name"" as parameter and name will be replaced by actual defined value"
         )]
-        private static void Define(string name, string value)
-            => DebugConsole.Defines.Add(name, value);
+        private void Define(string name, string value)
+            => Context.Defines.Add(name, value);
 
         [DebugCommand(Name = "#undefine", Description = "Remove defined value with associated name")]
-        private static void Undefine(string name)
-            => DebugConsole.Defines.Remove(name);
+        private void Undefine(string name)
+            => Context.Defines.Remove(name);
 
         [DebugCommand(Name = "#clear", Description = "Clear all defined values")]
-        private static void DefinesClear() => DebugConsole.Defines.Clear();
+        private void DefinesClear() => Context.Defines.Clear();
 
         [DebugCommand(Name = "#list", Description = "Print all defined values")]
-        private static string DefinesList()
+        private string DefinesList()
         {
-            if (!DebugConsole.Defines.Defines.Any())
+            if (!Context.Defines.Defines.Any())
                 return "There are no defines defined";
 
             var sb = new StringBuilder();
 
-            var nameLen = DebugConsole.Defines.Defines.Keys.Max(k => k.Length);
+            var nameLen = Context.Defines.Defines.Keys.Max(k => k.Length);
             var addSpace = 6;
             var lastPart = addSpace / 2f;
 
@@ -122,7 +132,7 @@ Later you can enter ""#name"" as parameter and name will be replaced by actual d
             sb.AppendLine("value");
             sb.AppendLine("___________________________________");
 
-            foreach (var item in DebugConsole.Defines.Defines)
+            foreach (var item in Context.Defines.Defines)
             {
                 var fulLen = nameLen + addSpace - item.Key.Length;
                 var secondHalf = lastPart;

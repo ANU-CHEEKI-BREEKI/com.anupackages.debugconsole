@@ -7,7 +7,18 @@ using UnityEngine;
 
 namespace ANU.IngameDebug.Console
 {
-    public class DebugConsoleProcessor
+    public interface IReadOnlyDebugConsoleProcessor
+    {
+        IReadOnlyConverterRegistry Converters { get; }
+        IReadOnlyCommandInputPreprocessorRegistry Preprocessors { get; }
+        IReadOnlyCommandsRegistry Commands { get; }
+
+        IInstancesTargetRegistry InstanceTargets { get; }
+        IDefinesRegistry Defines { get; }
+        ILogger Logger { get; }
+    }
+
+    public class DebugConsoleProcessor : IReadOnlyDebugConsoleProcessor
     {
         public ICommandsRouter Router { get; set; } = null;
         public bool ShowLogs { get; set; } = true;
@@ -22,14 +33,18 @@ namespace ANU.IngameDebug.Console
         internal CommandLineHistory CommandsHistory { get; } = new CommandLineHistory();
         internal ILogger InputLogger { get; }
 
+        IReadOnlyConverterRegistry IReadOnlyDebugConsoleProcessor.Converters => Converters;
+        IReadOnlyCommandInputPreprocessorRegistry IReadOnlyDebugConsoleProcessor.Preprocessors => Preprocessors;
+        IReadOnlyCommandsRegistry IReadOnlyDebugConsoleProcessor.Commands => Commands;
+
         public DebugConsoleProcessor()
         {
             InputLogger = new UnityLogger(ConsoleLogType.Input);
             Logger = new UnityLogger(ConsoleLogType.Output);
 
-            Commands = new CommandsRegistry(Logger);
-            Converters = new ConverterRegistry(Logger);
-            Preprocessors = new CommandInputPreprocessorRegistry(Logger);
+            Commands = new CommandsRegistry(this);
+            Converters = new ConverterRegistry(this);
+            Preprocessors = new CommandInputPreprocessorRegistry(this);
         }
 
         public void Initialize()
@@ -161,6 +176,9 @@ Enter ""list"" to print all registered commands
             Preprocessors.Add(new BracketsToStringPreprocessor());
             Preprocessors.Add(new NamedParametersPreprocessor());
             Preprocessors.Add(new DefinesPreprocessor());
+#if USE_NCALC
+            Preprocessors.Add(new ExpressionEvaluatorPreprocessor());
+#endif
         }
 
         private void SetUpConverters()

@@ -142,7 +142,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                     options.Add(
                         "targets|t:",
                         "Provide targets for instances command. This has highest priority over any `InstanceTargetType`",
-                        inputString => _dynamicInstances = DebugConsole.Converters.Convert(
+                        inputString => _dynamicInstances = Context.Converters.Convert(
                             _member.DeclaringType.MakeArrayType(),
                             inputString?.Trim('"')?.Trim('\'') ?? ""
                         ) as object[]
@@ -216,7 +216,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                     targets = new object[] { target };
                     break;
                 case InstanceTargetType.Registry:
-                    targets = DebugConsole.InstanceTargets.Get(_member.DeclaringType);
+                    targets = Context.InstanceTargets.Get(_member.DeclaringType);
                     break;
                 default:
                     throw new System.NotImplementedException();
@@ -328,7 +328,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                     {
                         _parameterValues[parameterIndex] = isFlag
                             ? value != null
-                            : DebugConsole.Converters.Convert(parameter.ParameterType, value);
+                            : Context.Converters.Convert(parameter.ParameterType, value);
 
                         _isParameterValid[parameterIndex] = true;
                     }
@@ -420,7 +420,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                 else
                 {
                     _invokeType = InvikeType.Set;
-                    _parameterValue = DebugConsole.Converters.Convert(_parameterType, value);
+                    _parameterValue = Context.Converters.Convert(_parameterType, value);
                 }
             });
 
