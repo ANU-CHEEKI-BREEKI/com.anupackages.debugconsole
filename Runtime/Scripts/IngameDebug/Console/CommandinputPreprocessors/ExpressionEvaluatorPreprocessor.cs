@@ -62,13 +62,11 @@ For example: ""echo ${1+4}""")]
 
         [DebugCommand(
             Name = "$evaluate",
-            Description = @"Evaluate expression
-You can call this command as nested command to pass expression as parameter. 
-Use short syntax for this command: ""${expression}""
-For example: ""echo ${1+4}""")]
+            Description = @"Evaluate expression")]
         private static string Evaluate(
             [OptDesc(@"String expression. For example: ""5 * (2 + 3) / 2""")]
             string expression,
+            [OptDesc(@"Do not print any Log messages")]
             bool silent = false
         )
         {
