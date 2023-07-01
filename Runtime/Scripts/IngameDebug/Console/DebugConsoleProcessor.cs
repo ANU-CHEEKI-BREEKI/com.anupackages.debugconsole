@@ -183,7 +183,7 @@ Enter ""list"" to print all registered commands
 
         private void SetUpConverters()
         {
-            Converters.Register(new BaseConveerter());
+            Converters.Register(new BaseConverter());
             Converters.Register(new ArrayConverter());
             Converters.Register(new ListConverter());
             Converters.Register(new Vector2IntConverter());

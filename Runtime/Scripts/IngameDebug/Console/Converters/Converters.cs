@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace ANU.IngameDebug.Console.Converters
 {
-    public class BaseConveerter : IConverter
+    public class BaseConverter : IConverter
     {
         int IConverter.Priority => int.MaxValue;
         public Type TargetType => typeof(object);
@@ -185,10 +185,10 @@ namespace ANU.IngameDebug.Console.Converters
             }
             catch { }
 
-            if (ColorUtility.TryParseHtmlString(option, out var color))
+            if (byName.TryGetValue(option.ToLower(), out var color))
                 return color;
 
-            if (byName.TryGetValue(option.ToLower(), out color))
+            if (ColorUtility.TryParseHtmlString(option, out color))
                 return color;
 
             throw new System.Exception($"Cant convert Color from input: {option}");
