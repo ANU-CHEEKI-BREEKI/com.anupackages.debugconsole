@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -99,5 +100,7 @@ namespace ANU.IngameDebug.Console.Editor.Tests
 
         [Test] public void Echo_Arr_Vec2_Dif() => Echo(new Vector2[] { new Vector2(0.2f, 5), new Vector2(35.4f, 29) }, "arr-vec2", "((0.2, 5) (35.4, 29))");
         [Test] public void Echo_List_Vec2_Dif() => Echo(new List<Vector2> { new Vector2(0.2f, 5), new Vector2(35.4f, 29) }, "list-vec2", "((0.2, 5) (35.4, 29))");
+
+        [Test] public void Echo_Arr_Empty() => Echo(Array.Empty<int>(), "arr-int", "()");
     }
 }
