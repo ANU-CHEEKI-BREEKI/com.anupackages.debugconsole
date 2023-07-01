@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -151,6 +152,117 @@ namespace ANU.IngameDebug.Utils
             for (int i = 0; i < framesCount; i++)
                 yield return null;
             method?.Invoke();
+        }
+
+        public enum ColumnAlignment
+        {
+            //
+            // Summary:
+            //     Text lines are aligned on the left side.
+            Left = 0,
+            //
+            // Summary:
+            //     Text lines are centered.
+            Center = 1,
+            //
+            // Summary:
+            //     Text lines are aligned on the right side.
+            Right = 2
+        }
+
+        public static StringBuilder PrintTable<T>(this StringBuilder sb, IEnumerable<T> items, IEnumerable<string> getTitle, Func<T, IEnumerable<string>> getRow, IEnumerable<ColumnAlignment> alignment = null, IEnumerable<int> extraSpaceLeft = null, IEnumerable<int> extraSpaceRight = null)
+        {
+            if (sb is null)
+                throw new ArgumentNullException(nameof(sb));
+
+            if (items is null)
+                throw new ArgumentNullException(nameof(items));
+
+            if (getTitle is null)
+                throw new ArgumentNullException(nameof(getTitle));
+
+            if (getRow is null)
+                throw new ArgumentNullException(nameof(getRow));
+
+            var title = getTitle;
+            var rows = items.Select(i => getRow(i));
+
+            var titleLength = title
+                .Select((t, i) => rows
+                    .Select(r => r.ElementAt(i)).Prepend(t)
+                    .Max(l => l.Length)
+                )
+                .ToArray();
+
+            PrintRow(title);
+
+            sb.AppendLine();
+
+            var sum = titleLength.Sum() + titleLength.Count();
+            var esl = extraSpaceLeft?.Sum() ?? (titleLength.Count() * 2);
+            var esr = extraSpaceRight?.Sum() ?? (titleLength.Count() * 2);
+            sum += esl + esr;
+
+            for (int i = 0; i < sum; i++)
+                sb.Append("_");
+
+            foreach (var row in rows)
+            {
+                sb.AppendLine();
+
+                PrintRow(row);
+            }
+
+            return sb;
+
+            void PrintRow(IEnumerable<string> items)
+            {
+                var tLen = items.Zip(titleLength.Select((t, i) => new { length = t, index = i }), (t, l) => new { title = t, length = l });
+                foreach (var item in tLen)
+                {
+                    var t = item.title;
+                    var l = item.length.length;
+                    var index = item.length.index;
+
+                    var len = l - t.Length;
+                    var al = alignment?.ElementAtOrDefault(index) ?? ColumnAlignment.Left;
+
+                    var esl = extraSpaceLeft?.ElementAtOrDefault(index) ?? 2;
+                    var esr = extraSpaceRight?.ElementAtOrDefault(index) ?? 2;
+
+                    for (int i = 0; i < esl; i++)
+                        sb.Append(" ");
+
+                    if (al == ColumnAlignment.Right)
+                        for (int i = 0; i < len; i++)
+                            sb.Append(" ");
+
+                    if (al == ColumnAlignment.Center)
+                    {
+                        var l2 = len / 2;
+                        if (len % 2 != 0)
+                            l2++;
+
+                        for (int i = 0; i < l2; i++)
+                            sb.Append(" ");
+                    }
+
+                    sb.Append(item.title);
+
+                    if (al == ColumnAlignment.Left)
+                        for (int i = 0; i < len; i++)
+                            sb.Append(" ");
+
+                    if (al == ColumnAlignment.Center)
+                        for (int i = 0; i < len / 2; i++)
+                            sb.Append(" ");
+
+                    for (int i = 0; i < esr; i++)
+                        sb.Append(" ");
+
+                    sb.Append("|");
+                }
+            }
         }
     }
 }

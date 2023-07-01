@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using UnityEngine;
 using ANU.IngameDebug.Utils;
+using static ANU.IngameDebug.Utils.Extensions.ColumnAlignment;
+using static ANU.IngameDebug.Utils.Extensions;
 
 [assembly: RegisterDebugCommandTypes(typeof(DefinesPreprocessor))]
 
@@ -94,11 +96,7 @@ namespace ANU.IngameDebug.Console
             return input;
         }
 
-        [DebugCommand(
-            Name = "#echo",
-            Description = @"Print defined value without evaluation.
-You can use this command as ""#name"" or ""# name"""
-        )]
+        [DebugCommand(Name = "#echo", Description = @"Print defined value without evaluation")]
         private string EchoDefine(string name)
         {
             if (Context.Defines.Defines.TryGetValue(name.Trim('#'), out var val))
@@ -107,11 +105,7 @@ You can use this command as ""#name"" or ""# name"""
             throw new Exception($"{name} not defined");
         }
 
-        [DebugCommand(
-            Name = "#define",
-            Description = @"Define custom value by given name.
-Later you can enter ""#name"" as parameter and name will be replaced by actual defined value"
-        )]
+        [DebugCommand(Name = "#define", Description = @"Define custom value by given name")]
         private void Define(string name, string value)
             => Context.Defines.Add(name, value);
 
@@ -123,43 +117,22 @@ Later you can enter ""#name"" as parameter and name will be replaced by actual d
         private void DefinesClear() => Context.Defines.Clear();
 
         [DebugCommand(Name = "#list", Description = "Print all defined values")]
-        private string DefinesList()
+        private void DefinesList()
         {
             if (!Context.Defines.Defines.Any())
-                return "There are no defines defined";
+                Context.Logger.LogReturnValue("There are no any defines defined");
 
             var sb = new StringBuilder();
+            sb.AppendLine();
 
-            var nameLen = Context.Defines.Defines.Keys.Max(k => k.Length);
-            var addSpace = 6;
-            var lastPart = addSpace / 2f;
+            sb.PrintTable(
+                Context.Defines.Defines,
+                new string[] { "Define", "Value" },
+                item => new string[] { item.Key, item.Value },
+                new ColumnAlignment[] { Right, Left }
+            );
 
-            sb.Append(" define");
-            for (int i = 0; i < (nameLen - 3) / 2; i++)
-                sb.Append(" ");
-            sb.Append("|");
-            for (int i = 0; i < (nameLen - 3) / 2; i++)
-                sb.Append(" ");
-            sb.AppendLine("value");
-            sb.AppendLine("___________________________________");
-
-            foreach (var item in Context.Defines.Defines)
-            {
-                var fulLen = nameLen + addSpace - item.Key.Length;
-                var secondHalf = lastPart;
-                var firstHalf = fulLen - lastPart;
-
-                sb.Append("#");
-                sb.Append(item.Key);
-                for (int i = 0; i < firstHalf; i++)
-                    sb.Append(" ");
-                sb.Append("|");
-                for (int i = 0; i < secondHalf; i++)
-                    sb.Append(" ");
-                sb.AppendLine(item.Value);
-            }
-
-            return sb.ToString();
+            Context.Logger.LogReturnValue(sb);
         }
     }
 

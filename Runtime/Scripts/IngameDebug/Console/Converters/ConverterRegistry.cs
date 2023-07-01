@@ -1,7 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ANU.IngameDebug.Console.CommandLinePreprocessors;
+using System.Text;
+using ANU.IngameDebug.Console;
+using ANU.IngameDebug.Console.Converters;
+using ANU.IngameDebug.Utils;
+using static ANU.IngameDebug.Utils.Extensions;
+using static ANU.IngameDebug.Utils.Extensions.ColumnAlignment;
+
+[assembly: RegisterDebugCommandTypes(typeof(ConverterRegistry))]
 
 namespace ANU.IngameDebug.Console.Converters
 {
@@ -9,7 +16,11 @@ namespace ANU.IngameDebug.Console.Converters
     {
         private readonly Dictionary<Type, IConverter> _converters = new();
 
-        public ConverterRegistry(DebugConsoleProcessor context) => Context = context;
+        public ConverterRegistry(DebugConsoleProcessor context)
+        {
+            Context = context;
+            Context.InstanceTargets.Register(this);
+        }
 
         public DebugConsoleProcessor Context { get; }
 
@@ -84,6 +95,28 @@ namespace ANU.IngameDebug.Console.Converters
             }
 
             public T ConvertFromString(string option) => _lambda.Invoke(option);
+        }
+
+        [DebugCommand]
+        public void ListRegisteredConverters()
+        {
+            if (!_converters.Any())
+            {
+                Context.Logger.LogReturnValue("There are no any registered converters");
+                return;
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine();
+
+            sb.PrintTable(
+                _converters,
+                new string[] { "Type", "Converter Type" },
+                item => new string[] { item.Key.Name, item.Value.GetType().Name },
+                new ColumnAlignment[] { Right, Left }
+            );
+
+            Context.Logger.LogReturnValue(sb);
         }
     }
 }
