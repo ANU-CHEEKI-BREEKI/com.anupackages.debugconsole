@@ -10,6 +10,7 @@ namespace ANU.IngameDebug.Console.Converters
         bool CanConvert<TFrom>() => CanConvert(typeof(TFrom));
         bool CanConvert(Type type) => TargetType.IsAssignableFrom(type);
 
+        string ConvertToString(object obj, Type targetType) => obj?.ToString();
         object ConvertFromString(string option, Type targetType);
     }
 
@@ -18,13 +19,17 @@ namespace ANU.IngameDebug.Console.Converters
         Type IConverter.TargetType => typeof(T);
         object IConverter.ConvertFromString(string option, Type targetType) => ConvertFromString(option);
 
+        string ConvertToString(T value) => ConvertToString(value as object, typeof(T));
         T ConvertFromString(string option);
     }
 
     public interface IReadOnlyConverterRegistry
     {
-        T Convert<T>(string option);
-        object Convert(Type type, string option);
+        string ConvertToString<T>(T value);
+        string ConvertToString(Type type, object value);
+
+        T ConvertFromString<T>(string option);
+        object ConvertFromString(Type type, string option);
     }
 
     public interface IConverterRegistry : IReadOnlyConverterRegistry

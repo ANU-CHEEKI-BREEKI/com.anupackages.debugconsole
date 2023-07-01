@@ -56,7 +56,7 @@ namespace ANU.IngameDebug.Console.Converters
             var components = option
                 //TODO: prevent splitting array of string values
                 .Split(new char[] { ' ', ',' }, System.StringSplitOptions.RemoveEmptyEntries)
-                .Select(c => Converters.Convert(type, c));
+                .Select(c => Converters.ConvertFromString(type, c));
 
             if (count == null)
                 return components;
@@ -154,7 +154,7 @@ namespace ANU.IngameDebug.Console.Converters
 
         public Quaternion ConvertFromString(string option)
         {
-            var euler = Converters.Convert<Vector3>(option);
+            var euler = Converters.ConvertFromString<Vector3>(option);
             return Quaternion.Euler(euler);
         }
     }
@@ -173,14 +173,14 @@ namespace ANU.IngameDebug.Console.Converters
         {
             try
             {
-                var v4 = Converters.Convert<Vector4>(option);
+                var v4 = Converters.ConvertFromString<Vector4>(option);
                 return new Color(v4.x, v4.y, v4.z, v4.w);
             }
             catch { }
 
             try
             {
-                var v3 = Converters.Convert<Vector3>(option);
+                var v3 = Converters.ConvertFromString<Vector3>(option);
                 return new Color(v3.x, v3.y, v3.z);
             }
             catch { }
@@ -202,7 +202,7 @@ namespace ANU.IngameDebug.Console.Converters
 
         public Color32 ConvertFromString(string option)
         {
-            var color = Converters.Convert<Color>(option);
+            var color = Converters.ConvertFromString<Color>(option);
             return new Color32((byte)(color.r * 255), (byte)(color.g * 255), (byte)(color.b * 255), (byte)(color.a * 255));
         }
     }
@@ -288,7 +288,7 @@ namespace ANU.IngameDebug.Console.Converters
         object IConverter.ConvertFromString(string option, System.Type targetType)
         {
             var array = Converters
-                .Convert(
+                .ConvertFromString(
                     targetType.GenericTypeArguments[0].MakeArrayType(),
                     option
                 ) as Array;

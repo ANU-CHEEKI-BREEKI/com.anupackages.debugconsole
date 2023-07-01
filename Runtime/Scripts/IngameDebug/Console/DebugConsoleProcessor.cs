@@ -9,13 +9,15 @@ namespace ANU.IngameDebug.Console
 {
     public interface IReadOnlyDebugConsoleProcessor
     {
-        IReadOnlyConverterRegistry Converters { get; }
-        IReadOnlyCommandInputPreprocessorRegistry Preprocessors { get; }
-        IReadOnlyCommandsRegistry Commands { get; }
+        IConverterRegistry Converters { get; }
+        ICommandInputPreprocessorRegistry Preprocessors { get; }
+        ICommandsRegistry Commands { get; }
 
         IInstancesTargetRegistry InstanceTargets { get; }
         IDefinesRegistry Defines { get; }
         ILogger Logger { get; }
+
+        ExecutionResult ExecuteCommand(string commandLine, bool silent = false);
     }
 
     public class DebugConsoleProcessor : IReadOnlyDebugConsoleProcessor
@@ -32,10 +34,6 @@ namespace ANU.IngameDebug.Console
 
         internal CommandLineHistory CommandsHistory { get; } = new CommandLineHistory();
         internal ILogger InputLogger { get; }
-
-        IReadOnlyConverterRegistry IReadOnlyDebugConsoleProcessor.Converters => Converters;
-        IReadOnlyCommandInputPreprocessorRegistry IReadOnlyDebugConsoleProcessor.Preprocessors => Preprocessors;
-        IReadOnlyCommandsRegistry IReadOnlyDebugConsoleProcessor.Commands => Commands;
 
         public DebugConsoleProcessor()
         {
@@ -176,6 +174,7 @@ Enter ""list"" to print all registered commands
             Preprocessors.Add(new BracketsToStringPreprocessor());
             Preprocessors.Add(new NamedParametersPreprocessor());
             Preprocessors.Add(new DefinesPreprocessor());
+            Preprocessors.Add(new NestedCommandsPreprocessor());
 #if USE_NCALC
             Preprocessors.Add(new ExpressionEvaluatorPreprocessor());
 #endif

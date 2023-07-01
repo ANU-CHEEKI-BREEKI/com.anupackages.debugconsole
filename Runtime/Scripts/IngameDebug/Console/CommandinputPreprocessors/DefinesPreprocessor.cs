@@ -50,34 +50,45 @@ namespace ANU.IngameDebug.Console
             using (var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2)))
             using (var waiter = new AutoResetEvent(false))
             {
-                ThreadPool.QueueUserWorkItem(obj =>
+                var queued = ThreadPool.QueueUserWorkItem(obj =>
                 {
-                    while (_defineNameRegex.IsMatch(input) && !tokenSource.IsCancellationRequested)
+                    try
                     {
-                        input = _defineNameRegex.Replace(input, m =>
+                        while (_defineNameRegex.IsMatch(input) && !tokenSource.IsCancellationRequested)
                         {
-                            try
+                            input = _defineNameRegex.Replace(input, m =>
                             {
-                                _forceProcess++;
+                                try
+                                {
+                                    _forceProcess++;
 
-                                if (Context.Defines.Defines.TryGetValue(m.Value.Trim('"').Trim('#'), out var val))
-                                    return Context.Preprocessors.Preprocess(val);
-                                else
-                                    return m.Value;
-                            }
-                            finally
-                            {
-                                _forceProcess--;
-                            }
-                        });
+                                    if (Context.Defines.Defines.TryGetValue(m.Value.Trim('"').Trim('#'), out var val))
+                                        return Context.Preprocessors.Preprocess(val);
+                                    else
+                                        return m.Value;
+                                }
+                                finally
+                                {
+                                    _forceProcess--;
+                                }
+                            });
+                        }
                     }
-                    waiter.Set();
+                    catch
+                    {
+                        tokenSource.Cancel();
+                    }
+                    finally
+                    {
+                        waiter.Set();
+                    }
                 });
 
-                waiter.WaitOne();
+                if (queued)
+                    waiter.WaitOne();
 
                 if (tokenSource.IsCancellationRequested)
-                    Debug.LogWarning($"Define replaceing timeout hitted. End result are invalid: {input}");
+                    Context.Logger.LogWarning($"Define replaceing timeout hitted. End result are invalid: {input}");
             }
 
             return input;
