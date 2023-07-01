@@ -1,4 +1,4 @@
-## com.anupackages.debugconsole
+# com.anupackages.debugconsole
 *Advanced in-game console for Unity 3D, which replicates Windows cmd.*
 
 <img width="432" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/373256d9-ea6e-479f-a8ae-e29c0c3c55e8">
@@ -13,7 +13,7 @@
 - [License](#License)
 
 
-## ATTENTION
+# ATTENTION
 
 This Asset is depends of other [repo](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.ndesk-options), which is redistribution of MIT licensed C# options parser [NDesk.Options](http://gitweb.ndesk.org/?p=ndesk-options;a=summary) (looks like original repo already missed, but there is [original web page](http://www.ndesk.org/Options))
 
@@ -24,16 +24,21 @@ Optional dependency:
   - [NCalc](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.ncalc)
   - [ANTLR v4](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.antlr4)
 
-## About
+# About
 Provides easy way to create and invoke debug commands in game console at runtime.
 Also it displays console messages (logs, warnings, errors, exceptions, assertions) at runtime in a build.
 
 User interface is created with uGUI and packed in a single SpriteAtlas. 
-- Commands, parameters, parameters values autocomplete\
+
+- Commands, parameters, suggestions and auto complete\
   <img width="410" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/c2713c6b-a7b9-404a-a766-162f9b868192">
   <img width="204" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/caeed8f5-dc7c-47d6-892d-19547ea7c7b2">
   <img width="189" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/f195cd02-a642-435d-bbcc-fa09843f934d">
-  
+
+- #defines
+- Expression evaluation
+- Nested commands
+
 - Persistent commands history\
   <img width="410" alt="" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/2d4c2238-5036-4187-9854-2f0b4ee9001c">
 
@@ -45,7 +50,9 @@ User interface is created with uGUI and packed in a single SpriteAtlas.
   
 - It is possible to filter logs by search query ste same way as in UnityEditor console window.\
 
-## How to Install
+- Infinite scroll. Logs scroll list are recyclable. So you can have ponentially infinite amoung of logs in the console
+
+# How to Install
 
 - through Unity Package Manager
   - git url: `https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole.git`
@@ -69,12 +76,12 @@ Then you will be able to search all available packages directly in Unity Package
 - download sources as zip archive and import to your project
 - asset store?
   
-## Roadmap
+# Roadmap
 Each star ★ on the project page brings new features closer. You can suggest new features in the [Discussions](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/discussions).
 
-## How to use
+# How to use
 
-Supported parameter types and some syntax flexibility:
+## Supported parameter types and some syntax flexibility:
 - `string`
   - surround with `"` or `'`
 - `bool` (non case sensitive)
@@ -101,40 +108,46 @@ Supported parameter types and some syntax flexibility:
   - used `GameObject.Find` and filtered by `name` for Component types
   - can pass `null` (non case sensitive)
 
-
-### NCalc
-
-`ATTENTION:` to use ExpressionEvaluation install package:
-
-original repo: https://github.com/ncalc/ncalc
-
-
-### command line syntax
+## Basic command line syntax
 NDeskOptions + C# optional and named parameters style
-
 
 commands categories
 commands list
 UI and UI commands
-Infinite scroll
 
-### Attributes
+
+
+## Expression evaluation
+
+`ATTENTION:` to use ExpressionEvaluation install package:
+
+original repo: [NCalc](https://github.com/ncalc/ncalc)
+
+## #defines
+
+
+
+## Nested commands
+
+
+
+
+## Attributes
 
 InstanceTargetType
 
-#### Static 
-#### Instanced
+### Static 
+### Instanced
 
-### Direct registration
+## Direct registration
 
-### Custom converters
+# Advanced
 
+## Custom converters
 
-### public ILogger Logger { get; set; }
+## Custom commandline preprocessors
 
-### Custom commandline preprocessors
+## UI Themes
 
-### UI Themes
-
-## License
+# License
 [MIT licensed](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/blob/log-list/LICENCE.md).
