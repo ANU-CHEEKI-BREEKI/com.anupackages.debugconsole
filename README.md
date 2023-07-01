@@ -56,7 +56,8 @@ User interface is created with uGUI and packed in a single SpriteAtlas.
 
 - through Unity Package Manager
   - git url: `https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole.git`
-  - npm package: add following to your Scoped Registries
+    You will need to install all dependencies first, ohervice Unity Packake Manager wont allow to install package. So the next method is preffered
+  - ***npm package*** (*preffered method*): add following to your Scoped Registries
 ```
   "scopedRegistries": [
     {
@@ -72,6 +73,10 @@ User interface is created with uGUI and packed in a single SpriteAtlas.
 
 Then you will be able to search all available packages directly in Unity Package Manager window
 <img width="717" alt="Screenshot 2023-06-28 at 19 28 52" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/d8aa5f5c-8911-4d03-a648-2351083dc764">
+
+When installing package with dependencies theought regustries, all dependencies will be installed automatically.
+
+`Do note, that NCalc for Expression evaluations it an optional dependency. So if you want to use Expression evaluations, you need to install it manually.`
 
 - download sources as zip archive and import to your project
 - asset store?
