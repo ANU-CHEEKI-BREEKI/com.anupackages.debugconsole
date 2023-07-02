@@ -147,12 +147,67 @@ public class NonMonoBehaviorClass
 }
 ```
 
+
+
 There are a lot more [attributes available]().\ You can
-- Change command [name]()
-- Add command [description]()
-- Add method parameter [names alias]()
-- Add method parameter [description]()
-- Add parameters available values hint as [constant]() or [dynamic]() collections
+- Change command name [[DebugCommand(Name="name")]]()
+- Add command description [[DebugCommand(Description="desc")]]()
+- Add method parameter alternative names [[OptAltNames("h","?")]]()
+- Add method parameter description [[OptDesc("parameter description")]]()
+- Add parameters available values hint 
+  - as constant collection [[OptVal(v1, v2, v3)]]() 
+  - or dynamic collection [[OptValDynamic("list-values")]]()<br>
+  for dynamic values provider nested command execution are used<br>
+    <details>
+      <summary>Click to expand</summary>
+      
+      ```cs
+      [DebugCommand]
+      private static void LoadScene(
+          [OptAltNames("n")]
+          [OptDesc("Load scene by name")]
+          [OptValDynamic("default.list-scene-names")]
+          string name = "",
+          [OptAltNames("i")]
+          [OptDesc("Load scene by index")]
+          [OptValDynamic("default.list-scene-indices")]
+          int index = -1,
+          [OptAltNames("r")]
+          [OptDesc("Set only this flag to reload current scene")]
+          bool reload = false
+      )
+      {
+          if (!string.IsNullOrEmpty(name))
+              SceneManager.LoadScene(name);
+          else if (index >= 0)
+              SceneManager.LoadScene(index);
+          else if (reload)
+              SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+          else
+              throw new System.Exception("Pass at least one parameter");
+      }
+
+      [DebugCommand]
+      private static IEnumerable<string> ListSceneNames()
+          => ListSceneIndices().Select(i => SceneUtility
+              .GetScenePathByBuildIndex(i)
+              .Split('/')
+              .LastOrDefault()
+              ?.Split('.')
+              ?.FirstOrDefault()
+          );
+
+      [DebugCommand]
+      private static IEnumerable<int> ListSceneIndices()
+      {
+          var cnt = SceneManager.sceneCountInBuildSettings;
+          for (int i = 0; i < cnt; i++)
+              yield return i;
+      }
+      ```
+    </details>
+  
+
 
 ### Direct registration
 
