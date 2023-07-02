@@ -358,7 +358,7 @@ command 123 -f -h -p=12
 ```
 
 ## Supported parameter types:
-----
+
 - `string`
   - surround with `"` or `'`
 - `bool` (non case sensitive)
@@ -404,7 +404,6 @@ command 8
 - Mathf.PI, Mathf.Deg2Rad, Mathf.Rad2Deg constants are supported
 
 ## #defines
-----
 
 Defines, like C macros, allow you to create shorthands which will then be expanded before the command is parsed. Defines are defined using `#define` command in console command line or by `DebugConsole.Defines.Add` API
 
@@ -431,7 +430,6 @@ command 6
 ```
 
 ## Nested commands
-----
 You can surround expression in brackets `{}` to parse it like nested command. The expression will be invoked recursively, with its result bubbled up to the expression.
 
 ```cs
@@ -467,10 +465,125 @@ player.heal #hp25percent
 # Advanced
 
 ## Custom converters
+----
+You can add custom converters to support more types parsing.
 
-## Custom commandline preprocessors
+- For types hierarchy
+  - you should implement `IIConverter` interface
+
+```cs
+public class ComponentConverter : IConverter
+{
+    public Type TargetType => typeof(UnityEngine.Component);
+
+    object IConverter.ConvertFromString(string option, System.Type targetType)
+    {
+        if (option.ToLower() == "null")
+            return null;
+        
+        return GameObject
+          .FindObjectsOfType(targetType)
+          .FirstOrDefault(t => t.name == option);
+    }
+}
+```
+```cs
+Converters.Register(new ComponentConverter());
+```
+- for concrete type 
+  - you should implement `IConverter<T>`
+```cs
+public class BoolConverter : IConverter<bool>
+{
+    public bool ConvertFromString(string option)
+    {
+        switch (option.ToLower())
+        {
+            case "0":
+            case "false":
+            case "f":
+                return false;
+            case "1":
+            case "true":
+            case "t":
+                return true;
+            default:
+                throw new Exception($"Not a valid input for Boolean: {option}");
+        }
+    }
+}
+```
+```cs
+Converters.Register(new BoolConverter());
+```
+  - or you can use lambda converter
+```cs
+Converters.Register<bool>(option => option == "1" || option == "true" || option == "t");
+```
+
+## Custom command line preprocessor
+----
+You can write and register own `ICommandInputPreprocessor` implementation to extend command line syntax.
+After entered command recorded to the command history, but before the command parsed and executed it being proceeded by `DebugConsole.Preprocessors`.
+
+All implemented syntax extensions made by `ICommandInputPreprocessor` implementations:
+- arrays brackets support - `BracketsToStringPreprocessor`
+- unnamed parameters - `NamedParametersPreprocessor`
+- defies - `DefinesPreprocessor`
+- expression evaluations - `ExpressionEvaluatorPreprocessor`
+- nested commands - `NestedCommandsPreprocessor`
+
+Basically it just grabs the input. ang changed it that way to support already existing syntax.<br>
+For example `BracketsToStringPreprocessor` just surround `[]` or `()` brackets by `"`, and make it string parameter, so NDescOption can parse it and pass to corresponding parameter as single value, not splitting by whitespace.
+
+```cs
+public class BracketsToStringPreprocessor : ICommandInputPreprocessor
+{
+    private readonly Regex _regex = new Regex(@"(?<!""|')\s+(?<content>(\[.*?\])|(\(.*?\)))");
+
+    public string Preprocess(string input)
+    {
+        var matches = _regex.Matches(input);
+        input = _regex.Replace(input, @" ""${content}""");
+        return input;
+    }
+}
+```
+```cs
+DebugConsole.Processors.Add(new BracketsToStringPreprocessor());
+```
+
+## IInjectDebugConsoleContext
+----
+Sometimes you want to access already registered `Converters`, `Processors`, or even silently execute command from inside `IConverter`or `ICommandInputPreprocessor`. 
+
+Technically you can access it by `DebugConsole.Converters` or `DebugConsole.Processors`, but its not recommended due to static spaghetti code and inability to write unit tests.
+
+For that purpose implement `IInjectDebugConsoleContext` interface, and `IReadOnlyDebugConsoleProcessor` will be injected to  your converter or processor.
+
+***For example:*** there are implementation of `Color32Converter`. It just parse the input as Color and then uses it to construct Color32
+
+```cs
+public class Color32Converter : IConverter<Color32>, IInjectDebugConsoleContext
+{
+    IReadOnlyDebugConsoleProcessor IInjectDebugConsoleContext.Context { get; set; }
+    private IReadOnlyConverterRegistry Converters => Context.Converters;
+
+    public Color32 ConvertFromString(string option)
+    {
+        var color = Converters.ConvertFromString<Color>(option);
+        return new Color32(
+          (byte)(color.r * 255), 
+          (byte)(color.g * 255), 
+          (byte)(color.b * 255), 
+          (byte)(color.a * 255)
+        );
+    }
+}
+```
 
 ## UI Themes
+
 
 # Third party notices
 
