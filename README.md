@@ -86,6 +86,180 @@ Each star ★ on the project page brings new features closer. You can suggest ne
 
 # How to use
 
+## Adding Commands
+
+### Attributes
+See more attributes in the [wiki]()
+
+----
+
+- Simply add `[DebugCommand]` attribute to field, property ot method, and it will become the command accessible from the 
+console!
+- Add `[DebugCommandPrefix("prefix")]` attribute to the class which contains the commands, and all commands will have `prefix.` before their names
+
+***Example:***
+```cs
+using UnityEngine;
+using ANU.IngameDebug.Console;
+
+[DebugCommandPrefix("example")]
+public class MyScript : MonoBehaviour 
+{
+    [DebugCommand]
+    [SerializeField] private int _myField;    
+
+    [DebugCommand]
+    public int Property { get; set; }
+
+    [DebugCommand]
+    public void MethodWithParameters(int num, Vector4[] arr, bool flag = false){ }
+}
+```
+
+From the code above will be registered following commands:
+- `example.my-field [value]`
+- `example.property [value]`
+- `example.method-with-parameters num arr [flag]`
+
+Field and property commands has default optional parameter `value`.\
+If you call the command without parameter, command will  return field/property value.\
+If you pass the value, command will set this vale to field/property.
+
+By default, *DebugConsole* search end register commands only in types that inherit `MonoBehaviour`. If you want to declare your commands in any other type, you should register that type by declaring `[RegisterDebugCommandTypes]` attribute on the assembly. But in this case you should use only static commands or register instance of that type in `DebugConsole.InstanceTargets` registry. See more in [InstanceTargetType usage](#InstanceTargetType)
+
+```cs
+using UnityEngine;
+using ANU.IngameDebug.Console;
+
+[assembly: RegisterDebugCommandTypes(typeof(NonMonoBehaviorClass))]
+
+public class NonMonoBehaviorClass
+{
+  [DebugCommand]
+  public static void StaticMethod(){}
+  
+  [DebugCommand]
+  public void InstanceMethod(){}
+
+  [RuntimeInitializeOnLoadMethod]
+  private static void InitStatic() 
+    => DebugConsole.InstanceTargets.Register(new NonMonoBehaviorClass());
+}
+```
+
+There are a lot more [attributes available]().\ You can
+- Change command [name]()
+- Add command [description]()
+- Add method parameter [names alias]()
+- Add method parameter [description]()
+- Add parameters available values hint as [constant]() or [dynamic]() collections
+
+### Direct registration
+
+----
+
+You can also register commands dynamically by `DebugConsole API`
+
+Strongly typed
+---
+
+- Lambda commands:
+```cs
+DebugConsole.Commands.RegisterCommand<int, bool>("is-positive", "Is the number greater than 0", num => num > 0)
+DebugConsole.Commands.RegisterCommand<float>("time-scale", "Set time scale", value => Time.scale = value)
+```
+- Delegate commands (can be decorated by attributes, the same way as in [Attributes](#Attributes) section)
+```cs
+using System;
+using ANU.IngameDebug.Console;
+
+class NonMbClass
+{
+  [DebugCommand(Name="custom-name-instanced", Description="Custom description")]
+  public static void InstanceMethod(
+    [OptDesc("integer value in range [0; 3]")]
+    [OptAltNames("p")]
+    [OptVal(0, 1, 2, 3)]
+    int parameter
+  ){}
+
+  [DebugCommand(Name="custom-name-static", Description="Custom description")]
+  public static void StaticMethod(){}
+}
+```
+```cs
+var instance = new NonMbClass();
+DebugConsole.Commands.RegisterCommand(new Action<int>(instance.InstanceMethod))
+DebugConsole.Commands.RegisterCommand(new Action(NonMbClass.StaticMethod))
+```
+
+Weakly typed
+---
+
+- Method info
+```cs
+class MyClass
+{
+  public void MyMethod(int arg1, Quaternion arg2){}
+}
+```
+```cs
+var methodInfo = typeof(MyClass).GetMethod("MyMethod");
+DebugConsole.Commands.RegisterCommand("by-method-info", "desc", methodInfo, new MyClass());
+```
+
+- By static method name
+```cs
+class MyClass
+{
+  static void MyStaticMethod(int arg1, Quaternion arg2){}
+}
+```
+```cs
+DebugConsole.Commands.RegisterCommand("static-by-name", "desc", "MyStaticMethod", typeof(MyClass));
+```
+
+- By instance method name
+```cs
+class MyClass
+{
+  void MyMethod(int arg1, Quaternion arg2){}
+}
+```
+```cs
+var instance = new MyClass();
+DebugConsole.Commands.RegisterCommand("instanced-by-name", "desc", "MyMethod", instance);
+```
+
+#### ***Static commands***
+It is simplest case of the command. No instance ot type, where command declared, required to call the command.
+
+#### ***Instanced commands***
+
+When using `[DebugCommand]` attribute, all methods, properties and fields marked by this attribute and declared directly inside any MonoBehaviour automatically registered.\
+You can also use `[RegisterDebugCommandTypes]` attribute to register the non MonoBehaviour types, to find and register all commands declared inside that types.
+
+However, to call this commands, instance of type where commands declared is required.
+
+You can pass this instance directly in the console as command target (`For all instanced commands option names [--targets|t] are reserved for this purpose`), or you can let the *DebugConsole* to find the instances for you.
+
+There is an optional property `InstanceTargetType Target` in `[DebugCommand]` attribute, which let you to define how the target command instance should be found.
+
+#### ***InstanceTargetType***
+- **AllActive** - *DebugConsole* will use GameObject.Find to find all components on active game objects and call the command for each of them
+- **AllIncludingInactive** - *DebugConsole* will use GameObject.Find to find all components on active and inactive game objects and call the command for each of them
+- **FirstActive** - *DebugConsole* will use GameObject.Find to find first component on active game objects and call the command for it
+- **FirstIncludingInactive** - *DebugConsole* will use GameObject.Find to find first component on active or and inactive game objects and call the command for it
+- **Registry** - *DebugConsole* will search for instances of target type only in `DebugConsole.InstanceTargets` registry.\
+When the command declared inside non MonoBehaviour type, `InstanceTargetType.Registry` always be used, no matter what value you set in `DebugCommandAttribute.Target` property
+
+## Basic command line syntax
+NDeskOptions + C# optional and named parameters style
+
+commands categories
+commands list
+UI and UI commands
+
 ## Supported parameter types and some syntax flexibility:
 - `string`
   - surround with `"` or `'`
@@ -113,38 +287,15 @@ Each star ★ on the project page brings new features closer. You can suggest ne
   - used `GameObject.Find` and filtered by `name` for Component types
   - can pass `null` (non case sensitive)
 
-## Basic command line syntax
-NDeskOptions + C# optional and named parameters style
-
-commands categories
-commands list
-UI and UI commands
-
-
-
 ## Expression evaluation
 
-`ATTENTION:` to use ExpressionEvaluation install package:
+***ATTENTION:*** to use ExpressionEvaluation install package:
 
 original repo: [NCalc](https://github.com/ncalc/ncalc)
 
 ## #defines
 
-
-
 ## Nested commands
-
-
-
-
-## Attributes
-
-InstanceTargetType
-
-### Static 
-### Instanced
-
-## Direct registration
 
 # Advanced
 
@@ -153,6 +304,8 @@ InstanceTargetType
 ## Custom commandline preprocessors
 
 ## UI Themes
+
+# Third party notices
 
 # License
 [MIT licensed](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/blob/log-list/LICENCE.md).
