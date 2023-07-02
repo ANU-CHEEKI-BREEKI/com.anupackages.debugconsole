@@ -254,18 +254,116 @@ There is an optional property `InstanceTargetType Target` in `[DebugCommand]` at
 When the command declared inside non MonoBehaviour type, `InstanceTargetType.Registry` always be used, no matter what value you set in `DebugCommandAttribute.Target` property
 
 ## Basic command line syntax
-NDeskOptions + C# optional and named parameters style
 
-commands categories
-commands list
-UI and UI commands
+Basic syntax based is based on [NDeskOptions](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.ndesk-options) package, and was extended to to support unnamed parameters. From that point it becomes similar to `C# named parameters` syntax. 
 
-## Supported parameter types and some syntax flexibility:
+### Parameters
+----
+*Lest see the example command:*
+
+```cs
+using UnityEngine;
+using ANU.IngameDebug.Console;
+
+public class MyScript : MonoBehaviour 
+{
+    [DebugCommand]
+    public void Command(
+      int param1, 
+      [OptAltNames("p")]
+      float param2 = 1.5f, 
+      bool optionalBool = true,
+      [OptAltNames("f")]
+      bool firstFlag = false,
+      [OptAltNames("s")]
+      bool secondFlag = false,
+      // do note: t is reserved name for instanced commands. so use 2nd symbol as alt name
+      [OptAltNames("h")]
+      bool thirdFlag = false){ }
+}
+```
+
+That method are accessible from the console in syntax:
+```
+command param1 [param2|p=1.5] [optionalBool=true] [firstFlag|f] [secondFlag|s] [thirdFlag|h]
+```
+*You should pass all required parameters.<br>*
+*And you can skip optional parameters.<br>*
+***But you should use of the following rules:<br>***
+
+- pass all parameters without specifying parameter names in order they declared in the corresponding method<br>
+```
+command 123 12 false
+```
+is equivalent to C# code:
+```cs
+myScript.Command(123, 12, false);
+```
+- pass all parameters with parameter names, what allows you to pass them in any order.
+```
+command --param2=12, --param1=123 --optionalBool=false
+```
+is equivalent to C# code:
+```cs
+myScript.Command(param2: 12, param1: 123, optionalBool: false);
+```
+- combine two approaches like in C# named parameters:
+  1. pass any parameters count without names in same order that parameters declared in the method
+  1. pass other parameters in any order you want, specified their names
+  1. if any parameter passed with name - all following parameters must be passed with names too
+
+```
+command 123, --optionalBool=false, --param2=12
+```
+is equivalent to C# code:
+```cs
+myScript.Command(123, optionalBool: false, param2: 12);
+```
+
+### Flags
+---
+Optional boolean parameter with default value `false` are considered as a `flag`.
+It should be passed without specifying the value, since any different value from 'false' than you can pass is 'true'. <br>
+So you should just pass
+- flag name for named parameter
+- ANY not empty string for unnamed parameter
+
+so following commands are equivalent
+```
+command 123 --firstFlag --secondFlag --thirdFlag --param2=12, --optionalBool=false
+command 123 12 false a a a
+```
+where `a a a` can be anything. like `a b c` or `yes aha sure`<br>
+and equivalent to C# code
+```cs
+myScript.Command(123, firstFlag: true, secondFlag: true, thirdFlag: true, param2: 12, optionalBool: false);
+myScript.Command(123, 12, true, true, true, true);
+```
+
+### Bundled flags
+----
+If flag has single character alternative name, it can be used in [bundled](http://www.ndesk.org/Options) mode.<br>
+Bundled parameters must start with a single '-' and consists of a sequence of (optional) boolean flags followed by an (optional) parameter name nad followed by that parameter value. <br>
+
+In this manner these commands are equivalent:
+```cs
+command 123 -fh
+command 123 --firstFlag --thirdFlag
+command 123 -f -h
+```
+and 
+```cs
+command 123 -fhp12
+command 123 -f -h -p=12
+```
+
+## Supported parameter types:
+----
 - `string`
   - surround with `"` or `'`
 - `bool` (non case sensitive)
-  - true: `1`, `+`, `yes`, `y`, `approve`, `apply`, `on`
-  - false: `0`, `-`, `no`, `n`, `discard`, `cancel`, `off`
+  - true: `t, 1, yes, y, approve, apply, on`
+  - false: `f, 0, no, n, discard, cancel, off`
 - `Quaternion`
   - parsed as `Vector3` euler angles
 - `Color32`
@@ -275,27 +373,96 @@ UI and UI commands
   - parsed as `Vector4`
   - parsed as [HtmlString](https://docs.unity3d.com/ScriptReference/ColorUtility.TryParseHtmlString.html), for example `#RGB`, `#RRGGBBAA`, `red`, `cyan`, etc..
 - array or list
-  - `[]` or `()` are equivalented, so below listed samples for `[]` only
-  - `,` or ` ` as component delimiter: `[1, 2, 3]` or `[1 2 3]` or `[1  , 2   ,3   ]` are equivalented
-  - `[n]` or just `n` witout `[]`: single item `n`
-  - `[]`: empty colection
+  - `[]` or `()` are equivalent, so below listed samples for `[]` only
+  - `,` or ` ` as component delimiter: `[1, 2, 3]` or `[1 2 3]` or `[1  , 2   ,3   ]` are equivalent
+  - `[n]` or just `n` without `[]`: single item `n`
+  - `[]`: empty collection
 - vectors (`Vector2Int`, `Vector2`, `Vector3Int`, `Vector3`, `Vector4`)
-  - parced as array of fixed size
+  - parsed as array of fixed size
   - `[]`: all components equals zero
-  - `[n]` or just `n` witout `[]`: all components equals `n`
+  - `[n]` or just `n` without `[]`: all components equals `n`
 - GameObject and Component, any type inherited from Component
   - used `GameObject.Find` and filtered by `name` for Component types
   - can pass `null` (non case sensitive)
 
 ## Expression evaluation
 
-***ATTENTION:*** to use ExpressionEvaluation install package:
+***`ATTENTION:`*** to use ExpressionEvaluation install [NCalc package](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.ncalc).
 
-original repo: [NCalc](https://github.com/ncalc/ncalc)
+When ExpressionEvaluation installed, you can evaluate expressions directly in console command line. The syntax is similar to [Unity ExpressionEvaluator.Evaluate](https://docs.unity3d.com/ScriptReference/ExpressionEvaluator.Evaluate.html) which is used to evaluate expressions directly in inspector numeric fields. So if you have used this at least one time, you should be already familiar with this.
+
+***For example:*** following command line inputs are equivalent:
+```cs
+command --param1="(1 + 3)*(1 + 1)"
+command --param1=(1+3)*(1+1)
+command (1+3)*(1+1)
+command 8
+```
+
+- Subset of System.Math methods are supported (Log, Max, Min, Round, Abs, Sin, Cos [and many more](https://github.com/ncalc/ncalc/wiki/Functions))
+- UnityEngine.Mathf.Clamp and Clamp01 are supported
+- Mathf.PI, Mathf.Deg2Rad, Mathf.Rad2Deg constants are supported
 
 ## #defines
+----
+
+Defines, like C macros, allow you to create shorthands which will then be expanded before the command is parsed. Defines are defined using `#define` command in console command line or by `DebugConsole.Defines.Add` API
+
+```cs
+#define num 125
+```
+equivalent to C# code:
+```cs
+DebugConsole.Defines.Add("num", "125");
+```
+and 
+```cs
+#define num 125
+#define a 2
+#define b 4
+#define apb #a+#b
+command #num
+command #apb
+```
+equivalent to
+```cs
+command 125
+command 6
+```
 
 ## Nested commands
+----
+You can surround expression in brackets `{}` to parse it like nested command. The expression will be invoked recursively, with its result bubbled up to the expression.
+
+```cs
+[DebugCommandPrefix("player")]
+public class Player
+{
+  [DebugCommand]
+  [SerializedField] private float _hp = 10;
+  
+  [DebugCommand]
+  [SerializedField] public float MaxHp => 10;
+  
+  [DebugCommand]
+  public void Heal(float amount) => _hp += amount;
+
+  [DebugCommand]
+  public void InstanceMethod(){}
+}
+```
+
+Set player hp to max value:
+```
+player.hp {player.max-hp}
+```
+
+Define shortcut to calculate 25% of player max hp<br>
+And heal player by 25% of max value
+```
+#define hp25percent {player.max-hp}*0.25
+player.heal #hp25percent
+```
 
 # Advanced
 
