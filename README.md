@@ -125,7 +125,7 @@ Field and property commands has default optional parameter `value`.\
 If you call the command without parameter, command will  return field/property value.\
 If you pass the value, command will set this vale to field/property.
 
-By default, *DebugConsole* search end register commands only in types that inherit `MonoBehaviour`. If you want to declare your commands in any other type, you should register that type by declaring `[RegisterDebugCommandTypes]` attribute on the assembly. But in this case you should use only static commands or register instance of that type in `DebugConsole.InstanceTargets` registry. See more in [InstanceTargetType usage](#InstanceTargetType)
+By default, *DebugConsole* search end register commands only in types that inherit `MonoBehaviour`. If you want to declare your commands in any other type, you should register that type by declaring `[RegisterDebugCommandTypes]` attribute on the assembly. But in this case you should use only static commands or register instance of that type in `DebugConsole.InstanceTargets` registry. See more in [InstanceTargetType usage](#instanced-commands)
 
 ```cs
 using UnityEngine;
