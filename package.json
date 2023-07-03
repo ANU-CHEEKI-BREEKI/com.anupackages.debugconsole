@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "displayName": "ANU Ingame debug console",
   "description": "Provides easy way to create and invoke debug commands in game console",
-  "unity": "2021",
+  "unity": "2021.0",
   "keywords": [
     "unity3d",
     "upm",
