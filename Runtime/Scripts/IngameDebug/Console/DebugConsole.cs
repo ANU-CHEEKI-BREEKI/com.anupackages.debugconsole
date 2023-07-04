@@ -324,6 +324,12 @@ namespace ANU.IngameDebug.Console
             DisplaySuggestions(_input.text, forced: true);
         }
 
+        [DebugCommand("console.open")]
+        public static void Open() => Instance._content.SetActive(true);
+
+        [DebugCommand("console.close")]
+        public static void Close() => Instance._content.SetActive(false);
+
         private void DisplaySuggestions(string input, bool forced = false)
         {
             if (!forced && string.IsNullOrEmpty(input))

@@ -69,6 +69,16 @@ namespace ANU.IngameDebug.Console
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class DebugCommandAttribute : Attribute
     {
+        public DebugCommandAttribute() { }
+        
+        public DebugCommandAttribute(string name) => Name = name;
+
+        public DebugCommandAttribute(string name, string description)
+            : this(name) => Description = description;
+
+        public DebugCommandAttribute(string name, string description, InstanceTargetType target)
+            : this(name, description) => Target = target;
+
         public string Name { get; set; }
         public string Description { get; set; }
         public InstanceTargetType Target { get; set; }

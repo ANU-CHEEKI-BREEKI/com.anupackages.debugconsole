@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.3] - 2023-07-04
+### Added
+- methods to open and close console from code.<br>
+can be useful, foe example, when you write the command to make screenshot. then probably you want to close the console first
+- commands to open and close console
+
+### Changed
+- bug fix of NestedCommandsPreprocessor and DefinesPreprocessor caused by evaluating in working thread, which is not allowed when accessing to UnityEngine library
+
 ## [2.0.2] - 2023-07-03
 ### Changed
 - bug fix of package.json unity version

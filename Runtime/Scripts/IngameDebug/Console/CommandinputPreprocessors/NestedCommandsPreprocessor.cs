@@ -33,40 +33,31 @@ namespace ANU.IngameDebug.Console
                 return input;
 
             using (var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2)))
-            using (var waiter = new AutoResetEvent(false))
             {
                 _nestedCall = true;
 
-                var queued = ThreadPool.QueueUserWorkItem(obj =>
+                //WE can not use thread, because commands can access UnityEngine code
+                // which can be accessible only from work thread
+                try
                 {
-                    try
+                    while (_expressionRegex.IsMatch(input) && !tokenSource.IsCancellationRequested)
                     {
-                        while (_expressionRegex.IsMatch(input) && !tokenSource.IsCancellationRequested)
-                        {
-                            input = _expressionRegex.Replace(
-                                input,
-                                m =>
-                                {
-                                    var nestedCommand = m.Groups["command"].Value;
-                                    var nestedResult = Context.ExecuteCommand(nestedCommand, silent: true);
-                                    var val = nestedResult.ReturnValues.LastOrDefault().ReturnValue;
-                                    return Context.Converters.ConvertToString(val);
-                                }
-                            );
-                        }
+                        input = _expressionRegex.Replace(
+                            input,
+                            m =>
+                            {
+                                var nestedCommand = m.Groups["command"].Value;
+                                var nestedResult = Context.ExecuteCommand(nestedCommand, silent: true);
+                                var val = nestedResult.ReturnValues.LastOrDefault().ReturnValue;
+                                return Context.Converters.ConvertToString(val);
+                            }
+                        );
                     }
-                    catch
-                    {
-                        tokenSource.Cancel();
-                    }
-                    finally
-                    {
-                        waiter.Set();
-                    }
-                });
-
-                if (queued)
-                    waiter.WaitOne();
+                }
+                catch (Exception ex)
+                {
+                    Context.Logger.LogException(ex);
+                }
 
                 _nestedCall = false;
 
