@@ -1,7 +1,7 @@
 # com.anupackages.debugconsole
 *Advanced in-game console for Unity 3D, which replicates Windows cmd.*
 
-![Cover image](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/02afd12c-2993-4bef-b371-bb0ba08652d7)
+![cover-gif](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/c0134944-47a8-45cd-b5e4-caa5071dbf67)
 
 
 - [ATTENTION](#ATTENTION)
