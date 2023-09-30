@@ -37,6 +37,7 @@ namespace ANU.IngameDebug.Console
         private static CommandsSuggestionsContext _commandsContext;
         private static HistorySuggestionsContext _historyContext;
         private static DebugConsoleProcessor _processor = new DebugConsoleProcessor();
+        private static IConsoleInput _consoleInput;
 
         internal static DebugConsole Instance { get; set; }
         public static bool IsOpened => Instance._content.activeInHierarchy;
@@ -123,6 +124,7 @@ namespace ANU.IngameDebug.Console
 
             Application.logMessageReceived += LogMessageReceived;
 
+            _consoleInput = ConsoleInputFactory.GetInput();
             _commandsContext = new CommandsSuggestionsContext(Commands.Commands);
             _historyContext = new HistorySuggestionsContext(CommandsHistory);
             _content.SetActive(false);
@@ -245,13 +247,13 @@ namespace ANU.IngameDebug.Console
             if (!Application.isPlaying)
                 return;
 
-            var control = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-            var openPressed = Input.GetKeyDown(KeyCode.Tilde) || Input.GetKeyDown(KeyCode.BackQuote);
-            var dotPressed = Input.GetKeyDown(KeyCode.Period);
-            var upPressed = Input.GetKeyDown(KeyCode.UpArrow);
-            var downPressed = Input.GetKeyDown(KeyCode.DownArrow);
-            var tabPressed = Input.GetKeyDown(KeyCode.Tab);
-            var escapePressed = Input.GetKeyDown(KeyCode.Escape);
+            var control = _consoleInput.GetControl();
+            var openPressed = _consoleInput.GetOpen();
+            var dotPressed = _consoleInput.GetDot();
+            var upPressed = _consoleInput.GetUp();
+            var downPressed = _consoleInput.GetDown();
+            var tabPressed = _consoleInput.GetTab();
+            var escapePressed = _consoleInput.GetEscape();
 
             if (_content.activeInHierarchy && control)
             {
