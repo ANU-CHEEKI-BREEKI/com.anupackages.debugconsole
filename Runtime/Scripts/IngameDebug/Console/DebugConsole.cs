@@ -2,19 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NDesk.Options;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using ANU.IngameDebug.Utils;
-using ANU.IngameDebug.Console.Commands;
-using ANU.IngameDebug.Console.Commands.Implementations;
-using System.Reflection;
 using ANU.IngameDebug.Console.Converters;
 using ANU.IngameDebug.Console.CommandLinePreprocessors;
 using System.Text.RegularExpressions;
 using System.Collections;
-using UnityEngine.EventSystems;
 
 namespace ANU.IngameDebug.Console
 {
