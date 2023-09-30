@@ -245,18 +245,22 @@ namespace ANU.IngameDebug.Console
             if (!Application.isPlaying)
                 return;
 
-            var controlDown = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-            var tildePressed = Input.GetKeyDown(KeyCode.Tilde) || Input.GetKeyDown(KeyCode.BackQuote);
+            var control = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+            var openPressed = Input.GetKeyDown(KeyCode.Tilde) || Input.GetKeyDown(KeyCode.BackQuote);
             var dotPressed = Input.GetKeyDown(KeyCode.Period);
+            var upPressed = Input.GetKeyDown(KeyCode.UpArrow);
+            var downPressed = Input.GetKeyDown(KeyCode.DownArrow);
+            var tabPressed = Input.GetKeyDown(KeyCode.Tab);
+            var escapePressed = Input.GetKeyDown(KeyCode.Escape);
 
-            if (_content.activeInHierarchy && controlDown)
+            if (_content.activeInHierarchy && control)
             {
-                if (tildePressed)
+                if (openPressed)
                     SwitchContext();
                 else if (dotPressed)
                     DisplaySuggestions(_input.text, forced: true);
             }
-            else if (tildePressed)
+            else if (openPressed)
             {
                 _content.SetActive(!_content.activeSelf);
                 if (_content.activeInHierarchy)
@@ -272,20 +276,20 @@ namespace ANU.IngameDebug.Console
 
             if (_suggestions.IsShown)
             {
-                if (Input.GetKeyDown(KeyCode.UpArrow))
+                if (upPressed)
                     _suggestions.MoveUp();
 
-                if (Input.GetKeyDown(KeyCode.DownArrow))
+                if (downPressed)
                     _suggestions.MoveDown();
 
-                if (Input.GetKeyDown(KeyCode.Tab))
+                if (tabPressed)
                 {
                     if (_suggestions.Selected == null)
                         _suggestions.MoveUp();
                     _suggestions.TryChooseCurrent();
                 }
 
-                if (Input.GetKeyDown(KeyCode.Escape))
+                if (escapePressed)
                 {
                     SuggestionsContext = _commandsContext;
                     DisplaySuggestions(_input.text);
@@ -295,8 +299,8 @@ namespace ANU.IngameDebug.Console
             }
             else
             {
-                if ((Input.GetKeyDown(KeyCode.UpArrow) && CommandsHistory.TryMoveUp(out var command))
-                || (Input.GetKeyDown(KeyCode.DownArrow) && CommandsHistory.TryMoveDown(out command)))
+                if ((upPressed && CommandsHistory.TryMoveUp(out var command))
+                || (downPressed && CommandsHistory.TryMoveDown(out command)))
                 {
                     _input.text = command;
                     _input.caretPosition = _input.text.Length;
