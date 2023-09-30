@@ -1,6 +1,6 @@
 {
   "name": "com.anupackages.debugconsole",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "displayName": "ANU Ingame debug console",
   "description": "Provides easy way to create and invoke debug commands in game console",
   "unity": "2021.3",
