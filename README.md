@@ -55,37 +55,59 @@ User interface is created with uGUI and packed in a single SpriteAtlas.
 
 # How to Install
 
-- through Unity Package Manager
-  - git url: `https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole.git`
-    You will need to install all dependencies first, ohervice Unity Packake Manager wont allow to install package. So the next method is preffered
-  - ***npm package*** (*preffered method*): add following to your Scoped Registries
-```
-  "scopedRegistries": [
-    {
-      "name": "ANU",
-      "url": "https://registry.npmjs.org/",
-      "scopes": [
-        "com.anupackages"
-      ]
-    }
-  ]
-```
-<img width="809" alt="Screenshot 2023-06-28 at 19 28 06" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/a967a238-a5d5-41d8-8bcc-23e8c575dfcc">
+- through Unity Package Manager as ***npm package*** (*preffered method*): add following to your Scoped Registries
+  ```
+    "scopedRegistries": [
+      {
+        "name": "ANU",
+        "url": "https://registry.npmjs.org/",
+        "scopes": [
+          "com.anupackages"
+        ]
+      }
+    ]
+  ```
+  <img width="809" alt="Screenshot 2023-06-28 at 19 28 06" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/a967a238-a5d5-41d8-8bcc-23e8c575dfcc">
 
-Then you will be able to search all available packages directly in Unity Package Manager window
-<img width="717" alt="Screenshot 2023-06-28 at 19 28 52" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/d8aa5f5c-8911-4d03-a648-2351083dc764">
+  Then you will be able to search all available packages directly in Unity Package Manager window
+  <img width="717" alt="Screenshot 2023-06-28 at 19 28 52" src="https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/assets/15821105/d8aa5f5c-8911-4d03-a648-2351083dc764">
 
-When installing package with dependencies theought regustries, all dependencies will be installed automatically.
+  When installing package with dependencies theought regustries, all dependencies will be installed automatically.
 
-`Do note, that NCalc for Expression evaluations it an optional dependency. So if you want to use Expression evaluations, you need to install it manually.`
+  `Do note, that NCalc for Expression evaluations it an optional dependency. So if you want to use Expression evaluations, you need to install it manually.`
 
-- download sources as zip archive and import to your project
-- asset store?
+- through Unity Package Manager from git url:
+  
+  Add all dependencies to your manifest.json:\
+  mandatory:
+  ```
+    "com.unity.textmeshpro": "3.0.6",
+    "com.anupackages.debugconsole": "https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole.git",
+    "com.anupackages.ndesk-options": "https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.ndesk-options.git",
+  ```
+    optional:
+  ```
+    "com.anupackages.ncalc": "https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.ncalc.git",
+    "com.anupackages.antlr4": "https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.antlr4.git",
+  ```
+- download sources as zip archive and import to your project (you will need then to manually download all dependencies too)
+- [from asset store](https://u3d.as/36S8) (updates less frequently because of long unity review time and general publishing process)
   
 # Roadmap
 Each star ★ on the project page brings new features closer. You can suggest new features in the [Discussions](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/discussions).
 
 # How to use
+
+## How To Begin
+
+- Just drag and drop DebugConsole prefab to the scene. And you are ready to go.
+- Use Tilde `~` key (or BackQuote `` ` ``) to open and close the console UI.
+- Use `Ctrl` + `~` to switch suggestion context (*Command line History* or *Commands Suggestions*)
+- Use `Ctrl` + `.` to force open suggestion popup even if command line is empty
+- Use `Tab` to apply first suggestion from popup
+- Use `Arrow Up` and `Arrow Down` to scroll suggestions
+- Use `Tab` or `Enter` to apply selected suggestion
+- Use `Esc` to move focus back from suggestion popup to command line
 
 ## Adding Commands
 
