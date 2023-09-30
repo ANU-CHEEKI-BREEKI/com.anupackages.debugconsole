@@ -2,19 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NDesk.Options;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using ANU.IngameDebug.Utils;
-using ANU.IngameDebug.Console.Commands;
-using ANU.IngameDebug.Console.Commands.Implementations;
-using System.Reflection;
 using ANU.IngameDebug.Console.Converters;
 using ANU.IngameDebug.Console.CommandLinePreprocessors;
 using System.Text.RegularExpressions;
 using System.Collections;
-using UnityEngine.EventSystems;
 
 namespace ANU.IngameDebug.Console
 {
@@ -43,6 +37,7 @@ namespace ANU.IngameDebug.Console
         private static CommandsSuggestionsContext _commandsContext;
         private static HistorySuggestionsContext _historyContext;
         private static DebugConsoleProcessor _processor = new DebugConsoleProcessor();
+        private static IConsoleInput _consoleInput;
 
         internal static DebugConsole Instance { get; set; }
         public static bool IsOpened => Instance._content.activeInHierarchy;
@@ -129,6 +124,7 @@ namespace ANU.IngameDebug.Console
 
             Application.logMessageReceived += LogMessageReceived;
 
+            _consoleInput = ConsoleInputFactory.GetInput();
             _commandsContext = new CommandsSuggestionsContext(Commands.Commands);
             _historyContext = new HistorySuggestionsContext(CommandsHistory);
             _content.SetActive(false);
@@ -251,18 +247,22 @@ namespace ANU.IngameDebug.Console
             if (!Application.isPlaying)
                 return;
 
-            var controlDown = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-            var tildePressed = Input.GetKeyDown(KeyCode.Tilde) || Input.GetKeyDown(KeyCode.BackQuote);
-            var dotPressed = Input.GetKeyDown(KeyCode.Period);
+            var control = _consoleInput.GetControl();
+            var openPressed = _consoleInput.GetOpen();
+            var dotPressed = _consoleInput.GetDot();
+            var upPressed = _consoleInput.GetUp();
+            var downPressed = _consoleInput.GetDown();
+            var tabPressed = _consoleInput.GetTab();
+            var escapePressed = _consoleInput.GetEscape();
 
-            if (_content.activeInHierarchy && controlDown)
+            if (_content.activeInHierarchy && control)
             {
-                if (tildePressed)
+                if (openPressed)
                     SwitchContext();
                 else if (dotPressed)
                     DisplaySuggestions(_input.text, forced: true);
             }
-            else if (tildePressed)
+            else if (openPressed)
             {
                 _content.SetActive(!_content.activeSelf);
                 if (_content.activeInHierarchy)
@@ -278,20 +278,20 @@ namespace ANU.IngameDebug.Console
 
             if (_suggestions.IsShown)
             {
-                if (Input.GetKeyDown(KeyCode.UpArrow))
+                if (upPressed)
                     _suggestions.MoveUp();
 
-                if (Input.GetKeyDown(KeyCode.DownArrow))
+                if (downPressed)
                     _suggestions.MoveDown();
 
-                if (Input.GetKeyDown(KeyCode.Tab))
+                if (tabPressed)
                 {
                     if (_suggestions.Selected == null)
                         _suggestions.MoveUp();
                     _suggestions.TryChooseCurrent();
                 }
 
-                if (Input.GetKeyDown(KeyCode.Escape))
+                if (escapePressed)
                 {
                     SuggestionsContext = _commandsContext;
                     DisplaySuggestions(_input.text);
@@ -301,8 +301,8 @@ namespace ANU.IngameDebug.Console
             }
             else
             {
-                if ((Input.GetKeyDown(KeyCode.UpArrow) && CommandsHistory.TryMoveUp(out var command))
-                || (Input.GetKeyDown(KeyCode.DownArrow) && CommandsHistory.TryMoveDown(out command)))
+                if ((upPressed && CommandsHistory.TryMoveUp(out var command))
+                || (downPressed && CommandsHistory.TryMoveDown(out command)))
                 {
                     _input.text = command;
                     _input.caretPosition = _input.text.Length;
