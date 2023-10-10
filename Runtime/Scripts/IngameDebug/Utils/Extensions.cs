@@ -264,5 +264,16 @@ namespace ANU.IngameDebug.Utils
                 }
             }
         }
+    
+        public static void DeleteAllChild(this Component component)
+        {
+            var tr = component.transform;
+            while(tr.childCount > 0)
+            {
+                var c = tr.GetChild(0);
+                c.SetParent(null);
+                GameObject.Destroy(c.gameObject);
+            }
+        }
     }
 }

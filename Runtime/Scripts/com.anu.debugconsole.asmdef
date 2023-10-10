@@ -1,6 +1,6 @@
 {
     "name": "com.anu.debugconsole",
-    "rootNamespace": "",
+    "rootNamespace": "ANU.IngameDebug.Console",
     "references": [
         "Unity.TextMeshPro",
         "NDesk.Options",
