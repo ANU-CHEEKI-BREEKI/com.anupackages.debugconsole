@@ -113,6 +113,9 @@ namespace ANU.IngameDebug.Console.Commands
 
         public ExecutionResult Execute(string args = null)
         {
+            if (args == null)
+                args = "";
+
             var options = Options;
 
             //TODO: preprocess command to define if there are any mandatory option leading -- or -
@@ -122,8 +125,8 @@ namespace ANU.IngameDebug.Console.Commands
 
             try
             {
-                var comandOptions = args.SplitCommandLine();
-                var notParsedOptions = options.Parse(comandOptions);
+                var commandOptions = args.SplitCommandLine();
+                var notParsedOptions = options.Parse(commandOptions);
 
                 if (notParsedOptions.Any())
                 {
