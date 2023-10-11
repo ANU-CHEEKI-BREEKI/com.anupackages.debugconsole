@@ -53,8 +53,8 @@ namespace ANU.IngameDebug.Console.Dashboard
             var index = values.IndexOf(str);
             SetIsOnWithoutNotify(index);
 
-            _layout.minWidth = Mathf.Max(500, values.Count * 162);
-            _layout.flexibleWidth = Mathf.Max(20, values.Count * 7.5f);
+            _layout = GetComponent<LayoutElement>();
+
         }
 
         private void SetIsOnWithoutNotify(int index)
@@ -69,6 +69,13 @@ namespace ANU.IngameDebug.Console.Dashboard
             var index = _toggles.IndexOf(_toggles.First(t => t.isOn));
             var value = _command.ValueHints.First().Value.Skip(index).Take(1).Single();
             DebugConsole.ExecuteCommand($"{_command.Name} {value}");
+        }
+
+        protected override void UpdateLayout(LayoutElement layout)
+        {
+            var values = _command.ValueHints.Values.First().ToList();
+            _layout.minWidth = Mathf.Max(500, values.Count * 162);
+            _layout.flexibleWidth = Mathf.Max(20, values.Count * 7.5f);
         }
     }
 }

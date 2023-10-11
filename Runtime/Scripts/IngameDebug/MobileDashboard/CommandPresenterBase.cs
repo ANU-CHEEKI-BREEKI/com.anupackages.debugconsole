@@ -6,10 +6,11 @@ using UnityEngine.UI;
 
 namespace ANU.IngameDebug.Console.Dashboard
 {
+    [RequireComponent(typeof(LayoutElement))]
     internal abstract class CommandPresenterBase : MonoBehaviour
     {
-        [SerializeField] private TextMeshProUGUI _label;
-        [SerializeField] private Button _info;
+        [SerializeField] protected TextMeshProUGUI _label;
+        [SerializeField] protected Button _info;
         [Space]
         [SerializeField] private Image _icon;
         [SerializeField] private Sprite _methodIcon;
@@ -39,9 +40,12 @@ namespace ANU.IngameDebug.Console.Dashboard
                 : command is PropertyCommand
                     ? _propertyIcon
                     : _methodIcon;
+
+            var layout = GetComponent<LayoutElement>();
+            UpdateLayout(layout);
         }
 
-        private void OnEnable()
+        protected virtual void OnEnable()
         {
             // update prop and field values when enabled
             if (_command is FieldCommand || _command is PropertyCommand)
@@ -49,5 +53,16 @@ namespace ANU.IngameDebug.Console.Dashboard
         }
 
         protected abstract void PresentInternal(MemberCommand command);
+
+        protected virtual void UpdateLayout(LayoutElement layout)
+        {
+            var w = LayoutUtility.GetPreferredWidth(_label.rectTransform);
+            w = Mathf.Clamp(w, 180, 650);
+            if (w > _label.rectTransform.rect.width)
+                w /= 2f;
+
+            w = Mathf.Clamp(w, 180, 650) + 90;//90 - info button
+            layout.minWidth = w;
+        }
     }
 }

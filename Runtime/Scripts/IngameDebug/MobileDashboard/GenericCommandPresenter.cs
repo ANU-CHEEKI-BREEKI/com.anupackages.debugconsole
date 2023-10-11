@@ -30,6 +30,7 @@ namespace ANU.IngameDebug.Console.Dashboard
 
             _requiredParametersSelection.SetActive(anyOptions && anyRequired);
             _nonRequiredParametersSelection.SetActive(anyOptions && !anyRequired);
+           
         }
 
         private void Execute()
