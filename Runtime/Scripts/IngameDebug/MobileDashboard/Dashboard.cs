@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using ANU.IngameDebug.Console.Commands.Implementations;
 using ANU.IngameDebug.Utils;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -19,15 +21,14 @@ namespace ANU.IngameDebug.Console.Dashboard
             yield return new WaitForSeconds(1f);
 
             _genericPresentersPool = new ObjectPool<GenericCommandPresenter>(
-                ()=>Instantiate(_genericPresenterPrefab)
+                () => Instantiate(_genericPresenterPrefab)
             );
 
             _content.DeleteAllChild();
 
             //TODO: group commands by Prefix
 
-
-            foreach (var item in DebugConsole.Commands.Commands)
+            foreach (var item in DebugConsole.Commands.Commands.Values.OfType<MemberCommand>())
             {
                 // ignore reserved parameters
 
@@ -41,7 +42,7 @@ namespace ANU.IngameDebug.Console.Dashboard
 
                 var presenter = _genericPresentersPool.Get();
                 presenter.transform.SetParent(_content, false);
-                presenter.Present(item.Value);
+                presenter.Present(item);
             }
         }
     }

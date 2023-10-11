@@ -1,4 +1,5 @@
 using ANU.IngameDebug.Console.Commands;
+using ANU.IngameDebug.Console.Commands.Implementations;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,12 +21,12 @@ namespace ANU.IngameDebug.Console.Dashboard
             //TODO: open popup with command name, description, arguments input
         }
 
-        public void Present(ADebugCommand command)
+        public void Present(MemberCommand command)
         {
             _label.text = command.Name;
             PresentInternal(command);
         }
 
-        protected abstract void PresentInternal(ADebugCommand command);
+        protected abstract void PresentInternal(MemberCommand command);
     }
 }

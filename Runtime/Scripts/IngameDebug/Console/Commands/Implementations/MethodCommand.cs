@@ -63,7 +63,51 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
         }
     }
 
-    public abstract class MemberCommand<T> : ADebugCommand where T : MemberInfo
+    public abstract class MemberCommand : ADebugCommand
+    {
+        private readonly Dictionary<int, ParameterCache> _parametersCache = new();
+        private int _parametersCount;
+        private bool _parametersCached;
+
+        protected MemberCommand(string name, string description) : base(name, description) { }
+
+        public IReadOnlyDictionary<int, ParameterCache> ParametersCache 
+        {
+            get
+            {
+                CacheParametersMetaDataIfNeeded();
+                return _parametersCache;
+            }
+        }
+
+        private void CacheParametersMetaDataIfNeeded()
+        {
+            if (_parametersCached)
+                return;
+            _parametersCached = true;
+            CacheParametersMetaData(_parametersCache);
+        }
+
+        protected abstract void CacheParametersMetaData(Dictionary<int, ParameterCache> parameterCache);
+
+        public struct ParameterCache
+        {
+            public int Index;
+            public Type Type;
+            public object DefaultValue;
+            public bool IsRequired;
+
+            public ParameterCache(int index, Type type, object defaultValue, bool isRequired)
+            {
+                Index = index;
+                Type = type;
+                DefaultValue = defaultValue;
+                IsRequired = isRequired;
+            }
+        }
+    }
+
+    public abstract class MemberCommand<T> : MemberCommand where T : MemberInfo
     {
         private static ProfilerMarker _createOptions = new ProfilerMarker("CreateOptions");
 
@@ -360,15 +404,33 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
         }
 
         protected override bool IsStatic(MethodInfo member) => member.IsStatic;
+
+        protected override void CacheParametersMetaData(Dictionary<int, ParameterCache> parameterCache)
+        {
+            for (int i = 0; i < _parameters.Length; i++)
+            {
+                var parameter = _parameters[i];
+                parameterCache[i] = new ParameterCache(
+                    i,
+                    parameter.ParameterType,
+                    parameter.HasDefaultValue
+                        ? parameter.DefaultValue
+                        : parameter.ParameterType.IsValueType
+                            ? Activator.CreateInstance(parameter.ParameterType)
+                            : null,
+                    isRequired: !parameter.HasDefaultValue
+                );
+            }
+        }
     }
 
     public abstract class GetSetCommand<T> : MemberCommand<T> where T : MemberInfo
     {
-        private enum InvikeType { Get, Set }
+        private enum InvokeType { Get, Set }
 
         private readonly Type _parameterType;
         private object _parameterValue;
-        private InvikeType _invokeType;
+        private InvokeType _invokeType;
 
         public GetSetCommand(string name, string description, T member, object instance)
             : base(name, description, member, instance)
@@ -383,7 +445,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
         {
             base.ResetParametersValues();
             _parameterValue = null;
-            _invokeType = InvikeType.Get;
+            _invokeType = InvokeType.Get;
         }
 
         protected override void CreateOptions(Dictionary<Option, AvailableValuesHint> valueHints, OptionSet options)
@@ -415,11 +477,11 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
                 if (value == null)
                 {
-                    _invokeType = InvikeType.Get;
+                    _invokeType = InvokeType.Get;
                 }
                 else
                 {
-                    _invokeType = InvikeType.Set;
+                    _invokeType = InvokeType.Set;
                     _parameterValue = Context.Converters.ConvertFromString(_parameterType, value);
                 }
             });
@@ -435,7 +497,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
         protected sealed override object Invoke(T member, object instance)
         {
-            if (_invokeType == InvikeType.Get)
+            if (_invokeType == InvokeType.Get)
             {
                 return GetValue(member, instance);
             }
@@ -448,6 +510,18 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
         protected abstract void SetValue(T member, object instance, object value);
         protected abstract object GetValue(T member, object instance);
+
+        protected override void CacheParametersMetaData(Dictionary<int, ParameterCache> parameterCache)
+        {
+            parameterCache[0] = new ParameterCache(
+                0,
+                ReturnValueType,
+                ReturnValueType.IsValueType
+                    ? Activator.CreateInstance(ReturnValueType)
+                    : null,
+                isRequired: true
+            );
+        }
     }
 
     public class FieldCommand : GetSetCommand<FieldInfo>

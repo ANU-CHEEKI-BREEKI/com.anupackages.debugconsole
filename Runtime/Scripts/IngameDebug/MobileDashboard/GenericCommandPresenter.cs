@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using ANU.IngameDebug.Console.Commands;
+using ANU.IngameDebug.Console.Commands.Implementations;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,7 +13,7 @@ namespace ANU.IngameDebug.Console.Dashboard
         [SerializeField] private GameObject _nonRequiredParametersSelection;
         [SerializeField] private Button _button;
 
-        private ADebugCommand _command;
+        private MemberCommand _command;
 
         protected override void Awake()
         {
@@ -20,13 +21,12 @@ namespace ANU.IngameDebug.Console.Dashboard
             _button.onClick.AddListener(Execute);
         }
 
-        protected override void PresentInternal(ADebugCommand command)
+        protected override void PresentInternal(MemberCommand command)
         {
             _command = command;
 
-            var options = command.Options.Where(c => !c.GetNames().Any(n => n == "h" || n == "t"));
-            var anyOptions = options.Any();
-            var anyRequired = options.Any(o => o.OptionValueType == NDesk.Options.OptionValueType.Required);
+            var anyOptions = command.ParametersCache.Count > 0;
+            var anyRequired = command.ParametersCache.Values.Any(v => v.IsRequired);
 
             _requiredParametersSelection.SetActive(anyOptions && anyRequired);
             _nonRequiredParametersSelection.SetActive(anyOptions && !anyRequired);
