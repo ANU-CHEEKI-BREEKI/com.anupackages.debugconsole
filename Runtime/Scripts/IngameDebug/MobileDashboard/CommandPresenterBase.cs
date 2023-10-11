@@ -10,6 +10,11 @@ namespace ANU.IngameDebug.Console.Dashboard
     {
         [SerializeField] private TextMeshProUGUI _label;
         [SerializeField] private Button _info;
+        [Space]
+        [SerializeField] private Image _icon;
+        [SerializeField] private Sprite _methodIcon;
+        [SerializeField] private Sprite _fieldIcon;
+        [SerializeField] private Sprite _propertyIcon;
 
         private MemberCommand _command;
 
@@ -28,6 +33,12 @@ namespace ANU.IngameDebug.Console.Dashboard
             _command = command;
             _label.text = command.Name;
             PresentInternal(command);
+
+            _icon.sprite = command is FieldCommand
+                ? _fieldIcon
+                : command is PropertyCommand
+                    ? _propertyIcon
+                    : _methodIcon;
         }
 
         private void OnEnable()

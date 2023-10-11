@@ -603,6 +603,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _label: {fileID: 7043833582110465818}
   _info: {fileID: 2996264848671484882}
+  _icon: {fileID: 5234770583067823211}
+  _methodIcon: {fileID: 21300000, guid: 055a7b1e85bf74824886fc61b1e5da85, type: 3}
+  _fieldIcon: {fileID: 21300000, guid: 9a5f256ec4d484701826d7a77ee65b49, type: 3}
+  _propertyIcon: {fileID: 21300000, guid: e4c28b3991769431a8e496d3c32e56f7, type: 3}
   _requiredParametersSelection: {fileID: 1583176963718055950}
   _nonRequiredParametersSelection: {fileID: 1345618519283544182}
   _button: {fileID: 6112425244765402552}
