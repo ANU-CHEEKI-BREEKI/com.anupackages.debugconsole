@@ -13,16 +13,12 @@ namespace ANU.IngameDebug.Console.Dashboard
     {
         [SerializeField] private Transform _content;
         [SerializeField] private GenericCommandPresenter _genericPresenterPrefab;
-
-        private ObjectPool<GenericCommandPresenter> _genericPresentersPool;
+        [SerializeField] private ToggleCommandPresenter _togglePresenterPrefab;
+        [SerializeField] private SwitchCommandPresenter _switchCommandPresenter;
 
         private IEnumerator Start()
         {
             yield return new WaitForSeconds(1f);
-
-            _genericPresentersPool = new ObjectPool<GenericCommandPresenter>(
-                () => Instantiate(_genericPresenterPrefab)
-            );
 
             _content.DeleteAllChild();
 
@@ -40,10 +36,30 @@ namespace ANU.IngameDebug.Console.Dashboard
                 //      generic val - input field
                 // if we have more than 1 argument - show 2 buttons - with command name, and "..." for opening window to enter arguments. entered arguments should remember last input
 
-                var presenter = _genericPresentersPool.Get();
+                CommandPresenterBase presenter = null;
+                if ((item is FieldCommand || item is PropertyCommand) && item.ParametersCache.Count == 1)
+                {
+                    if (item.ParametersCache[0].Type == typeof(bool))
+                    {
+                        presenter = Instantiate(_togglePresenterPrefab);
+                    }
+                    else if (item.ValueHints.Count > 0 && InRange(item.ValueHints.First().Value.Count(), 2, 4))
+                    {
+                        presenter = Instantiate(_switchCommandPresenter);
+                    }
+                }
+
+                if (presenter == null)
+                    presenter = Instantiate(_genericPresenterPrefab);
+
                 presenter.transform.SetParent(_content, false);
                 presenter.Present(item);
             }
         }
+
+        private bool InRange(int value, int min, int max) => value >= min && value <= max;
+
+        private CommandPresenterBase Instantiate(CommandPresenterBase prefab)
+            => GameObject.Instantiate(prefab, _content);
     }
 }

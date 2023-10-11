@@ -5302,6 +5302,10 @@ MonoBehaviour:
   _content: {fileID: 6543213829252899158}
   _genericPresenterPrefab: {fileID: 2891912173400278302, guid: a8a8f3f9d961843f0a775c3fc7660d52,
     type: 3}
+  _togglePresenterPrefab: {fileID: 748138087404480254, guid: cf3791b940b2347349b4ef157c86f550,
+    type: 3}
+  _switchCommandPresenter: {fileID: 2933335761489937422, guid: 4d79baf9dae044e3abf88e5f520a7072,
+    type: 3}
 --- !u!1 &6414169174141003170
 GameObject:
   m_ObjectHideFlags: 0

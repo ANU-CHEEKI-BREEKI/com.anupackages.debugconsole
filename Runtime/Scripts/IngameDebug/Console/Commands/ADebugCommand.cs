@@ -207,12 +207,12 @@ namespace ANU.IngameDebug.Console.Commands
             foreach (var item in Values)
                 yield return item;
 
-            foreach (var comand in DynamicValueProviderCommands)
+            foreach (var command in DynamicValueProviderCommands)
             {
                 IEnumerable<string> values = null;
                 try
                 {
-                    var result = DebugConsole.ExecuteCommand(comand, silent: true);
+                    var result = DebugConsole.ExecuteCommand(command, silent: true);
                     values = result.ReturnValues
                         .Select(b => b.ReturnValue as IEnumerable)
                         .Where(b => b != null)
