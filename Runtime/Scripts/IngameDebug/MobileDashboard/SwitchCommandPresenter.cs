@@ -34,8 +34,15 @@ namespace ANU.IngameDebug.Console.Dashboard
         protected override void PresentInternal(MemberCommand command)
         {
             _command = command;
-            var defaultValue = _command.ParametersCache[0].DefaultValue;
-            var str = DebugConsole.Converters.ConvertToString(defaultValue);
+
+            object initValue;
+            try
+            {
+                initValue = command.Execute().ReturnValues.First().ReturnValue;
+            }
+            finally { }
+
+            var str = DebugConsole.Converters.ConvertToString(initValue);
             var values = _command.ValueHints.Values.First().ToList();
             for (int i = 0; i < _toggles.Count; i++)
             {

@@ -11,6 +11,8 @@ namespace ANU.IngameDebug.Console.Dashboard
         [SerializeField] private TextMeshProUGUI _label;
         [SerializeField] private Button _info;
 
+        private MemberCommand _command;
+
         protected virtual void Awake()
         {
             _info.onClick.AddListener(() => InfoButtonClicked());
@@ -23,8 +25,16 @@ namespace ANU.IngameDebug.Console.Dashboard
 
         public void Present(MemberCommand command)
         {
+            _command = command;
             _label.text = command.Name;
             PresentInternal(command);
+        }
+
+        private void OnEnable()
+        {
+            // update prop and field values when enabled
+            if (_command is FieldCommand || _command is PropertyCommand)
+                PresentInternal(_command);
         }
 
         protected abstract void PresentInternal(MemberCommand command);
