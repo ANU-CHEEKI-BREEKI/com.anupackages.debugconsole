@@ -19,7 +19,7 @@ namespace ANU.IngameDebug.Console.Dashboard
             base.Initialize(initArgs);
 
             _button.onClick.AddListener(Execute);
-            _input.onSelect.AddListener(Execute);
+            _input.onSubmit.AddListener(Execute);
         }
 
         protected override void PresentInternal(MemberCommand command)
