@@ -5268,7 +5268,7 @@ MonoBehaviour:
   _clear: {fileID: 437850544577155313}
   _close: {fileID: 837183489544980374}
   _suggestions: {fileID: 4683053573495274068}
-  _inputSuggestions: {fileID: 0}
+  _inputSuggestions: {fileID: 18974292336297814}
   _themes:
   - {fileID: 11400000, guid: 98c052ba81f9047b5963887f30446511, type: 2}
   - {fileID: 11400000, guid: c9d2dfe3bbfef42698acc3eaea2fd36e, type: 2}

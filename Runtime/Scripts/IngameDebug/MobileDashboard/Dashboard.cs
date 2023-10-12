@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ANU.IngameDebug.Console.Commands.Implementations;
 using ANU.IngameDebug.Utils;
+using NCalc.Domain;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -24,7 +25,7 @@ namespace ANU.IngameDebug.Console.Dashboard
 
             //TODO: group commands by Prefix
 
-            foreach (var item in DebugConsole.Commands.Commands.Values.OfType<MemberCommand>())
+            foreach (var item in DebugConsole.Commands.Commands.Values.OfType<MemberCommand>().OrderBy(c => c.Name))
             {
                 // ignore reserved parameters
 
@@ -37,16 +38,16 @@ namespace ANU.IngameDebug.Console.Dashboard
                 // if we have more than 1 argument - show 2 buttons - with command name, and "..." for opening window to enter arguments. entered arguments should remember last input
 
                 CommandPresenterBase presenter = null;
-                if ((item is FieldCommand || item is PropertyCommand) && item.ParametersCache.Count == 1)
+
+                if (item.ParametersCache.Count == 1)
                 {
-                    if (item.ParametersCache[0].Type == typeof(bool))
-                    {
+                    if ((item is FieldCommand || item is PropertyCommand)
+                        && item.ParametersCache[0].Type == typeof(bool))
                         presenter = Instantiate(_togglePresenterPrefab);
-                    }
-                    else if (item.ValueHints.Count > 0 && InRange(item.ValueHints.First().Value.Count(), 2, 4))
-                    {
+                    else if (item.ValueHints.Count > 0
+                        && InRange(item.ValueHints.First().Value.Count(), 2, 4)
+                        && (item is not MethodCommand || item.ParametersCache[0].IsRequired))
                         presenter = Instantiate(_switchCommandPresenter);
-                    }
                 }
 
                 if (presenter == null)

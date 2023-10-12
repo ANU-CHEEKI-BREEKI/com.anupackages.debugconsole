@@ -13,36 +13,28 @@ namespace ANU.IngameDebug.Console.Dashboard
         [SerializeField] private ToggleGroup _group;
         [SerializeField] private List<Toggle> _toggles;
 
-        private LayoutElement _layout;
-
         private MemberCommand _command;
+        private bool _isInitializing;
 
         protected override void Awake()
         {
             base.Awake();
 
+            _isInitializing = true;
+            
             _group.allowSwitchOff = false;
             foreach (var item in _toggles)
                 item.group = _group;
 
             foreach (var item in _toggles)
                 item.onValueChanged.AddListener(Toggle);
-
-            _layout = GetComponent<LayoutElement>();
         }
 
         protected override void PresentInternal(MemberCommand command)
         {
+            _isInitializing = true;
             _command = command;
 
-            object initValue;
-            try
-            {
-                initValue = command.Execute().ReturnValues.First().ReturnValue;
-            }
-            finally { }
-
-            var str = DebugConsole.Converters.ConvertToString(initValue);
             var values = _command.ValueHints.Values.First().ToList();
             for (int i = 0; i < _toggles.Count; i++)
             {
@@ -50,32 +42,62 @@ namespace ANU.IngameDebug.Console.Dashboard
                 if (_toggles[i].gameObject.activeSelf)
                     _toggles[i].GetComponentInChildren<TextMeshProUGUI>().text = values[i];
             }
-            var index = values.IndexOf(str);
-            SetIsOnWithoutNotify(index);
 
-            _layout = GetComponent<LayoutElement>();
+            if (command is MethodCommand)
+            {
+                _group.allowSwitchOff = true;
+                DeselectAll();
+            }
+            else
+            {
+                _group.allowSwitchOff = false;
 
+                object initValue;
+                try
+                {
+                    initValue = command.Execute().ReturnValues.First().ReturnValue;
+                }
+                finally { }
+
+                var str = DebugConsole.Converters.ConvertToString(initValue);
+
+                var index = values.IndexOf(str);
+                SetIsOnWithoutNotify(index);
+            }
+
+            _isInitializing = false;
         }
 
-        private void SetIsOnWithoutNotify(int index)
+        private void DeselectAll()
         {
             foreach (var item in _toggles)
                 item.SetIsOnWithoutNotify(false);
+        }
+        private void SetIsOnWithoutNotify(int index)
+        {
+            DeselectAll();
+
             _toggles[index].SetIsOnWithoutNotify(true);
         }
 
         private void Toggle(bool isOn)
         {
+            if (!isOn || _isInitializing)
+                return;
+
             var index = _toggles.IndexOf(_toggles.First(t => t.isOn));
             var value = _command.ValueHints.First().Value.Skip(index).Take(1).Single();
             DebugConsole.ExecuteCommand($"{_command.Name} {value}");
+
+            if (_command is MethodCommand)
+                DeselectAll();
         }
 
         protected override void UpdateLayout(LayoutElement layout)
         {
             var values = _command.ValueHints.Values.First().ToList();
-            _layout.minWidth = Mathf.Max(500, values.Count * 162);
-            _layout.flexibleWidth = Mathf.Max(20, values.Count * 7.5f);
+            layout.minWidth = Mathf.Max(500, values.Count * 162);
+            layout.flexibleWidth = Mathf.Max(20, values.Count * 7.5f);
         }
     }
 }

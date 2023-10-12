@@ -13,6 +13,7 @@ using System.Collections;
 namespace ANU.IngameDebug.Console
 {
     [DisallowMultipleComponent]
+    [DebugCommandPrefix("console")]
     public class DebugConsole : MonoBehaviour
     {
         private const float ColsoleInputHeightPercentage = 0.1f;
@@ -184,11 +185,13 @@ namespace ANU.IngameDebug.Console
             SaveDefines(Defines);
         }
 
-        [DebugCommand(Name = "console.theme", Description = "Set console theme at runtime. Pass index or name of wanted UITheme listed in DebugConsole Themes list")]
-        private void SetConsoleTheme(
+        [DebugCommand(Description = "Set console theme at runtime. Pass index or name of wanted UITheme listed in DebugConsole Themes list")]
+        private void SetTheme(
             [OptAltNames("i")]
+            [OptValDynamic("console.list-theme-indices")]
             int index = -1,
             [OptAltNames("n")]
+            [OptValDynamic("console.list-theme-names")]
             string name = "",
             [OptAltNames("l"), OptDesc("Print all available themes")]
             bool list = false
@@ -240,6 +243,20 @@ namespace ANU.IngameDebug.Console
             {
                 Logger.LogError("Provide index or name of wanted UITheme listed in DebugConsole Themes list");
             }
+        }
+
+        [DebugCommand]
+        private IEnumerable<int> ListThemeIndices()
+        {
+            for (int i = 0; i < _themes.Length; i++)
+                yield return i;
+        }
+
+        [DebugCommand]
+        private IEnumerable<string> ListThemeNames()
+        {
+            for (int i = 0; i < _themes.Length; i++)
+                yield return _themes[i].name;
         }
 
         private void Update()
@@ -317,7 +334,6 @@ namespace ANU.IngameDebug.Console
         [DebugCommand(Description = "Clear console logs")]
         private void Clear() => Logs.Clear();
 
-        [DebugCommand(Name = "suggestions-context", Description = "Switch suggestions context")]
         private void SwitchContext()
         {
             if (SuggestionsContext == _historyContext)
@@ -328,14 +344,14 @@ namespace ANU.IngameDebug.Console
             DisplaySuggestions(_input.text, forced: true);
         }
 
-        [DebugCommand("console.open")]
+        [DebugCommand]
         public static void Open()
         {
             Instance._content.SetActive(true);
             ExecuteCommand("console.refresh-size", silent: true);
         }
 
-        [DebugCommand("console.close")]
+        [DebugCommand]
         public static void Close() => Instance._content.SetActive(false);
 
         private void DisplaySuggestions(string input, bool forced = false)
