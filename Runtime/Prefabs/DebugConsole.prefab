@@ -5293,6 +5293,8 @@ MonoBehaviour:
     type: 3}
   _dropdownCommandPresenter: {fileID: 779979953600704216, guid: 6c94eaaa9bea44be2a5fddae22e4b9af,
     type: 3}
+  _inputCommandPresenter: {fileID: 7213007814202788672, guid: 1d6176e1949784735ae0be5b115c64e1,
+    type: 3}
   _methodIcon: {fileID: 21300000, guid: 055a7b1e85bf74824886fc61b1e5da85, type: 3}
   _fieldIcon: {fileID: 21300000, guid: 9a5f256ec4d484701826d7a77ee65b49, type: 3}
   _propertyIcon: {fileID: 21300000, guid: e4c28b3991769431a8e496d3c32e56f7, type: 3}

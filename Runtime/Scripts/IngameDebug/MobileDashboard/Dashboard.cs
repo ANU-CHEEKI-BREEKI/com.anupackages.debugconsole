@@ -17,6 +17,7 @@ namespace ANU.IngameDebug.Console.Dashboard
         [SerializeField] private ToggleCommandPresenter _togglePresenterPrefab;
         [SerializeField] private SwitchCommandPresenter _switchCommandPresenter;
         [SerializeField] private DropdownCommandPresenter _dropdownCommandPresenter;
+        [SerializeField] private InputCommandPresenter _inputCommandPresenter;
         [Space]
         [SerializeField] private Sprite _methodIcon;
         [SerializeField] private Sprite _fieldIcon;
@@ -50,13 +51,15 @@ namespace ANU.IngameDebug.Console.Dashboard
                         && item.ParametersCache[0].Type == typeof(bool))
                         presenter = Instantiate(_togglePresenterPrefab);
                     else if (item.ValueHints.Count > 0
-                        && InRange(item.ValueHints.First().Value.Count(), 2, 4)
+                        && InRange(item.ValueHints.First().Value.Count(), 1, 4)
                         && (item is not MethodCommand || item.ParametersCache[0].IsRequired))
                         presenter = Instantiate(_switchCommandPresenter);
                     else if (item.ValueHints.Count > 0
                         && InRange(item.ValueHints.First().Value.Count(), 5, int.MaxValue)
                         && (item is not MethodCommand || item.ParametersCache[0].IsRequired))
                         presenter = Instantiate(_dropdownCommandPresenter);
+                    else if (item.ParametersCache[0].Type != typeof(bool))
+                        presenter = Instantiate(_inputCommandPresenter);
                 }
 
                 if (presenter == null)
