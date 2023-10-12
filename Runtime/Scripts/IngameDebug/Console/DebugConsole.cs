@@ -127,7 +127,7 @@ namespace ANU.IngameDebug.Console
             _consoleInput = ConsoleInputFactory.GetInput();
             _commandsContext = new CommandsSuggestionsContext(Commands.Commands);
             _historyContext = new HistorySuggestionsContext(CommandsHistory);
-            _content.SetActive(false);
+            Close();
 
             _processor.Initialize();
 
@@ -143,7 +143,7 @@ namespace ANU.IngameDebug.Console
             _clear.onClick.AddListener(Logs.Clear);
             _close.onClick.AddListener(() =>
             {
-                _content.SetActive(false);
+                Close();
                 _input.text = "";
             });
 
@@ -264,7 +264,11 @@ namespace ANU.IngameDebug.Console
             }
             else if (openPressed)
             {
-                _content.SetActive(!_content.activeSelf);
+                if (_content.activeSelf)
+                    Close();
+                else
+                    Open();
+
                 if (_content.activeInHierarchy)
                 {
                     _input.ActivateInputField();
@@ -325,7 +329,11 @@ namespace ANU.IngameDebug.Console
         }
 
         [DebugCommand("console.open")]
-        public static void Open() => Instance._content.SetActive(true);
+        public static void Open()
+        {
+            Instance._content.SetActive(true);
+            ExecuteCommand("console.refresh-size", silent: true);
+        }
 
         [DebugCommand("console.close")]
         public static void Close() => Instance._content.SetActive(false);
