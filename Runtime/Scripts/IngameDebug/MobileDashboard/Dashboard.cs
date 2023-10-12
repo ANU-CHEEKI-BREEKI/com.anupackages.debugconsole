@@ -16,6 +16,11 @@ namespace ANU.IngameDebug.Console.Dashboard
         [SerializeField] private GenericCommandPresenter _genericPresenterPrefab;
         [SerializeField] private ToggleCommandPresenter _togglePresenterPrefab;
         [SerializeField] private SwitchCommandPresenter _switchCommandPresenter;
+        [SerializeField] private DropdownCommandPresenter _dropdownCommandPresenter;
+        [Space]
+        [SerializeField] private Sprite _methodIcon;
+        [SerializeField] private Sprite _fieldIcon;
+        [SerializeField] private Sprite _propertyIcon;
 
         private IEnumerator Start()
         {
@@ -48,12 +53,22 @@ namespace ANU.IngameDebug.Console.Dashboard
                         && InRange(item.ValueHints.First().Value.Count(), 2, 4)
                         && (item is not MethodCommand || item.ParametersCache[0].IsRequired))
                         presenter = Instantiate(_switchCommandPresenter);
+                    else if (item.ValueHints.Count > 0
+                        && InRange(item.ValueHints.First().Value.Count(), 5, int.MaxValue)
+                        && (item is not MethodCommand || item.ParametersCache[0].IsRequired))
+                        presenter = Instantiate(_dropdownCommandPresenter);
                 }
 
                 if (presenter == null)
                     presenter = Instantiate(_genericPresenterPrefab);
 
                 presenter.transform.SetParent(_content, false);
+                presenter.Initialize(new CommandPresenterBase.InitArgs
+                {
+                    MethodIcon = _methodIcon,
+                    PropertyIcon = _propertyIcon,
+                    FieldIcon = _fieldIcon
+                });
                 presenter.Present(item);
             }
         }

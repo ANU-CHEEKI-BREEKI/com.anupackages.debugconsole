@@ -7,7 +7,6 @@ using UnityEngine.UI;
 
 namespace ANU.IngameDebug.Console.Dashboard
 {
-    [RequireComponent(typeof(LayoutElement))]
     internal class SwitchCommandPresenter : CommandPresenterBase
     {
         [SerializeField] private ToggleGroup _group;
@@ -16,12 +15,10 @@ namespace ANU.IngameDebug.Console.Dashboard
         private MemberCommand _command;
         private bool _isInitializing;
 
-        protected override void Awake()
+        public override void Initialize(InitArgs initArgs)
         {
-            base.Awake();
+            base.Initialize(initArgs);
 
-            _isInitializing = true;
-            
             _group.allowSwitchOff = false;
             foreach (var item in _toggles)
                 item.group = _group;
@@ -87,7 +84,7 @@ namespace ANU.IngameDebug.Console.Dashboard
 
             var index = _toggles.IndexOf(_toggles.First(t => t.isOn));
             var value = _command.ValueHints.First().Value.Skip(index).Take(1).Single();
-            DebugConsole.ExecuteCommand($"{_command.Name} {value}");
+            DebugConsole.ExecuteCommand($"{_command.Name} \"{value}\"");
 
             if (_command is MethodCommand)
                 DeselectAll();

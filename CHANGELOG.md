@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- mobile ui support - Dashboard commands view
+    - grouping by command prefix
+    - filtering by command prefix
+    - filtering by command type (method, property, field)
+    - easy accessible zero- and one-argument command presenters
+    - generic command presenters
+
+### Changed
+- removed console.switch-context command. its unnecessary
+- bug fix of unimplemented OptValDynamicAttribute for Fields and Properties
+- auto refreshing console size when open
 
 ## [2.0.4] - 2023-10-02
 ### Added

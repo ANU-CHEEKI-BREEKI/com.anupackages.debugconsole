@@ -469,9 +469,6 @@ MonoBehaviour:
   _label: {fileID: 3066746603377713549}
   _info: {fileID: 5991796913015121886}
   _icon: {fileID: 7421060698039013286}
-  _methodIcon: {fileID: 21300000, guid: 055a7b1e85bf74824886fc61b1e5da85, type: 3}
-  _fieldIcon: {fileID: 21300000, guid: 9a5f256ec4d484701826d7a77ee65b49, type: 3}
-  _propertyIcon: {fileID: 21300000, guid: e4c28b3991769431a8e496d3c32e56f7, type: 3}
   _group: {fileID: 2888333140980841423}
   _toggles:
   - {fileID: 8426859873670183182}
@@ -1523,7 +1520,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 0
+  m_overflowMode: 1
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1

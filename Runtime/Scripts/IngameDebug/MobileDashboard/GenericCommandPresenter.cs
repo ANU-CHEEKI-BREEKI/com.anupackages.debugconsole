@@ -15,9 +15,10 @@ namespace ANU.IngameDebug.Console.Dashboard
 
         private MemberCommand _command;
 
-        protected override void Awake()
+        public override void Initialize(InitArgs initArgs)
         {
-            base.Awake();
+            base.Initialize(initArgs);
+            
             _button.onClick.AddListener(Execute);
         }
 

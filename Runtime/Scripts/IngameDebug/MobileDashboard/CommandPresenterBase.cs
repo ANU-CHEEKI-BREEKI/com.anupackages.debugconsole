@@ -9,24 +9,31 @@ namespace ANU.IngameDebug.Console.Dashboard
     [RequireComponent(typeof(LayoutElement))]
     internal abstract class CommandPresenterBase : MonoBehaviour
     {
+        public struct InitArgs
+        {
+            public Sprite MethodIcon;
+            public Sprite FieldIcon;
+            public Sprite PropertyIcon;
+        }
+
         [SerializeField] protected TextMeshProUGUI _label;
         [SerializeField] protected Button _info;
         [Space]
         [SerializeField] private Image _icon;
-        [SerializeField] private Sprite _methodIcon;
-        [SerializeField] private Sprite _fieldIcon;
-        [SerializeField] private Sprite _propertyIcon;
+
+        private InitArgs _initArgs;
 
         private MemberCommand _command;
-
-        protected virtual void Awake()
-        {
-            _info.onClick.AddListener(() => InfoButtonClicked());
-        }
 
         protected void InfoButtonClicked()
         {
             //TODO: open popup with command name, description, arguments input
+        }
+
+        public virtual void Initialize(InitArgs initArgs)
+        {
+            _initArgs = initArgs;
+            _info.onClick.AddListener(() => InfoButtonClicked());
         }
 
         public void Present(MemberCommand command)
@@ -36,10 +43,10 @@ namespace ANU.IngameDebug.Console.Dashboard
             PresentInternal(command);
 
             _icon.sprite = command is FieldCommand
-                ? _fieldIcon
+                ? _initArgs.FieldIcon
                 : command is PropertyCommand
-                    ? _propertyIcon
-                    : _methodIcon;
+                    ? _initArgs.PropertyIcon
+                    : _initArgs.MethodIcon;
 
             var layout = GetComponent<LayoutElement>();
             UpdateLayout(layout);

@@ -12,14 +12,15 @@ namespace ANU.IngameDebug.Console.Dashboard
 
         private MemberCommand _command;
 
-        protected override void Awake()
+        public override void Initialize(InitArgs initArgs)
         {
-            base.Awake();
+            base.Initialize(initArgs);
+            
             _toggle.onValueChanged.AddListener(Toggle);
         }
 
         private void Toggle(bool isOn)
-            => DebugConsole.ExecuteCommand($"{_command.Name} {isOn}");
+            => DebugConsole.ExecuteCommand($"{_command.Name} \"{isOn}\"");
 
         protected override void PresentInternal(MemberCommand command)
         {

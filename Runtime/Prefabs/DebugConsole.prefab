@@ -5306,6 +5306,11 @@ MonoBehaviour:
     type: 3}
   _switchCommandPresenter: {fileID: 2933335761489937422, guid: 4d79baf9dae044e3abf88e5f520a7072,
     type: 3}
+  _dropdownCommandPresenter: {fileID: 779979953600704216, guid: 6c94eaaa9bea44be2a5fddae22e4b9af,
+    type: 3}
+  _methodIcon: {fileID: 21300000, guid: 055a7b1e85bf74824886fc61b1e5da85, type: 3}
+  _fieldIcon: {fileID: 21300000, guid: 9a5f256ec4d484701826d7a77ee65b49, type: 3}
+  _propertyIcon: {fileID: 21300000, guid: e4c28b3991769431a8e496d3c32e56f7, type: 3}
 --- !u!1 &6414169174141003170
 GameObject:
   m_ObjectHideFlags: 0

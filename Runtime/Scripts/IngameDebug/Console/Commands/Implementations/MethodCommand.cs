@@ -464,6 +464,8 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
             IEnumerable<string> hints = null;
 
             var values = _member.GetCustomAttribute<OptValAttribute>();
+            var valuesDynamic = _member.GetCustomAttribute<OptValDynamicAttribute>();
+
             if (values != null)
                 hints = values.AvailableValues.Select(v => v.ToString());
             else if (_parameterType.IsEnum)
@@ -489,8 +491,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
             var valAsKey = optionName.Split(new string[] { "|" }, StringSplitOptions.RemoveEmptyEntries);
             var opt = options[valAsKey.Last().TrimEnd('=', ':')];
 
-            if (hints != null)
-                valueHints[opt] = new AvailableValuesHint(hints);
+            valueHints[opt] = new AvailableValuesHint(hints, valuesDynamic?.DynamicValuesProviderCommandNames);
         }
 
         protected override void ValidateParameters() { }
