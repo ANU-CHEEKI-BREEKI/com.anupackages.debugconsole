@@ -3500,19 +3500,7 @@ MonoBehaviour:
   m_Group: {fileID: 2766254473115521032}
   onValueChanged:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 4641755235936612642}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   m_IsOn: 1
 --- !u!1 &4641755235936612642
 GameObject:
@@ -5883,19 +5871,7 @@ MonoBehaviour:
   m_Group: {fileID: 2766254473115521032}
   onValueChanged:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 5238148880676080178}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   m_IsOn: 0
 --- !u!1 &6671920928911030735
 GameObject:
@@ -6901,6 +6877,7 @@ GameObject:
   - component: {fileID: 4253336834324023771}
   - component: {fileID: 340375263552670928}
   - component: {fileID: 2766254473115521032}
+  - component: {fileID: 1880591118729613604}
   m_Layer: 5
   m_Name: view-toggles
   m_TagString: Untagged
@@ -6981,6 +6958,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_AllowSwitchOff: 0
+--- !u!114 &1880591118729613604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8966341734666018899}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 843e1c4498bce48d7ab9b0cc4f053ce2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _console: {fileID: 6165461399349882794}
+  _dashboard: {fileID: 2182953466196568525}
+  _consoleObject: {fileID: 4641755235936612642}
+  _dashboardObject: {fileID: 5238148880676080178}
 --- !u!1 &9080305242401076326
 GameObject:
   m_ObjectHideFlags: 0
