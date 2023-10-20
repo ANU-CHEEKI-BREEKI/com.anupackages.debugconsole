@@ -264,16 +264,39 @@ namespace ANU.IngameDebug.Utils
                 }
             }
         }
-    
+
         public static void DeleteAllChild(this Component component)
         {
             var tr = component.transform;
-            while(tr.childCount > 0)
+            while (tr.childCount > 0)
             {
                 var c = tr.GetChild(0);
                 c.SetParent(null);
                 GameObject.Destroy(c.gameObject);
             }
+        }
+
+        public static Coroutine TweenFloat(this MonoBehaviour mono, float from, float to, float duration, Action<float> callback)
+            => mono.StartCoroutine(TweenFloatCoroutine(from, to, duration, callback));
+
+        public static Coroutine TweenAnimation(this MonoBehaviour mono, Action<float> callback)
+            => mono.TweenFloat(0, 1, 0.1f, callback);
+
+        private static IEnumerator TweenFloatCoroutine(float from, float to, float duration, Action<float> callback)
+        {
+            var timer = 0f;
+
+            while (timer < duration)
+            {
+                var t = timer / duration;
+                callback?.Invoke(
+                    Mathf.Lerp(from, to, t)
+                );
+                yield return null;
+                timer += Time.unscaledDeltaTime;
+            }
+
+            callback?.Invoke(to);
         }
     }
 }

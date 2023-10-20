@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -73,7 +74,7 @@ namespace ANU.IngameDebug.Console
                 {
                     var item = row[c];
                     lastMinY = LayoutUtility.GetMinHeight(item);
-                
+
                     var minX = LayoutUtility.GetMinWidth(item);
                     var prefX = LayoutUtility.GetPreferredWidth(item);
                     var flexX = Mathf.Max(1, LayoutUtility.GetFlexibleWidth(item));
