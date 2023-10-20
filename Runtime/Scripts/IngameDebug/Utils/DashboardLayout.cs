@@ -12,6 +12,8 @@ namespace ANU.IngameDebug.Console
     {
         [SerializeField] private float _spacing = 15f;
 
+        public IReadOnlyList<RectTransform> RectChildren => rectChildren;
+
         private Grid<RectTransform> _grid = new();
 
         public override void CalculateLayoutInputHorizontal()

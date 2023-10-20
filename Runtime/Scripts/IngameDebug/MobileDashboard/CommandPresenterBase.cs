@@ -39,7 +39,8 @@ namespace ANU.IngameDebug.Console.Dashboard
         public void Present(MemberCommand command)
         {
             _command = command;
-            _label.text = command.Name;
+            var c = command;
+            _label.text = c.Name.Contains('.') ? c.Name.Substring(c.Name.LastIndexOf('.') + 1) : c.Name;
             PresentInternal(command);
 
             _icon.sprite = command is FieldCommand
