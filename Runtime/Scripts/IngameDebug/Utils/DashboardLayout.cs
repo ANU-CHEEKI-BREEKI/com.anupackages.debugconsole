@@ -58,12 +58,8 @@ namespace ANU.IngameDebug.Console
                     var item = row[c];
                     sumMinWidth += LayoutUtility.GetMinWidth(item);
                     sumPrefWidth += LayoutUtility.GetPreferredWidth(item);
-                    sumFlexWidth += LayoutUtility.GetFlexibleWidth(item);
+                    sumFlexWidth += Mathf.Max(1, LayoutUtility.GetFlexibleWidth(item));
                 }
-
-                if (sumFlexWidth == 0)
-                    sumFlexWidth = 1;
-
 
                 var totalWidth = maxWidth - (row.Count - 1) * _spacing;
                 if (sumMinWidth < totalWidth / 3f * 2f)

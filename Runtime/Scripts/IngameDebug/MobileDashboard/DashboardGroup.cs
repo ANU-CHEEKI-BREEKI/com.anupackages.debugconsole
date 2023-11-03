@@ -13,6 +13,8 @@ namespace ANU.IngameDebug.Console.Dashboard
         [SerializeField] private Toggle _toggle;
         [SerializeField] private DashboardLayout _layout;
         [SerializeField] private TextMeshProUGUI _title;
+        [SerializeField] private GameObject _header;
+        [SerializeField] private LayoutElement _element;
         [Space]
         [SerializeField] private GenericCommandPresenter _genericPresenterPrefab;
         [SerializeField] private ToggleCommandPresenter _togglePresenterPrefab;
@@ -34,10 +36,14 @@ namespace ANU.IngameDebug.Console.Dashboard
             });
         }
 
-        public void Initialize(string title, IEnumerable<MemberCommand> commands)
+        public void Initialize(string title, IEnumerable<MemberCommand> commands, bool showHeader)
         {
+            _header.SetActive(showHeader);
+            _element.minHeight = showHeader ? 80 : 5;
+            _layout.padding.top = showHeader ? 95 : 15;
+
             _title.text = title;
-            
+
             foreach (var command in commands)
             {
                 var item = command;

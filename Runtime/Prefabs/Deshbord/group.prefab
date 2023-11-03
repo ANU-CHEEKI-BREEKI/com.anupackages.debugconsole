@@ -167,6 +167,8 @@ MonoBehaviour:
   _toggle: {fileID: 1044821907151920066}
   _layout: {fileID: 9128721255330381338}
   _title: {fileID: 4531486193233404540}
+  _header: {fileID: 1870265485769136054}
+  _element: {fileID: 8939392396095612264}
   _genericPresenterPrefab: {fileID: 2891912173400278302, guid: a8a8f3f9d961843f0a775c3fc7660d52,
     type: 3}
   _togglePresenterPrefab: {fileID: 748138087404480254, guid: cf3791b940b2347349b4ef157c86f550,
