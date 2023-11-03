@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - filtering by command type (method, property, field)
     - easy accessible zero- and one-argument command presenters
     - generic command presenters
+    - floating button for open console on android
+    - saving floating button position
+    - saving last opened console tab
 
 ### Changed
 - removed console.switch-context command. its unnecessary

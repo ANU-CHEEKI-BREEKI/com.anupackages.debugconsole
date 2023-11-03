@@ -1,13 +1,8 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using ANU.IngameDebug.Console.Commands.Implementations;
 using ANU.IngameDebug.Utils;
-using Codice.CM.Common;
-using NCalc.Domain;
 using UnityEngine;
-using UnityEngine.Pool;
 using UnityEngine.UI;
 
 namespace ANU.IngameDebug.Console.Dashboard
