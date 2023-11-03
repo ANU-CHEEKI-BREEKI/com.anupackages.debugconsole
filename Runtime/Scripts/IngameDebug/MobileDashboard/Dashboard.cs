@@ -20,6 +20,43 @@ namespace ANU.IngameDebug.Console.Dashboard
         [SerializeField] private Transform _categoriesFilterContent;
         [SerializeField] private ToggleGroup _categoryGroup;
         [SerializeField] private CategoryFilterToggle _categoryFilterGroupPrefab;
+        [Space]
+        [SerializeField] private FloatingRectTransform _floatingOpenButton;
+        [SerializeField] private Button _closeConsole;
+
+        private float FloatingButtonPositionX
+        {
+            get => PlayerPrefs.GetFloat("FloatingButtonPositionX", 0.5f);
+            set => PlayerPrefs.SetFloat("FloatingButtonPositionX", value);
+        }
+        private float FloatingButtonPositionY
+        {
+            get => PlayerPrefs.GetFloat("FloatingButtonPositionY", 0.5f);
+            set => PlayerPrefs.SetFloat("FloatingButtonPositionY", value);
+        }
+
+        private Vector2 FloatingButtonPosition
+        {
+            get => new Vector2(FloatingButtonPositionX, FloatingButtonPositionY);
+            set
+            {
+                FloatingButtonPositionX = value.x;
+                FloatingButtonPositionY = value.y;
+            }
+        }
+
+        private void Awake()
+        {
+            _floatingOpenButton.Clicked += args => DebugConsole.Open();
+            _floatingOpenButton.DragEnd += args => FloatingButtonPosition = _floatingOpenButton.RT.anchorMin;
+            DebugConsole.IsOpenedChanged += () => _floatingOpenButton.gameObject.SetActive(!DebugConsole.IsOpened);
+            _floatingOpenButton.gameObject.SetActive(!DebugConsole.IsOpened);
+            _closeConsole.onClick.AddListener(DebugConsole.Close);
+
+            _floatingOpenButton.RT.anchorMin = FloatingButtonPosition;
+            _floatingOpenButton.RT.anchorMax = FloatingButtonPosition;
+            _floatingOpenButton.RT.anchoredPosition = Vector2.zero;
+        }
 
         private IEnumerator Start()
         {

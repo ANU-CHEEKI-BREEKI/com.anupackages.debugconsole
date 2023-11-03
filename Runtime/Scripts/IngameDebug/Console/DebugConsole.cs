@@ -14,6 +14,7 @@ namespace ANU.IngameDebug.Console
 {
     [DisallowMultipleComponent]
     [DebugCommandPrefix("console")]
+    [DefaultExecutionOrder(-10_000)]
     public class DebugConsole : MonoBehaviour
     {
         private const float ColsoleInputHeightPercentage = 0.1f;
@@ -42,6 +43,7 @@ namespace ANU.IngameDebug.Console
 
         internal static DebugConsole Instance { get; set; }
         public static bool IsOpened => Instance._content.activeInHierarchy;
+        public static event Action IsOpenedChanged;
 
         private static ISuggestionsContext SuggestionsContext
         {
@@ -173,6 +175,9 @@ namespace ANU.IngameDebug.Console
                 _input.ActivateInputField();
             }
         }
+
+        // private void Start() => GetComponentInChildren<UIRectResizer>(includeInactive: true).RefreshConsoleSize();
+        private void Start() => GetComponentInChildren<UICanvasScaler>(includeInactive: true).RefreshConsoleScale();
 
         private void OnDestroy()
         {
@@ -349,10 +354,15 @@ namespace ANU.IngameDebug.Console
         {
             Instance._content.SetActive(true);
             ExecuteCommand("console.refresh-size", silent: true);
+            IsOpenedChanged?.Invoke();
         }
 
         [DebugCommand]
-        public static void Close() => Instance._content.SetActive(false);
+        public static void Close()
+        {
+            Instance._content.SetActive(false);
+            IsOpenedChanged?.Invoke();
+        }
 
         private void DisplaySuggestions(string input, bool forced = false)
         {

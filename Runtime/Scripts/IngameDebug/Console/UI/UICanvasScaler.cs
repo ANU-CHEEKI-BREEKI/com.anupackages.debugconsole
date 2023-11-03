@@ -48,10 +48,10 @@ namespace ANU.IngameDebug.Console
 
             _plus.onClick.AddListener(() => ConsoleScale(CurrentScale + ScaleStep));
             _minus.onClick.AddListener(() => ConsoleScale(CurrentScale - ScaleStep));
-
-            ConsoleScale(CurrentScale);
         }
 
+        private void OnEnable() => ConsoleScale(CurrentScale);
+        public void RefreshConsoleScale() => ConsoleScale(CurrentScale);
         private void ResetInput() => _exact.text = CurrentScale.ToString() + "%";
 
         [DebugCommand(Name = "scale", Description = "Set console ui scale.")]
