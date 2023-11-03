@@ -19,6 +19,8 @@ namespace ANU.IngameDebug.Console.Dashboard
         [SerializeField] private FloatingRectTransform _floatingOpenButton;
         [SerializeField] private Button _closeConsole;
 
+        private Coroutine _observer;
+
         private float FloatingButtonPositionX
         {
             get => PlayerPrefs.GetFloat("FloatingButtonPositionX", 0.5f);
@@ -52,6 +54,9 @@ namespace ANU.IngameDebug.Console.Dashboard
             _floatingOpenButton.RT.anchorMax = FloatingButtonPosition;
             _floatingOpenButton.RT.anchoredPosition = Vector2.zero;
         }
+
+        private void OnEnable() => _observer = StartCoroutine(DeviseOrientationObserver());
+        private void OnDisable() => StopCoroutine(_observer);
 
         private IEnumerator Start()
         {
@@ -114,6 +119,29 @@ namespace ANU.IngameDebug.Console.Dashboard
             space.flexibleWidth = 1_000_000;
 
             _categoriesFilterContent.GetComponentInChildren<Toggle>().isOn = true;
+        }
+
+        private IEnumerator DeviseOrientationObserver()
+        {
+            var waiter = new WaitForSecondsRealtime(0.2f);
+            var lastScreenHeight = Screen.height;
+            var lastScreenWidth = Screen.width;
+
+            while (true)
+            {
+                var changed = lastScreenHeight != Screen.height || lastScreenWidth != Screen.width;
+
+                lastScreenHeight = Screen.height;
+                lastScreenWidth = Screen.width;
+
+                if (changed)
+                {
+                    DebugConsole.ExecuteCommand("console.refresh-size", silent: true);
+                    DebugConsole.ExecuteCommand("console.refresh-scale", silent: true);
+                }
+
+                yield return waiter;
+            }
         }
     }
 }
