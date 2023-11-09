@@ -49,6 +49,7 @@ MonoBehaviour:
   _output_Assert:
     _isEnabled: 0
     _value: {r: 0, g: 0, b: 0, a: 0}
+  <Header>k__BackingField: {r: 0.18867922, g: 0.18867922, b: 0.18867922, a: 1}
   <Background>k__BackingField: {r: 0, g: 0, b: 0, a: 0.68235296}
   <Foreground>k__BackingField: {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 0.68235296}
   <Font>k__BackingField: {r: 0.8584906, g: 0.8584906, b: 0.8584906, a: 1}
@@ -57,6 +58,9 @@ MonoBehaviour:
   <ScrollBar_Background>k__BackingField: {r: 0.3773585, g: 0.3773585, b: 0.3773585,
     a: 0.28627452}
   <ScrollBar_Foreground>k__BackingField: {r: 0.735849, g: 0.735849, b: 0.735849, a: 0.21960784}
+  _main_Background:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
   _consoleList_Background:
     _isEnabled: 0
     _value: {r: 0, g: 0, b: 0, a: 0}
@@ -96,7 +100,7 @@ MonoBehaviour:
   _commandLine_Font:
     _isEnabled: 0
     _value: {r: 0, g: 0, b: 0, a: 0}
-  _commandLineControls_Foreground:
+  _commandLineControls_Background:
     _isEnabled: 0
     _value: {r: 0, g: 0, b: 0, a: 0}
   _commandLineControls_Font:
@@ -120,3 +124,60 @@ MonoBehaviour:
   filter_Font:
     _isEnabled: 0
     _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboard_Header:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboard_Background:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboard_Foreground:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboard_Font:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboard_ScrollBar_Background:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboard_ScrollBar_Foreground:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardInfo_Background:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardInfo_Foreground:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardInfo_Font:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardInfo_ScrollBar_Background:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardInfo_ScrollBar_Foreground:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardItem_Background:
+    _isEnabled: 1
+    _value: {r: 0.254717, g: 0.254717, b: 0.254717, a: 1}
+  _dashboardItem_Foreground:
+    _isEnabled: 1
+    _value: {r: 0.509434, g: 0.509434, b: 0.509434, a: 1}
+  _dashboardItem_Font:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardItem_FontSelected:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardItem_FontPressed:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardItem_ScrollBar_Background:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardItem_ScrollBar_Foreground:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardItem_NonRequired: {r: 0.5188679, g: 0.5188679, b: 0.5188679, a: 1}
+  _dashboardItem_Required: {r: 0.7264151, g: 0.43130347, b: 0, a: 1}
+  _dashboardItem_Toggle: {r: 0, g: 0.22612378, b: 0.5283019, a: 1}

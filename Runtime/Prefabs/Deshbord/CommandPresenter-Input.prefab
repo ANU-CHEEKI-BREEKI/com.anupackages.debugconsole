@@ -250,14 +250,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.49056602, g: 0.48362404, b: 0.48362404, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: d3522398f37c54df4b49176a84c0dbec, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -499,6 +499,7 @@ GameObject:
   - component: {fileID: 2167992057104391602}
   - component: {fileID: 5860126985715403994}
   - component: {fileID: 7213007814202788672}
+  - component: {fileID: 5234129822252948746}
   m_Layer: 5
   m_Name: CommandPresenter-Input
   m_TagString: Untagged
@@ -558,8 +559,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
+  m_Sprite: {fileID: 21300000, guid: d3522398f37c54df4b49176a84c0dbec, type: 3}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -605,6 +606,34 @@ MonoBehaviour:
   _icon: {fileID: 4110360309859068050}
   _input: {fileID: 4182285713716726398}
   _button: {fileID: 732807069779813918}
+--- !u!114 &5234129822252948746
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5910077298609865436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2fea5d0f2d024e5184f923f9dd29972, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _header: []
+  _background:
+  - {fileID: 2167992057104391602}
+  _foreground:
+  - {fileID: 5120119127512305742}
+  _font:
+  - {fileID: 2885355576541814618}
+  - {fileID: 177779242204519353}
+  - {fileID: 5341142650528683519}
+  _selectable: []
+  _selection: []
+  _scrollBarBackgroind: []
+  _scrollBarForeground: []
+  _nonRequired: []
+  _required: []
+  _toggle: []
 --- !u!1 &7475185260949531192
 GameObject:
   m_ObjectHideFlags: 0
@@ -681,8 +710,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4282335039
+  m_fontColor: {r: 0.24528301, g: 0.24528301, b: 0.24528301, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -818,8 +847,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 2150773298
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 0.5}
+    rgba: 4282335039
+  m_fontColor: {r: 0.24528301, g: 0.24528301, b: 0.24528301, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -906,6 +935,36 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3625296542938108010}
     m_Modifications:
+    - target: {fileID: 6118215251125182781, guid: 057237aab1d364e32801edab6164a962,
+        type: 3}
+      propertyPath: m_Colors.m_PressedColor.b
+      value: 0.37254903
+      objectReference: {fileID: 0}
+    - target: {fileID: 6118215251125182781, guid: 057237aab1d364e32801edab6164a962,
+        type: 3}
+      propertyPath: m_Colors.m_PressedColor.g
+      value: 0.7529412
+      objectReference: {fileID: 0}
+    - target: {fileID: 6118215251125182781, guid: 057237aab1d364e32801edab6164a962,
+        type: 3}
+      propertyPath: m_Colors.m_PressedColor.r
+      value: 0.7529412
+      objectReference: {fileID: 0}
+    - target: {fileID: 6118215251125182781, guid: 057237aab1d364e32801edab6164a962,
+        type: 3}
+      propertyPath: m_Colors.m_SelectedColor.b
+      value: 0.054378804
+      objectReference: {fileID: 0}
+    - target: {fileID: 6118215251125182781, guid: 057237aab1d364e32801edab6164a962,
+        type: 3}
+      propertyPath: m_Colors.m_SelectedColor.g
+      value: 0.68153805
+      objectReference: {fileID: 0}
+    - target: {fileID: 6118215251125182781, guid: 057237aab1d364e32801edab6164a962,
+        type: 3}
+      propertyPath: m_Colors.m_SelectedColor.r
+      value: 0.8867924
+      objectReference: {fileID: 0}
     - target: {fileID: 6447572089979461444, guid: 057237aab1d364e32801edab6164a962,
         type: 3}
       propertyPath: m_Name

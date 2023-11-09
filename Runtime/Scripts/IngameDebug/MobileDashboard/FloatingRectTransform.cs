@@ -17,6 +17,8 @@ namespace ANU.IngameDebug.Console.Dashboard
         public RectTransform RT => transform as RectTransform;
         public RectTransform RTParent => transform.parent as RectTransform;
 
+        private void OnEnable() => ClampPosition(RT.localPosition);
+
         void IBeginDragHandler.OnBeginDrag(PointerEventData eventData) => _drag = true;
         void IEndDragHandler.OnEndDrag(PointerEventData eventData)
         {
@@ -28,7 +30,11 @@ namespace ANU.IngameDebug.Console.Dashboard
         {
             RectTransformUtility.ScreenPointToLocalPointInRectangle(RTParent, eventData.position, eventData.pressEventCamera, out var localPoint);
             localPoint -= _offset;
+            ClampPosition(localPoint);
+        }
 
+        private void ClampPosition(Vector2 localPoint)
+        {
             var size = RTParent.rect.size;
             var localNormalized = (localPoint + (size / 2f)) / size;
             var rtNormalizedSize = RT.rect.size / size / 2f;

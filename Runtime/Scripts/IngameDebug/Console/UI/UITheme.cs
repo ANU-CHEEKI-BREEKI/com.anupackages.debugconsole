@@ -33,6 +33,7 @@ namespace ANU.IngameDebug.Console
         [SerializeField] private OptionalField<Color> _output_Assert;
 
         [field: Space, Header("UI - Default")]
+        [field: SerializeField] public Color Header { get; private set; }
         [field: SerializeField] public Color Background { get; private set; }
         [field: SerializeField] public Color Foreground { get; private set; }
         [field: SerializeField] public Color Font { get; private set; }
@@ -77,6 +78,32 @@ namespace ANU.IngameDebug.Console
         [SerializeField] private OptionalField<Color> filter_Foreground;
         [SerializeField] private OptionalField<Color> filter_Font;
 
+        [Space, Header("UI - Overrides - Dashboard")]
+        [SerializeField] private OptionalField<Color> _dashboard_Header;
+        [SerializeField] private OptionalField<Color> _dashboard_Background;
+        [SerializeField] private OptionalField<Color> _dashboard_Foreground;
+        [SerializeField] private OptionalField<Color> _dashboard_Font;
+        [SerializeField] private OptionalField<Color> _dashboard_ScrollBar_Background;
+        [SerializeField] private OptionalField<Color> _dashboard_ScrollBar_Foreground;
+        [Space]
+        [SerializeField] private OptionalField<Color> _dashboardInfo_Background;
+        [SerializeField] private OptionalField<Color> _dashboardInfo_Foreground;
+        [SerializeField] private OptionalField<Color> _dashboardInfo_Font;
+        [SerializeField] private OptionalField<Color> _dashboardInfo_ScrollBar_Background;
+        [SerializeField] private OptionalField<Color> _dashboardInfo_ScrollBar_Foreground;
+        [Space, Header("UI - Overrides - Dashboard - Items")]
+        [SerializeField] private OptionalField<Color> _dashboardItem_Background;
+        [SerializeField] private OptionalField<Color> _dashboardItem_Foreground;
+        [SerializeField] private OptionalField<Color> _dashboardItem_Font;
+        [SerializeField] private OptionalField<Color> _dashboardItem_FontSelected;
+        [SerializeField] private OptionalField<Color> _dashboardItem_FontPressed;
+        [SerializeField] private OptionalField<Color> _dashboardItem_ScrollBar_Background;
+        [SerializeField] private OptionalField<Color> _dashboardItem_ScrollBar_Foreground;
+        [SerializeField] private Color _dashboardItem_NonRequired;
+        [SerializeField] private Color _dashboardItem_Required;
+        [SerializeField] private Color _dashboardItem_Toggle;
+
+
         public Color Message_Log => _message_Log.AsNullable() ?? Log;
         public Color Message_Warnings => _message_Warnings.AsNullable() ?? Warnings;
         public Color Message_Errors => _message_Errors.AsNullable() ?? Errors;
@@ -117,6 +144,31 @@ namespace ANU.IngameDebug.Console
         public Color Filter_Background => filter_Background.AsNullable() ?? Background;
         public Color Filter_Foreground => filter_Foreground.AsNullable() ?? Foreground;
         public Color Filter_Font => filter_Font.AsNullable() ?? Font;
+
+        public Color Dashboard_Header => _dashboard_Header.AsNullable() ?? Header;
+        public Color Dashboard_Background => _dashboard_Background.AsNullable() ?? Background;
+        public Color Dashboard_Foreground => _dashboard_Foreground.AsNullable() ?? Foreground;
+        public Color Dashboard_Font => _dashboard_Font.AsNullable() ?? Font;
+        public Color Dashboard_ScrollBar_Background => _dashboard_ScrollBar_Background.AsNullable() ?? ScrollBar_Background;
+        public Color Dashboard_ScrollBar_Foreground => _dashboard_ScrollBar_Foreground.AsNullable() ?? ScrollBar_Foreground;
+
+        public Color DashboardInfo_Background => _dashboardInfo_Background.AsNullable() ?? Background;
+        public Color DashboardInfo_Foreground => _dashboardInfo_Foreground.AsNullable() ?? Foreground;
+        public Color DashboardInfo_Font => _dashboardInfo_Font.AsNullable() ?? Font;
+        public Color DashboardInfo_ScrollBar_Background => _dashboardInfo_ScrollBar_Background.AsNullable() ?? ScrollBar_Background;
+        public Color DashboardInfo_ScrollBar_Foreground => _dashboardInfo_ScrollBar_Foreground.AsNullable() ?? ScrollBar_Foreground;
+
+        public Color DashboardItem_Background => _dashboardItem_Background.AsNullable() ?? Background;
+        public Color DashboardItem_Foreground => _dashboardItem_Foreground.AsNullable() ?? Foreground;
+        public Color DashboardItem_Font => _dashboardItem_Font.AsNullable() ?? Font;
+        public Color DashboardItem_FontSelected => _dashboardItem_FontSelected.AsNullable() ?? FontSelected;
+        public Color DashboardItem_FontPressed => _dashboardItem_FontPressed.AsNullable() ?? FontPressed;
+        public Color DashboardItem_ScrollBar_Background => _dashboardItem_ScrollBar_Background.AsNullable() ?? ScrollBar_Background;
+        public Color DashboardItem_ScrollBar_Foreground => _dashboardItem_ScrollBar_Foreground.AsNullable() ?? ScrollBar_Foreground;
+
+        public Color DashboardItem_NonRequired => _dashboardItem_NonRequired;
+        public Color DashboardItem_Required => _dashboardItem_Required;
+        public Color DashboardItem_Toggle => _dashboardItem_Toggle;
 
         public event Action Changed;
 

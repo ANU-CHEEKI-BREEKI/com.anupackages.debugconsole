@@ -60,7 +60,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.14509805, g: 0.92156863, b: 1, a: 1}
+  m_Color: {r: 0.25, g: 1, b: 0.97767866, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -136,7 +136,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.1462264, g: 0.9199335, b: 1, a: 1}
+  m_Color: {r: 0.8867924, g: 0.68153805, b: 0.054378804, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -167,6 +167,7 @@ GameObject:
   - component: {fileID: 5409626967086306492}
   - component: {fileID: 4294644224848962811}
   - component: {fileID: 2249666867925059068}
+  - component: {fileID: 9048897008452359180}
   m_Layer: 5
   m_Name: ArgumentPresenter-Toggle
   m_TagString: Untagged
@@ -316,6 +317,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _label: {fileID: 8401815754674404376}
   _toggle: {fileID: 4294644224848962811}
+--- !u!114 &9048897008452359180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5207654976784898746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2fea5d0f2d024e5184f923f9dd29972, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _header: []
+  _background:
+  - {fileID: 312929991134381524}
+  _foreground: []
+  _font:
+  - {fileID: 8401815754674404376}
+  _selectable: []
+  _selection: []
+  _scrollBarBackgroind: []
+  _scrollBarForeground: []
+  _nonRequired: []
+  _required: []
+  _toggle:
+  - {fileID: 6524155924363230695}
+  - {fileID: 2862676817421929133}
 --- !u!1 &7231642110452440708
 GameObject:
   m_ObjectHideFlags: 0
@@ -392,8 +420,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4282335039
+  m_fontColor: {r: 0.24528301, g: 0.24528301, b: 0.24528301, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

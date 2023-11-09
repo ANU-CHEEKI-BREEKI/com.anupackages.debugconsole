@@ -49,6 +49,7 @@ MonoBehaviour:
   _output_Assert:
     _isEnabled: 0
     _value: {r: 0, g: 0, b: 0, a: 0}
+  <Header>k__BackingField: {r: 0.7924528, g: 0.7924528, b: 0.7924528, a: 1}
   <Background>k__BackingField: {r: 1, g: 1, b: 1, a: 1}
   <Foreground>k__BackingField: {r: 0.4716981, g: 0.46502313, b: 0.46502313, a: 1}
   <Font>k__BackingField: {r: 0.3207547, g: 0.22846209, b: 0.22846209, a: 1}
@@ -123,3 +124,60 @@ MonoBehaviour:
   filter_Font:
     _isEnabled: 0
     _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboard_Header:
+    _isEnabled: 0
+    _value: {r: 1, g: 0, b: 0, a: 1}
+  _dashboard_Background:
+    _isEnabled: 1
+    _value: {r: 1, g: 1, b: 1, a: 1}
+  _dashboard_Foreground:
+    _isEnabled: 1
+    _value: {r: 0.87843144, g: 0.87843144, b: 0.87843144, a: 1}
+  _dashboard_Font:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboard_ScrollBar_Background:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboard_ScrollBar_Foreground:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardInfo_Background:
+    _isEnabled: 0
+    _value: {r: 1, g: 0, b: 0, a: 1}
+  _dashboardInfo_Foreground:
+    _isEnabled: 1
+    _value: {r: 1, g: 1, b: 1, a: 1}
+  _dashboardInfo_Font:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardInfo_ScrollBar_Background:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardInfo_ScrollBar_Foreground:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardItem_Background:
+    _isEnabled: 1
+    _value: {r: 0.8784314, g: 0.8784314, b: 0.8784314, a: 1}
+  _dashboardItem_Foreground:
+    _isEnabled: 1
+    _value: {r: 1, g: 1, b: 1, a: 1}
+  _dashboardItem_Font:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardItem_FontSelected:
+    _isEnabled: 1
+    _value: {r: 1, g: 0.8240588, b: 0.5330188, a: 1}
+  _dashboardItem_FontPressed:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardItem_ScrollBar_Background:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardItem_ScrollBar_Foreground:
+    _isEnabled: 0
+    _value: {r: 0, g: 0, b: 0, a: 0}
+  _dashboardItem_NonRequired: {r: 1, g: 1, b: 1, a: 1}
+  _dashboardItem_Required: {r: 0.990566, g: 0.91087955, b: 0.39716092, a: 1}
+  _dashboardItem_Toggle: {r: 0.7028302, g: 0.98732567, b: 1, a: 1}
