@@ -18,6 +18,8 @@ namespace ANU.IngameDebug.Console.Dashboard
         [Space]
         [SerializeField] private FloatingRectTransform _floatingOpenButton;
         [SerializeField] private Button _closeConsole;
+        [Space]
+        [SerializeField] private CommandInfoPanel _infoPanel;
 
         private Coroutine _observer;
 
@@ -94,6 +96,7 @@ namespace ANU.IngameDebug.Console.Dashboard
                     _content.DeleteAllChild();
                     var groupContent = Instantiate(_groupPrefab, _content);
                     groupContent.Initialize(group.Key, group.Select(g => g.Command), false);
+                    groupContent.InfoRequested += OpenInfo;
                 });
             }
 
@@ -110,6 +113,7 @@ namespace ANU.IngameDebug.Console.Dashboard
                 {
                     var groupContent = Instantiate(_groupPrefab, _content);
                     groupContent.Initialize(group.Key, group.Select(g => g.Command), true);
+                    groupContent.InfoRequested += OpenInfo;
                 }
             });
 
@@ -120,6 +124,8 @@ namespace ANU.IngameDebug.Console.Dashboard
 
             _categoriesFilterContent.GetComponentInChildren<Toggle>().isOn = true;
         }
+
+        private void OpenInfo(MemberCommand command) => _infoPanel.Show(command);
 
         private IEnumerator DeviseOrientationObserver()
         {

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using ANU.IngameDebug.Console.Commands.Implementations;
+using ANU.IngameDebug.Utils;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -46,23 +47,7 @@ namespace ANU.IngameDebug.Console.Dashboard
                 );
             }
 
-            _input.contentType = command.ParametersCache[0].DefaultValue switch
-            {
-                short => TMP_InputField.ContentType.IntegerNumber,
-                int => TMP_InputField.ContentType.IntegerNumber,
-                long => TMP_InputField.ContentType.IntegerNumber,
-                ushort => TMP_InputField.ContentType.IntegerNumber,
-                uint => TMP_InputField.ContentType.IntegerNumber,
-                ulong => TMP_InputField.ContentType.IntegerNumber,
-                sbyte => TMP_InputField.ContentType.IntegerNumber,
-                byte => TMP_InputField.ContentType.IntegerNumber,
-
-                float => TMP_InputField.ContentType.DecimalNumber,
-                double => TMP_InputField.ContentType.DecimalNumber,
-                decimal => TMP_InputField.ContentType.DecimalNumber,
-
-                _ => TMP_InputField.ContentType.Standard,
-            };
+            _input.contentType = command.ParametersCache[0].DefaultValue.GetContentType();
         }
 
         private void Execute(string arg0) => Execute();

@@ -1,3 +1,4 @@
+using System;
 using ANU.IngameDebug.Console.Commands;
 using ANU.IngameDebug.Console.Commands.Implementations;
 using TMPro;
@@ -25,10 +26,11 @@ namespace ANU.IngameDebug.Console.Dashboard
 
         private MemberCommand _command;
 
-        protected void InfoButtonClicked()
-        {
-            //TODO: open popup with command name, description, arguments input
-        }
+        public MemberCommand Command => _command;
+
+        public event Action<CommandPresenterBase> InfoRequested;
+
+        protected void InfoButtonClicked() => InfoRequested?.Invoke(this);
 
         public virtual void Initialize(InitArgs initArgs)
         {

@@ -5,9 +5,11 @@ using UnityEngine.EventSystems;
 namespace ANU.IngameDebug.Console.Dashboard
 {
     [RequireComponent(typeof(RectTransform))]
-    public class FloatingRectTransform : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerClickHandler
+    public class FloatingRectTransform : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler
     {
         private bool _drag;
+
+        private Vector2 _offset;
 
         public event Action<PointerEventData> Clicked;
         public event Action<PointerEventData> DragEnd;
@@ -25,6 +27,7 @@ namespace ANU.IngameDebug.Console.Dashboard
         void IDragHandler.OnDrag(PointerEventData eventData)
         {
             RectTransformUtility.ScreenPointToLocalPointInRectangle(RTParent, eventData.position, eventData.pressEventCamera, out var localPoint);
+            localPoint -= _offset;
 
             var size = RTParent.rect.size;
             var localNormalized = (localPoint + (size / 2f)) / size;
@@ -43,6 +46,14 @@ namespace ANU.IngameDebug.Console.Dashboard
             if (_drag)
                 return;
             Clicked?.Invoke(eventData);
+        }
+
+        void IPointerUpHandler.OnPointerUp(PointerEventData eventData) { }
+
+        void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
+        {
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(RT, eventData.position, eventData.pressEventCamera, out var localPoint);
+            _offset = localPoint;
         }
     }
 }

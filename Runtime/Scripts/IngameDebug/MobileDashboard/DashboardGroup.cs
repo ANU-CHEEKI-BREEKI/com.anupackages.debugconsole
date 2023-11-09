@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,8 @@ namespace ANU.IngameDebug.Console.Dashboard
         [SerializeField] private Sprite _methodIcon;
         [SerializeField] private Sprite _fieldIcon;
         [SerializeField] private Sprite _propertyIcon;
+
+        public event Action<MemberCommand> InfoRequested;
 
         private void Awake()
         {
@@ -77,6 +80,8 @@ namespace ANU.IngameDebug.Console.Dashboard
                     FieldIcon = _fieldIcon
                 });
                 presenter.Present(item);
+
+                presenter.InfoRequested += presenter => InfoRequested?.Invoke(presenter.Command);
             }
 
         }

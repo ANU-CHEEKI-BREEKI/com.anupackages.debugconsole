@@ -71,7 +71,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
         protected MemberCommand(string name, string description) : base(name, description) { }
 
-        public IReadOnlyDictionary<int, ParameterCache> ParametersCache 
+        public IReadOnlyDictionary<int, ParameterCache> ParametersCache
         {
             get
             {
@@ -93,13 +93,15 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
         public struct ParameterCache
         {
             public int Index;
+            public string Name;
             public Type Type;
             public object DefaultValue;
             public bool IsRequired;
 
-            public ParameterCache(int index, Type type, object defaultValue, bool isRequired)
+            public ParameterCache(int index, string name, Type type, object defaultValue, bool isRequired)
             {
                 Index = index;
+                Name = name;
                 Type = type;
                 DefaultValue = defaultValue;
                 IsRequired = isRequired;
@@ -412,6 +414,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                 var parameter = _parameters[i];
                 parameterCache[i] = new ParameterCache(
                     i,
+                    parameter.Name,
                     parameter.ParameterType,
                     parameter.HasDefaultValue
                         ? parameter.DefaultValue
@@ -516,6 +519,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
         {
             parameterCache[0] = new ParameterCache(
                 0,
+                _invokeType.ToString(),
                 ReturnValueType,
                 ReturnValueType.IsValueType
                     ? Activator.CreateInstance(ReturnValueType)
