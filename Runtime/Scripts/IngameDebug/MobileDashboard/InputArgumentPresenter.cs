@@ -1,18 +1,24 @@
+using ANU.IngameDebug.Utils;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static ANU.IngameDebug.Console.Commands.Implementations.MemberCommand;
 
 namespace ANU.IngameDebug.Console.Dashboard
 {
     internal class InputArgumentPresenter : ArgumentPresenterBase
     {
         [SerializeField] private TMP_InputField _input;
-        [SerializeField] private Button _button;
 
-        protected override void PresentInternal(ParameterCache parameter)
+        public override string Value => string.IsNullOrEmpty(_input.text) ? null : _input.text;
+
+        protected override void Initialize() { }
+
+        protected override void PresentInternal()
         {
-            throw new System.NotImplementedException();
+            _input.SetTextWithoutNotify(
+                DebugConsole.Converters.ConvertToString(Parameter.DefaultValue)
+            );
+            _input.contentType = Parameter.DefaultValue.GetContentType();
         }
     }
 }

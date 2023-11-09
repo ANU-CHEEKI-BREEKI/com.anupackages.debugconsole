@@ -31,43 +31,43 @@ namespace ANU.IngameDebug.Console.Commands
             }
         }
 
-        private void PrintHelp()
+        private void PrintHelp() => Logger.LogInfo(GetHelp());
+
+        public string GetHelp()
         {
-            using (var writer = new StringWriter())
+            using var writer = new StringWriter();
+            writer.WriteLine();
+            writer.WriteLine($"{"Name:",-15} {Name}");
+            writer.WriteLine($"{"Description:",-15} {Description}");
+            writer.WriteLine("Options:");
+            foreach (var opt in Options)
             {
-                writer.WriteLine();
-                writer.WriteLine($"{"Name:",-15} {Name}");
-                writer.WriteLine($"{"Description:",-15} {Description}");
-                writer.WriteLine("Options:");
-                foreach (var opt in Options)
+                writer.Write("    --");
+                writer.Write(string.Join("|", opt.GetNames()));
+
+                var val = "=VALUE";
+                if (InternalValueHints.ContainsKey(opt))
+                    val = "=" + string.Join(", -", InternalValueHints[opt]);
+
+                switch (opt.OptionValueType)
                 {
-                    writer.Write("    --");
-                    writer.Write(string.Join("|", opt.GetNames()));
-
-                    var val = "=VALUE";
-                    if (InternalValueHints.ContainsKey(opt))
-                        val = "=" + string.Join(", -", InternalValueHints[opt]);
-
-                    switch (opt.OptionValueType)
-                    {
-                        case OptionValueType.None:
-                            break;
-                        case OptionValueType.Optional:
-                            writer.Write("[");
-                            writer.Write(val);
-                            writer.Write("]");
-                            break;
-                        case OptionValueType.Required:
-                            writer.Write(val);
-                            break;
-                    }
-
-                    writer.Write("    ");
-                    writer.WriteLine(opt.Description);
+                    case OptionValueType.None:
+                        break;
+                    case OptionValueType.Optional:
+                        writer.Write("[");
+                        writer.Write(val);
+                        writer.Write("]");
+                        break;
+                    case OptionValueType.Required:
+                        writer.Write(val);
+                        break;
                 }
 
-                Logger.LogInfo(writer.ToString());
+                writer.Write("    ");
+                writer.WriteLine(opt.Description);
             }
+
+            return writer.ToString();
         }
 
         public ILogger Logger { get; set; }

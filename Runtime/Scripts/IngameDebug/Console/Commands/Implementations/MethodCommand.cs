@@ -97,14 +97,16 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
             public Type Type;
             public object DefaultValue;
             public bool IsRequired;
+            public Option Option;
 
-            public ParameterCache(int index, string name, Type type, object defaultValue, bool isRequired)
+            public ParameterCache(int index, string name, Type type, object defaultValue, bool isRequired, Option option)
             {
                 Index = index;
                 Name = name;
                 Type = type;
                 DefaultValue = defaultValue;
                 IsRequired = isRequired;
+                Option = option;
             }
         }
     }
@@ -277,6 +279,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
         private readonly object[] _parameterValues;
         private readonly bool[] _isParameterValid;
         private readonly ParameterInfo[] _parameters;
+        private readonly Option[] _options;
 
         public MethodCommand(MethodInfo method, string prefix = "")
             : this(method, (object)null, prefix) { }
@@ -289,6 +292,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
             _parameters = method.GetParameters();
             _parameterValues = new object[_parameters.Length];
             _isParameterValid = new bool[_parameters.Length];
+            _options = new Option[_parameters.Length];
 
             ResetParametersValues();
         }
@@ -402,6 +406,7 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                     hints = new string[] { "true", "false" };
 
                 valueHints[opt] = new AvailableValuesHint(hints, valuesDynamic?.DynamicValuesProviderCommandNames);
+                _options[i] = opt;
             }
         }
 
@@ -409,6 +414,9 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
         protected override void CacheParametersMetaData(Dictionary<int, ParameterCache> parameterCache)
         {
+            //call this to cache options
+            var hints = this.Options;
+
             for (int i = 0; i < _parameters.Length; i++)
             {
                 var parameter = _parameters[i];
@@ -421,7 +429,8 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                         : parameter.ParameterType.IsValueType
                             ? Activator.CreateInstance(parameter.ParameterType)
                             : null,
-                    isRequired: !parameter.HasDefaultValue
+                    isRequired: !parameter.HasDefaultValue,
+                    _options[i]
                 );
             }
         }
@@ -524,7 +533,8 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                 ReturnValueType.IsValueType
                     ? Activator.CreateInstance(ReturnValueType)
                     : null,
-                isRequired: true
+                isRequired: true,
+                ValueHints.FirstOrDefault().Key
             );
         }
     }

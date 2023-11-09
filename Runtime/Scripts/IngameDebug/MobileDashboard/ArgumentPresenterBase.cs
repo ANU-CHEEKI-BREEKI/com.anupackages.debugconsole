@@ -1,3 +1,4 @@
+using System;
 using ANU.IngameDebug.Console.Commands.Implementations;
 using TMPro;
 using UnityEngine;
@@ -9,15 +10,28 @@ namespace ANU.IngameDebug.Console.Dashboard
     {
         [SerializeField] protected TextMeshProUGUI _label;
 
-        public ParameterCache _parameter;
+        public ParameterCache Parameter { get; private set; }
+        public MemberCommand Command { get; private set; }
+        public abstract string Value { get; }
 
-        public void Present(ParameterCache parameter)
+        private bool _isInitialized;
+
+        public void Present(MemberCommand command, ParameterCache parameter)
         {
-            _parameter = parameter;
+            if (!_isInitialized)
+            {
+                _isInitialized = true;
+                Initialize();
+            }
+
+            Parameter = parameter;
+            Command = command;
             _label.text = parameter.Name;
-            PresentInternal(_parameter);
+            PresentInternal();
         }
+
         protected virtual void OnEnable() { }
-        protected abstract void PresentInternal(ParameterCache parameter);
+        protected abstract void Initialize();
+        protected abstract void PresentInternal();
     }
 }
