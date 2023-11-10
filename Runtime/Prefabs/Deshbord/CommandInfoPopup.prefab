@@ -216,7 +216,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.4811321, g: 0.4811321, b: 0.4811321, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -552,7 +552,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.4811321, g: 0.4811321, b: 0.4811321, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.44705883}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1874,12 +1874,12 @@ GameObject:
   - component: {fileID: 1017515259777642690}
   - component: {fileID: 7004277951067918083}
   - component: {fileID: 7539783513001092403}
+  - component: {fileID: 4865696730421020248}
   - component: {fileID: 8369072914760416834}
   - component: {fileID: 6513579036307325797}
   - component: {fileID: 7905410163155379140}
   - component: {fileID: 5404005302222421412}
   - component: {fileID: 7259848247917351653}
-  - component: {fileID: 4865696730421020248}
   m_Layer: 5
   m_Name: CommandInfoPopup
   m_TagString: Untagged
@@ -1955,8 +1955,6 @@ MonoBehaviour:
   _background: []
   _foreground:
   - {fileID: 7786147167200413306}
-  - {fileID: 8271501489720871455}
-  - {fileID: 2571008873275325551}
   - {fileID: 1943558931887143664}
   - {fileID: 5499398797885167194}
   - {fileID: 7786147167200413306}
@@ -1973,6 +1971,33 @@ MonoBehaviour:
   _scrollBarForeground:
   - {fileID: 5339627978218810481}
   - {fileID: 7791637567876458283}
+  _nonRequired: []
+  _required: []
+  _toggle: []
+--- !u!114 &4865696730421020248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8286584763212936359}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2fea5d0f2d024e5184f923f9dd29972, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _header: []
+  _background:
+  - {fileID: 8271501489720871455}
+  - {fileID: 2571008873275325551}
+  _foreground: []
+  _font:
+  - {fileID: 5319298338171459303}
+  - {fileID: 6873484392961532501}
+  _selectable: []
+  _selection: []
+  _scrollBarBackgroind: []
+  _scrollBarForeground: []
   _nonRequired: []
   _required: []
   _toggle: []
@@ -2066,31 +2091,6 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &4865696730421020248
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8286584763212936359}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2fea5d0f2d024e5184f923f9dd29972, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _header: []
-  _background: []
-  _foreground: []
-  _font:
-  - {fileID: 5319298338171459303}
-  - {fileID: 6873484392961532501}
-  _selectable: []
-  _selection: []
-  _scrollBarBackgroind: []
-  _scrollBarForeground: []
-  _nonRequired: []
-  _required: []
-  _toggle: []
 --- !u!1 &8398804055878688931
 GameObject:
   m_ObjectHideFlags: 0
@@ -2348,8 +2348,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 7791637567876458283}
   m_HandleRect: {fileID: 6553532547447322506}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 0.83274525
+  m_Value: 0.99999887
+  m_Size: 0.8327452
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
