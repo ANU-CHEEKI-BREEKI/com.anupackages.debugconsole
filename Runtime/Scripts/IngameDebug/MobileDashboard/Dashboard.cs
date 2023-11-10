@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Linq;
+using ANU.IngameDebug.Console.Commands;
 using ANU.IngameDebug.Console.Commands.Implementations;
 using ANU.IngameDebug.Utils;
 using UnityEditor;
@@ -25,6 +26,7 @@ namespace ANU.IngameDebug.Console.Dashboard
         [SerializeField] private TargetPlatforms _showFloatingButtonOn = TargetPlatforms.Any;
 
         private Coroutine _observer;
+        private bool _updateDelayed;
 
         private float FloatingButtonPositionX
         {
@@ -67,12 +69,31 @@ namespace ANU.IngameDebug.Console.Dashboard
 
         private IEnumerator Start()
         {
-            yield return new WaitForSeconds(1f);
-
             _content.DeleteAllChild();
             _categoriesFilterContent.DeleteAllChild();
 
+            yield return new WaitForSeconds(1f);
+
             //TODO: all "favorites" group
+            DebugConsole.Commands.CommandRegistered += UpdateDashboardDelayed;
+            CreateGroups();
+        }
+
+        private void UpdateDashboardDelayed(ADebugCommand command) => _updateDelayed = true;
+
+        private void Update()
+        {
+            if (!_updateDelayed)
+                return;
+            _updateDelayed = false;
+            CreateGroups();
+        }
+
+        private void CreateGroups()
+        {
+            _content.DeleteAllChild();
+            _categoriesFilterContent.DeleteAllChild();
+
             var commands = DebugConsole
                 .Commands
                 .Commands
@@ -130,7 +151,10 @@ namespace ANU.IngameDebug.Console.Dashboard
             space.transform.SetAsLastSibling();
             space.flexibleWidth = 1_000_000;
 
-            _categoriesFilterContent.GetComponentInChildren<Toggle>().isOn = true;
+            var toggles = _categoriesFilterContent.GetComponentsInChildren<Toggle>();
+            foreach (var item in toggles)
+                item.isOn = false;
+            toggles.First().isOn = true;
         }
 
         private void OpenInfo(MemberCommand command) => _infoPanel.Show(command);

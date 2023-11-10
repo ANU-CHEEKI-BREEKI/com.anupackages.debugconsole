@@ -25,6 +25,7 @@ namespace ANU.IngameDebug.Console.Converters
 
     public interface IReadOnlyCommandsRegistry
     {
+        event Action<ADebugCommand> CommandRegistered;
         IReadOnlyDictionary<string, ADebugCommand> Commands { get; }
     }
 
@@ -60,9 +61,11 @@ namespace ANU.IngameDebug.Console.Converters
     {
         private readonly Dictionary<string, ADebugCommand> _commands = new();
 
-        public CommandsRegistry(IReadOnlyDebugConsoleProcessor context) => Context= context;
+        public event Action<ADebugCommand> CommandRegistered;
 
-        private IReadOnlyDebugConsoleProcessor Context{ get; }
+        public CommandsRegistry(IReadOnlyDebugConsoleProcessor context) => Context = context;
+
+        private IReadOnlyDebugConsoleProcessor Context { get; }
         public IReadOnlyDictionary<string, ADebugCommand> Commands => _commands;
 
         private class CommandMetaData : ICommandMetaData
@@ -88,9 +91,15 @@ namespace ANU.IngameDebug.Console.Converters
         {
             _commands[command.Name] = command;
             command.Logger = Context.Logger;
-            
-            if(command is IInjectDebugConsoleContext consoleContext)
+
+            if (command is IInjectDebugConsoleContext consoleContext)
                 consoleContext.Context = Context;
+
+            try
+            {
+                CommandRegistered?.Invoke(command);
+            }
+            catch (Exception ex) { Context.Logger.LogException(ex); }
         }
 
         public void RegisterCommand(string name, string description, Action command, Action<ICommandMetaData> metaDataCustomize = null)
@@ -216,6 +225,5 @@ namespace ANU.IngameDebug.Console.Converters
 
             RegisterCommand(methodCommand);
         }
-
     }
 }
