@@ -255,14 +255,14 @@ namespace ANU.IngameDebug.Console
             }
         }
 
-        [DebugCommand]
+        [DebugCommand(DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         private IEnumerable<int> ListThemeIndices()
         {
             for (int i = 0; i < _themes.Length; i++)
                 yield return i;
         }
 
-        [DebugCommand]
+        [DebugCommand(DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         private IEnumerable<string> ListThemeNames()
         {
             for (int i = 0; i < _themes.Length; i++)
@@ -388,7 +388,7 @@ namespace ANU.IngameDebug.Console
             DisplaySuggestions(_input.text, forced: true);
         }
 
-        [DebugCommand]
+        [DebugCommand(DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         public static void Open()
         {
             Instance._content.SetActive(true);
@@ -396,7 +396,7 @@ namespace ANU.IngameDebug.Console
             IsOpenedChanged?.Invoke();
         }
 
-        [DebugCommand]
+        [DebugCommand(DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         public static void Close()
         {
             Instance._content.SetActive(false);

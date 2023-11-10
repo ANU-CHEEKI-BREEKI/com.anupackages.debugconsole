@@ -71,6 +71,8 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
         protected MemberCommand(string name, string description) : base(name, description) { }
 
+        public abstract DebugCommandAttribute DebugCommandAttribute { get; }
+
         public IReadOnlyDictionary<int, ParameterCache> ParametersCache
         {
             get
@@ -131,6 +133,9 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
             ResetParametersValues();
         }
 
+        protected abstract Type ReturnValueType { get; }
+        public sealed override DebugCommandAttribute DebugCommandAttribute => _attribute;
+
         protected virtual void ResetParametersValues() => _dynamicInstances = Array.Empty<object>();
 
         protected sealed override ExecutionResult OnParsed()
@@ -175,7 +180,6 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
 
         protected abstract object Invoke(T member, object item);
         protected abstract void ValidateParameters();
-        protected abstract Type ReturnValueType { get; }
 
         protected sealed override OptionSet CreateOptions(Dictionary<Option, AvailableValuesHint> valueHints)
         {

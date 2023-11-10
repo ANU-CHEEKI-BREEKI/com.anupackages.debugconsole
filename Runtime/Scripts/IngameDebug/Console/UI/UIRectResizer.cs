@@ -82,7 +82,7 @@ namespace ANU.IngameDebug.Console
             SizeYVPort = corner.y / Screen.height;
         }
 
-        [DebugCommand(Name = "refresh-size")]
+        [DebugCommand(Name = "refresh-size", DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         public void RefreshConsoleSize() => ConsoleSize(new Vector2Int(
             Mathf.RoundToInt(SizeXVPort * 100f),
             Mathf.RoundToInt(SizeYVPort * 100f)

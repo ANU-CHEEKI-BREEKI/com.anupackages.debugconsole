@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - removed console.switch-context command. its unnecessary
 - bug fix of unimplemented OptValDynamicAttribute for Fields and Properties
 - auto refreshing console size when open
+- nullref exception bug fix when called command ObjectInfo for object with no parent
 
 ## [2.0.4] - 2023-10-02
 ### Added

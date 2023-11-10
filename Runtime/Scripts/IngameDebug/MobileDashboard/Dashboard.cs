@@ -84,6 +84,9 @@ namespace ANU.IngameDebug.Console.Dashboard
                     Group = c.Name.Contains('.') ? c.Name.Substring(0, c.Name.LastIndexOf('.')) : "other",
                     ShortName = c.Name.Contains('.') ? c.Name.Substring(c.Name.LastIndexOf('.') + 1) : c.Name,
                 })
+                .Where(c => c.Command.DebugCommandAttribute == null
+                    || c.Command.DebugCommandAttribute.DisplayOptions.HasFlag(CommandDisplayOptions.Dashboard)
+                )
                 .OrderBy(c => c.Group)
                 .ThenBy(c => c.ShortName)
                 .GroupBy(c => c.Group)

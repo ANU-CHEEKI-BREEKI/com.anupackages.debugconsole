@@ -134,39 +134,8 @@ namespace ANU.IngameDebug.Console
 
         private void SetupConsoleCommands()
         {
-            Commands.RegisterCommand("help", "Print help", () => Logger.LogInfo(
-$@"To call command               - enter command name and parameters
-for example: ""command_name -param_name_1 -param_name_2""
-To see all commands              - enter command ""list""
-To see concrete command help     - enter command name with parameter ""-help""
----------------------------------
-To force show suggestions       - press ""Ctrl + .""
-To switch suggestions context   - press ""Ctrl + ~""
-    available contexts: commands, history
-To select suggestions           - use ArrowUp and ArrowDown
-To choose suggestion            - press Tab or Enter
-To choose first suggestion      - press Tab when no selected suggestions
-To search history               - use ArrowUp and ArrowDown when suggestions not shown
----------------------------------
-Enter ""list"" to print all registered commands
-"));
-            Commands.RegisterCommand("list", "Print all command names with descriptions", () =>
-            {
-                var maxLength = Commands.Commands.Values.Max(n => n.Name.Length);
-                var nameLength = Mathf.Max(maxLength, maxLength + 5);
-
-                var builder = new StringBuilder();
-                builder.AppendLine("Available commands:");
-                foreach (var command in Commands.Commands.Values.OrderBy(cmd => cmd.Name))
-                {
-                    builder.Append("  - ");
-                    builder.Append(command.Name);
-                    builder.Append(new string('-', nameLength - command.Name.Length));
-                    builder.AppendLine(command.Description);
-                }
-
-                Logger.LogInfo(builder.ToString());
-            });
+            Commands.RegisterCommand(new Action(PrintHelpCommand));
+            Commands.RegisterCommand(new Action(ListCommandsCommand));
         }
 
         private void SetUpPreprocessors()
@@ -196,6 +165,46 @@ Enter ""list"" to print all registered commands
             Converters.Register(new GameObjectConverter());
             Converters.Register(new ComponentConverter());
             Converters.Register(new BoolConverter());
+        }
+
+        [DebugCommand("help", "Print help", DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
+        private void PrintHelpCommand()
+        {
+            Logger.LogInfo(
+$@"To call command               - enter command name and parameters
+for example: ""command_name -param_name_1 -param_name_2""
+To see all commands              - enter command ""list""
+To see concrete command help     - enter command name with parameter ""-help""
+---------------------------------
+To force show suggestions       - press ""Ctrl + .""
+To switch suggestions context   - press ""Ctrl + ~""
+    available contexts: commands, history
+To select suggestions           - use ArrowUp and ArrowDown
+To choose suggestion            - press Tab or Enter
+To choose first suggestion      - press Tab when no selected suggestions
+To search history               - use ArrowUp and ArrowDown when suggestions not shown
+---------------------------------
+Enter ""list"" to print all registered commands
+");
+        }
+
+        [DebugCommand("list", "Print all command names with descriptions", DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
+        private void ListCommandsCommand()
+        {
+            var maxLength = Commands.Commands.Values.Max(n => n.Name.Length);
+            var nameLength = Mathf.Max(maxLength, maxLength + 5);
+
+            var builder = new StringBuilder();
+            builder.AppendLine("Available commands:");
+            foreach (var command in Commands.Commands.Values.OrderBy(cmd => cmd.Name))
+            {
+                builder.Append("  - ");
+                builder.Append(command.Name);
+                builder.Append(new string('-', nameLength - command.Name.Length));
+                builder.AppendLine(command.Description);
+            }
+
+            Logger.LogInfo(builder.ToString());
         }
     }
 }

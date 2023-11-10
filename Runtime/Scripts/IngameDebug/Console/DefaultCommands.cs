@@ -19,7 +19,7 @@ namespace ANU.IngameDebug.Console
         private static float TimeScale
         {
             get => Time.timeScale;
-            set => Time.timeScale = Mathf.Clamp01(value);
+            set => Time.timeScale = Mathf.Max(0, value);
         }
 
         [DebugCommand(Description = "Print all Scenes GameObjects hierarchy")]
@@ -42,8 +42,8 @@ namespace ANU.IngameDebug.Console
 
             if (includeDontDestroyOnLoad)
             {
-                var dontDestryScene = DebugConsole.Instance.transform.root.gameObject.scene;
-                DisplayHierarchy(dontDestryScene, sb);
+                var dontDestroyScene = DebugConsole.Instance.transform.root.gameObject.scene;
+                DisplayHierarchy(dontDestroyScene, sb);
             }
 
             DebugConsole.Logger.LogReturnValue(sb.ToString());
@@ -65,6 +65,9 @@ namespace ANU.IngameDebug.Console
         }
         private static void DisplayHierarchy(GameObject gameObject, StringBuilder sb, string intent)
         {
+            if (gameObject == null)
+                return;
+
             for (int i = 0; i < gameObject.transform.childCount; i++)
             {
                 var child = gameObject.transform.GetChild(i);
@@ -90,7 +93,8 @@ namespace ANU.IngameDebug.Console
                 sb.AppendLine("]:");
 
                 sb.Append("|--parent: ");
-                sb.AppendLine(item.transform.parent.name);
+                if (item.transform.parent != null)
+                    sb.AppendLine(item.transform.parent.name);
 
                 sb.Append("|--child count: ");
                 sb.AppendLine(item.transform.childCount.ToString());
@@ -123,7 +127,7 @@ namespace ANU.IngameDebug.Console
             Append("Position", transform.position, sb, intent);
             Append("Local Position", transform.localPosition, sb, intent);
 
-            Append("Rotaion", transform.eulerAngles, sb, intent);
+            Append("Rotation", transform.eulerAngles, sb, intent);
             Append("Local Rotation", transform.localEulerAngles, sb, intent);
 
             Append("Lossy Scale", transform.lossyScale, sb, intent);
@@ -185,7 +189,7 @@ namespace ANU.IngameDebug.Console
 
     internal class DefaultCommandsNoPrefix
     {
-        [DebugCommand]
+        [DebugCommand(DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         private static string Echo(string value) => value;
     }
 }

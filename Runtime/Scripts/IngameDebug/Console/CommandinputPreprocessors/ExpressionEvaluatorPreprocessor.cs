@@ -51,12 +51,13 @@ namespace ANU.IngameDebug.Console
             return result;
         }
 
-        [DebugCommand(Name = "$", Description = @"Alias for evaluate command")]
+        [DebugCommand(Name = "$", Description = @"Alias for evaluate command",DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         private static object EvaluateAlias(string expression) => Evaluate(expression);
 
         [DebugCommand(
             Name = "$evaluate",
-            Description = @"Evaluate expression")]
+            Description = @"Evaluate expression",
+            DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         private static object Evaluate(
             [OptDesc(@"String expression. For example: ""5 * (2 + 3) / 2""")]
             string expression,
