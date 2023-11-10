@@ -1,12 +1,46 @@
+using System;
 using System.Collections;
 using System.Linq;
 using ANU.IngameDebug.Console.Commands.Implementations;
 using ANU.IngameDebug.Utils;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace ANU.IngameDebug.Console.Dashboard
 {
+    [Flags]
+    public enum ConsolePlatform
+    {
+        Any = 1 << 0,
+        PC = 1 << 1,
+        Mobile = 1 << 2,
+        Editor = 1 << 3
+    }
+
+    public static class ConsolePlatformExtensions
+    {
+        public static ConsolePlatform GetCurrentPlatform(this ConsolePlatform platforms)
+        {
+            platforms = (ConsolePlatform)0;
+
+#if UNITY_EDITOR
+            platforms |= ConsolePlatform.Editor;
+#endif
+#if UNITY_ANDROID
+            platforms |= ConsolePlatform.Mobile;
+#endif
+#if UNITY_IOS
+                platforms |= ConsolePlatform.Mobile;
+#endif
+#if UNITY_STANDALONE
+                platforms |= ConsolePlatform.PC;
+#endif
+
+            return platforms;
+        }
+    }
+
     public class Dashboard : MonoBehaviour
     {
         [SerializeField] private Transform _content;
@@ -20,6 +54,8 @@ namespace ANU.IngameDebug.Console.Dashboard
         [SerializeField] private Button _closeConsole;
         [Space]
         [SerializeField] private CommandInfoPanel _infoPanel;
+        [Space, Header("--- Settings ---")]
+        [SerializeField] private ConsolePlatform _showFloatingButtonOn = ConsolePlatform.Any;
 
         private Coroutine _observer;
 
@@ -44,12 +80,21 @@ namespace ANU.IngameDebug.Console.Dashboard
             }
         }
 
+        private bool ShowFloatingButton
+        {
+            get
+            {
+                var current = _showFloatingButtonOn.GetCurrentPlatform();
+                return _showFloatingButtonOn.HasFlag(ConsolePlatform.Any) || (current & _showFloatingButtonOn) != 0;
+            }
+        }
+
         private void Awake()
         {
             _floatingOpenButton.Clicked += args => DebugConsole.Open();
             _floatingOpenButton.DragEnd += args => FloatingButtonPosition = _floatingOpenButton.RT.anchorMin;
-            DebugConsole.IsOpenedChanged += () => _floatingOpenButton.gameObject.SetActive(!DebugConsole.IsOpened);
-            _floatingOpenButton.gameObject.SetActive(!DebugConsole.IsOpened);
+            DebugConsole.IsOpenedChanged += () => _floatingOpenButton.gameObject.SetActive(!DebugConsole.IsOpened && ShowFloatingButton);
+            _floatingOpenButton.gameObject.SetActive(!DebugConsole.IsOpened && ShowFloatingButton);
             _closeConsole.onClick.AddListener(DebugConsole.Close);
 
             _floatingOpenButton.RT.anchorMin = FloatingButtonPosition;
