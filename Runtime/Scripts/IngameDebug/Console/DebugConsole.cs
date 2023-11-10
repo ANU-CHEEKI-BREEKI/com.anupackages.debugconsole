@@ -68,6 +68,8 @@ namespace ANU.IngameDebug.Console
                     return;
                 Instance._currentTheme = value;
                 ThemeChanged?.Invoke(CurrentTheme);
+
+                LastThemeIndex = Array.IndexOf(Instance._themes, value);
             }
         }
 
@@ -85,6 +87,12 @@ namespace ANU.IngameDebug.Console
         private static CommandLineHistory CommandsHistory => _processor.CommandsHistory;
         internal static ILogger InputLogger => _processor.InputLogger;
         internal static LogsContainer Logs { get; } = new();
+
+        private static int LastThemeIndex
+        {
+            get => PlayerPrefs.GetInt("ANU.IngameDebug.Console.LastTheme.Index", 0);
+            set => PlayerPrefs.SetInt("ANU.IngameDebug.Console.LastTheme.Index", value);
+        }
 
         /// <summary>
         /// if void - returns null
@@ -168,6 +176,10 @@ namespace ANU.IngameDebug.Console
             LoadCommandsHistory(CommandsHistory);
             LoadDefines(Defines);
 
+            var themeIndex = LastThemeIndex;
+            if (themeIndex >= 0 && themeIndex < _themes.Length)
+                CurrentTheme = _themes[themeIndex];
+
             void Submit()
             {
                 var text = _input.text;
@@ -219,7 +231,6 @@ namespace ANU.IngameDebug.Console
                 Logger.LogInfo(sb.ToString());
                 return;
             }
-
 
             if (_themes.Length == 0)
             {

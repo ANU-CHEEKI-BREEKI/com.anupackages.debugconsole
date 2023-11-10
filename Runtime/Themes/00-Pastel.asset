@@ -135,8 +135,8 @@ MonoBehaviour:
     _isEnabled: 0
     _value: {r: 0, g: 0, b: 0, a: 0}
   _dashboard_Font:
-    _isEnabled: 0
-    _value: {r: 1, g: 0, b: 0, a: 1}
+    _isEnabled: 1
+    _value: {r: 1, g: 1, b: 1, a: 1}
   _dashboard_ScrollBar_Background:
     _isEnabled: 0
     _value: {r: 0, g: 0, b: 0, a: 0}
@@ -160,7 +160,7 @@ MonoBehaviour:
     _value: {r: 0, g: 0, b: 0, a: 0}
   _dashboardItem_Background:
     _isEnabled: 1
-    _value: {r: 1, g: 1, b: 1, a: 1}
+    _value: {r: 0.8207547, g: 0.8207547, b: 0.8207547, a: 1}
   _dashboardItem_Foreground:
     _isEnabled: 1
     _value: {r: 0.5660378, g: 0.5660378, b: 0.5660378, a: 1}
