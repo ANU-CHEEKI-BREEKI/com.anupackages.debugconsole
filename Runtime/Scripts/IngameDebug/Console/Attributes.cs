@@ -81,7 +81,16 @@ namespace ANU.IngameDebug.Console
 
         public string Name { get; set; }
         public string Description { get; set; }
-        public InstanceTargetType Target { get; set; }
+        public InstanceTargetType Target { get; set; } = InstanceTargetType.AllActive;
+        /// <summary>
+        /// You can exclude command from being displayed in console suggestions or/and on the dashboard, etc.
+        /// Even if commands are not visible, they still can be executed (from command line or by DebugConsole.Execute)
+        /// </summary>
+        public CommandDisplayOptions DisplayOptions { get; set; } = (CommandDisplayOptions)~0;
+        /// <summary>
+        /// You can exclude commands from specific platforms. They wont be registered at all so they can not be executed.
+        /// </summary>
+        public TargetPlatforms Platforms { get; set; } = TargetPlatforms.Any;
     }
 
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]

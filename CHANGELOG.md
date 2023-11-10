@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - saving floating button position
 - saving last opened console tab
 - auto refresh console layout on phone orientation change
+- commands registration on startup
+    - Synchronous
+    - Asynchronous
+- TargetPlatforms for commands registration
+- CommandDisplayOptions for displaying commands on dashboard or/and in command line suggestion
 
 ### Changed
 - removed console.switch-context command. its unnecessary

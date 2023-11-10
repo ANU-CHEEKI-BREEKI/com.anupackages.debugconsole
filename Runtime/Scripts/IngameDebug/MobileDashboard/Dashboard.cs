@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Linq;
 using ANU.IngameDebug.Console.Commands.Implementations;
@@ -9,38 +8,6 @@ using UnityEngine.UI;
 
 namespace ANU.IngameDebug.Console.Dashboard
 {
-    [Flags]
-    public enum ConsolePlatform
-    {
-        Any = 1 << 0,
-        PC = 1 << 1,
-        Mobile = 1 << 2,
-        Editor = 1 << 3
-    }
-
-    public static class ConsolePlatformExtensions
-    {
-        public static ConsolePlatform GetCurrentPlatform(this ConsolePlatform platforms)
-        {
-            platforms = (ConsolePlatform)0;
-
-#if UNITY_EDITOR
-            platforms |= ConsolePlatform.Editor;
-#endif
-#if UNITY_ANDROID
-            platforms |= ConsolePlatform.Mobile;
-#endif
-#if UNITY_IOS
-                platforms |= ConsolePlatform.Mobile;
-#endif
-#if UNITY_STANDALONE
-                platforms |= ConsolePlatform.PC;
-#endif
-
-            return platforms;
-        }
-    }
-
     public class Dashboard : MonoBehaviour
     {
         [SerializeField] private Transform _content;
@@ -55,7 +22,7 @@ namespace ANU.IngameDebug.Console.Dashboard
         [Space]
         [SerializeField] private CommandInfoPanel _infoPanel;
         [Space, Header("--- Settings ---")]
-        [SerializeField] private ConsolePlatform _showFloatingButtonOn = ConsolePlatform.Any;
+        [SerializeField] private TargetPlatforms _showFloatingButtonOn = TargetPlatforms.Any;
 
         private Coroutine _observer;
 
@@ -85,7 +52,7 @@ namespace ANU.IngameDebug.Console.Dashboard
             get
             {
                 var current = _showFloatingButtonOn.GetCurrentPlatform();
-                return _showFloatingButtonOn.HasFlag(ConsolePlatform.Any) || (current & _showFloatingButtonOn) != 0;
+                return _showFloatingButtonOn.HasFlag(TargetPlatforms.Any) || (current & _showFloatingButtonOn) != 0;
             }
         }
 

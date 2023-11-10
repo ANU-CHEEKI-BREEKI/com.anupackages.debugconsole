@@ -9,6 +9,7 @@ using ANU.IngameDebug.Console.Converters;
 using ANU.IngameDebug.Console.CommandLinePreprocessors;
 using System.Text.RegularExpressions;
 using System.Collections;
+using System.Collections.Concurrent;
 
 namespace ANU.IngameDebug.Console
 {
@@ -40,6 +41,7 @@ namespace ANU.IngameDebug.Console
         private static HistorySuggestionsContext _historyContext;
         private static DebugConsoleProcessor _processor = new DebugConsoleProcessor();
         private static IConsoleInput _consoleInput;
+        private static ConcurrentQueue<UnityLog> _logs = new();
 
         internal static DebugConsole Instance { get; set; }
         public static bool IsOpened => Instance._content.activeInHierarchy;
@@ -68,6 +70,8 @@ namespace ANU.IngameDebug.Console
                 ThemeChanged?.Invoke(CurrentTheme);
             }
         }
+
+        public static DebugConsoleProcessor Processor => _processor;
 
         public static ICommandsRouter Router { get => _processor.Router; set => _processor.Router = value; }
         public static bool ShowLogs { get => _processor.ShowLogs; set => _processor.ShowLogs = value; }
@@ -109,6 +113,7 @@ namespace ANU.IngameDebug.Console
         private static void ClearStatic()
         {
             Instance = null;
+            _logs.Clear();
         }
 
         private void Awake()
@@ -125,7 +130,7 @@ namespace ANU.IngameDebug.Console
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            Application.logMessageReceived += LogMessageReceived;
+            Application.logMessageReceivedThreaded += LogMessageReceivedThreaded;
 
             _consoleInput = ConsoleInputFactory.GetInput();
             _commandsContext = new CommandsSuggestionsContext(Commands.Commands);
@@ -181,7 +186,7 @@ namespace ANU.IngameDebug.Console
 
         private void OnDestroy()
         {
-            Application.logMessageReceived -= LogMessageReceived;
+            Application.logMessageReceived -= LogMessageReceivedThreaded;
         }
 
         private void OnApplicationQuit()
@@ -268,7 +273,41 @@ namespace ANU.IngameDebug.Console
         {
             if (!Application.isPlaying)
                 return;
+            HandleInput();
+            HandleLogs();
+        }
 
+        private void HandleLogs()
+        {
+            while (_logs.TryDequeue(out var log))
+            {
+                if (!ShowLogs)
+                    return;
+
+                if (Instance == null)
+                    return;
+
+                var logType = ConsoleLogType.AppMessage;
+                var match = _receivedMessageTypeRegex.Match(log.condition);
+
+                if (match.Success && match.Index == 0)
+                {
+                    log.condition = log.condition.Substring(match.Length);
+                    if (Enum.TryParse(typeof(ConsoleLogType), match.Groups["type"].Value, true, out var parsed))
+                        logType = (ConsoleLogType)parsed;
+                }
+
+                Logs.Add(new Log(
+                    logType,
+                    log.type,
+                    log.condition,
+                    log.stackTrace
+                ));
+            }
+        }
+
+        private void HandleInput()
+        {
             var control = _consoleInput.GetControl();
             var openPressed = _consoleInput.GetOpen();
             var dotPressed = _consoleInput.GetDot();
@@ -383,31 +422,8 @@ namespace ANU.IngameDebug.Console
                 _suggestions.Hide();
         }
 
-        private static void LogMessageReceived(string condition, string stackTrace, LogType type)
-        {
-            if (!ShowLogs)
-                return;
-
-            if (Instance == null)
-                return;
-
-            var logType = ConsoleLogType.AppMessage;
-            var match = _receivedMessageTypeRegex.Match(condition);
-
-            if (match.Success && match.Index == 0)
-            {
-                condition = condition.Substring(match.Length);
-                if (Enum.TryParse(typeof(ConsoleLogType), match.Groups["type"].Value, true, out var parsed))
-                    logType = (ConsoleLogType)parsed;
-            }
-
-            Logs.Add(new Log(
-                logType,
-                type,
-                condition,
-                stackTrace
-            ));
-        }
+        private static void LogMessageReceivedThreaded(string condition, string stackTrace, LogType type)
+            => _logs.Enqueue(new UnityLog(condition, stackTrace, type));
 
         private void SaveCommandsHistory(CommandLineHistory history)
         {
@@ -476,6 +492,20 @@ namespace ANU.IngameDebug.Console
                 public TKey Key;
                 public TValue Value;
             }
+        }
+    }
+
+    internal struct UnityLog
+    {
+        public string condition;
+        public string stackTrace;
+        public LogType type;
+
+        public UnityLog(string condition, string stackTrace, LogType type)
+        {
+            this.condition = condition;
+            this.stackTrace = stackTrace;
+            this.type = type;
         }
     }
 

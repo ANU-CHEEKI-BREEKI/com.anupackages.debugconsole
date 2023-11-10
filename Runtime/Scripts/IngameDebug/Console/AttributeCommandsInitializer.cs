@@ -9,18 +9,55 @@ using NDesk.Options;
 using UnityEngine;
 using System.Diagnostics;
 using ANU.IngameDebug.Console.Converters;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace ANU.IngameDebug.Console
 {
     public class AttributeCommandsInitializer : MonoBehaviour
     {
-        private void Start()
+        [SerializeField] private CommandRegistrationType _commandRegistrationType = CommandRegistrationType.Asynchronous;
+
+        private CancellationTokenSource _cancellationTokenSource;
+
+        private async void Start()
         {
-            var init = new AttributeCommandsInitializerProcessor(
-                DebugConsole.Logger,
-                DebugConsole.Commands
-            );
-            init.Initialize();
+            if (_commandRegistrationType == CommandRegistrationType.Synchronous)
+            {
+                new AttributeCommandsInitializerProcessor(
+                    DebugConsole.Logger,
+                    DebugConsole.Commands
+                ).Initialize();
+            }
+            else
+            {
+                var logger = new UnityLogger(ConsoleLogType.Output);
+                var commands = new CommandsRegistry(DebugConsole.Processor);
+
+                _cancellationTokenSource = new CancellationTokenSource();
+                var token = _cancellationTokenSource.Token;
+
+                await Task.Run(() =>
+                {
+                    new AttributeCommandsInitializerProcessor(
+                        logger,
+                        commands
+                    ).Initialize();
+                });
+
+                if (token.IsCancellationRequested)
+                    return;
+
+                foreach (var item in commands.Commands.Values)
+                    DebugConsole.Commands.RegisterCommand(item);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
         }
     }
 
