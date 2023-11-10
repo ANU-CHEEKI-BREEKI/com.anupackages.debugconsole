@@ -47,14 +47,7 @@ namespace ANU.IngameDebug.Console.Dashboard
             }
         }
 
-        private bool ShowFloatingButton
-        {
-            get
-            {
-                var current = _showFloatingButtonOn.GetCurrentPlatform();
-                return _showFloatingButtonOn.HasFlag(TargetPlatforms.Any) || (current & _showFloatingButtonOn) != 0;
-            }
-        }
+        private bool ShowFloatingButton => _showFloatingButtonOn.HasCurrentPlatform();
 
         private void Awake()
         {

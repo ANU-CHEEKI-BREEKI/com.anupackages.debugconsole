@@ -11,6 +11,7 @@ using System.Diagnostics;
 using ANU.IngameDebug.Console.Converters;
 using System.Threading.Tasks;
 using System.Threading;
+using ANU.IngameDebug.Console.Dashboard;
 
 namespace ANU.IngameDebug.Console
 {
@@ -98,6 +99,7 @@ namespace ANU.IngameDebug.Console
                         attribute = method.GetCustomAttribute<DebugCommandAttribute>()
                     })
                     .Where(method => method.attribute != null)
+                    .Where(method => method.attribute.Platforms.HasCurrentPlatform())
                     .Select(method => new
                     {
                         method = method.method,
@@ -138,7 +140,8 @@ namespace ANU.IngameDebug.Console
                         field = field,
                         attribute = field.GetCustomAttribute<DebugCommandAttribute>()
                     })
-                    .Where(field => field.attribute != null)
+                    .Where(method => method.attribute != null)
+                    .Where(method => method.attribute.Platforms.HasCurrentPlatform())
                     .Select(field => new
                     {
                         method = field.field,
@@ -161,7 +164,7 @@ namespace ANU.IngameDebug.Console
 
             Log(timerProperty, "property");
 
-            var timerfield = StartLog("field");
+            var timerField = StartLog("field");
 
             Commands.RegisterCommands(
                 assemblies
@@ -179,7 +182,8 @@ namespace ANU.IngameDebug.Console
                         field = field,
                         attribute = field.GetCustomAttribute<DebugCommandAttribute>()
                     })
-                    .Where(field => field.attribute != null)
+                    .Where(method => method.attribute != null)
+                    .Where(method => method.attribute.Platforms.HasCurrentPlatform())
                     .Select(field => new
                     {
                         method = field.field,
@@ -200,7 +204,7 @@ namespace ANU.IngameDebug.Console
                     .ToArray()
             );
 
-            Log(timerfield, "field");
+            Log(timerField, "field");
 
             Log(timer, null);
             var log = $"Searching commands declared by attributes ended.\nOperation elapsed duration: {timer.Elapsed:ss's.'fff'ms'}, ticks: {timer.ElapsedTicks}";

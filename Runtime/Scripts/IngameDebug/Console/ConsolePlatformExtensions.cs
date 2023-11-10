@@ -2,9 +2,9 @@ namespace ANU.IngameDebug.Console.Dashboard
 {
     public static class ConsolePlatformExtensions
     {
-        public static TargetPlatforms GetCurrentPlatform(this TargetPlatforms platforms)
+        public static TargetPlatforms GetCurrentPlatform()
         {
-            platforms = (TargetPlatforms)0;
+            var platforms = (TargetPlatforms)0;
 
 #if UNITY_EDITOR
             platforms |= TargetPlatforms.Editor;
@@ -13,13 +13,20 @@ namespace ANU.IngameDebug.Console.Dashboard
             platforms |= TargetPlatforms.Mobile;
 #endif
 #if UNITY_IOS
-                platforms |= ConsolePlatform.Mobile;
+            platforms |= ConsolePlatform.Mobile;
 #endif
 #if UNITY_STANDALONE
                 platforms |= ConsolePlatform.PC;
 #endif
 
             return platforms;
+        }
+
+        public static bool HasCurrentPlatform(this TargetPlatforms platforms)
+        {
+            var current = GetCurrentPlatform();
+            return platforms.HasFlag(TargetPlatforms.Any)
+                || (current & platforms) != 0;
         }
     }
 }
