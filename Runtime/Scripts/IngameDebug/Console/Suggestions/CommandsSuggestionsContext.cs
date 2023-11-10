@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ANU.IngameDebug.Console.Commands;
+using ANU.IngameDebug.Console.Commands.Implementations;
 using ANU.IngameDebug.Utils;
 using NDesk.Options;
 
@@ -17,7 +18,12 @@ namespace ANU.IngameDebug.Console
 
         public override string Title => "commands";
 
-        protected override IEnumerable<ADebugCommand> Collection => _commands.Values;
+        protected override IEnumerable<ADebugCommand> Collection => _commands
+            .Values
+            .Where(c => c is not MemberCommand m 
+                || m.DebugCommandAttribute == null 
+                || m.DebugCommandAttribute.DisplayOptions.HasFlag(CommandDisplayOptions.Console)
+            );
 
         protected override string GetDisplayName(ADebugCommand item) => $"{item.Name} {item.OptionsHint}";
         protected override string GetFilteringName(ADebugCommand item) => item.Name;
