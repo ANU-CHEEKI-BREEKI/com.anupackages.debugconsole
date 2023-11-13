@@ -22,6 +22,15 @@ namespace ANU.IngameDebug.Console
         [SerializeField] private TMP_InputField _exact;
         [SerializeField] private int _step = 10;
 
+        private int DefaultScale =>
+#if !UNITY_EDITOR &&(UNITY_ANDROID || UNITY_IOS)
+            150
+#else
+            100
+#endif
+            ;
+
+
         private int ScaleStep
         {
             get => PlayerPrefs.GetInt(PrefsSaveUIScale_ScaleStep, _step);
@@ -29,7 +38,7 @@ namespace ANU.IngameDebug.Console
         }
         private int CurrentScale
         {
-            get => PlayerPrefs.GetInt(PrefsSaveUIScale_ScaleValue, 100);
+            get => PlayerPrefs.GetInt(PrefsSaveUIScale_ScaleValue, DefaultScale);
             set => PlayerPrefs.SetInt(PrefsSaveUIScale_ScaleValue, value);
         }
 
@@ -48,10 +57,10 @@ namespace ANU.IngameDebug.Console
 
             _plus.onClick.AddListener(() => ConsoleScale(CurrentScale + ScaleStep));
             _minus.onClick.AddListener(() => ConsoleScale(CurrentScale - ScaleStep));
-
-            ConsoleScale(CurrentScale);
         }
 
+        private void OnEnable() => ConsoleScale(CurrentScale);
+        public void RefreshConsoleScale() => ConsoleScale(CurrentScale);
         private void ResetInput() => _exact.text = CurrentScale.ToString() + "%";
 
         [DebugCommand(Name = "scale", Description = "Set console ui scale.")]

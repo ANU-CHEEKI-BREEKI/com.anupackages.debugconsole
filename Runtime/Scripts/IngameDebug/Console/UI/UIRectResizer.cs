@@ -12,64 +12,38 @@ namespace ANU.IngameDebug.Console
         [SerializeField] private RectTransform _rect;
 
         private const string PrefsSavePrefix = nameof(DebugConsole) + nameof(UIRectResizer);
-        private const string PrefsSaveUIScale_SizeX = PrefsSavePrefix + nameof(SizeX);
-        private const string PrefsSaveUIScale_SizeY = PrefsSavePrefix + nameof(SizeY);
         private const string PrefsSaveUIScale_SizeXVPort = PrefsSavePrefix + nameof(SizeXVPort);
         private const string PrefsSaveUIScale_SizeYVPort = PrefsSavePrefix + nameof(SizeYVPort);
-        private const string PrefsSaveUIScale_SizeStored = PrefsSavePrefix + nameof(HasSize);
+
+        private Vector2 DefaultSize =>
+#if !UNITY_EDITOR && (UNITY_ANDROID || UNITY_IOS)
+        new Vector2(1f, 1f)
+#else
+        new Vector2(0.7f, 0.7f)
+#endif
+        ;
 
         private Vector3[] _corners = new Vector3[4];
 
-        private bool HasSize
-        {
-            get => PlayerPrefs.GetInt(PrefsSaveUIScale_SizeStored, 0) == 1;
-            set => PlayerPrefs.GetInt(PrefsSaveUIScale_SizeStored, value ? 1 : 0);
-        }
-        private float SizeX
-        {
-            get => PlayerPrefs.GetFloat(PrefsSaveUIScale_SizeX, -1);
-            set => PlayerPrefs.SetFloat(PrefsSaveUIScale_SizeX, value);
-        }
-        private float SizeY
-        {
-            get => PlayerPrefs.GetFloat(PrefsSaveUIScale_SizeY, -1);
-            set => PlayerPrefs.SetFloat(PrefsSaveUIScale_SizeY, value);
-        }
         private float SizeXVPort
         {
-            get => PlayerPrefs.GetFloat(PrefsSaveUIScale_SizeXVPort, -1);
+            get => PlayerPrefs.GetFloat(PrefsSaveUIScale_SizeXVPort, DefaultSize.x);
             set => PlayerPrefs.SetFloat(PrefsSaveUIScale_SizeXVPort, value);
         }
         private float SizeYVPort
         {
-            get => PlayerPrefs.GetFloat(PrefsSaveUIScale_SizeYVPort, -1);
+            get => PlayerPrefs.GetFloat(PrefsSaveUIScale_SizeYVPort, DefaultSize.y);
             set => PlayerPrefs.SetFloat(PrefsSaveUIScale_SizeYVPort, value);
         }
 
         private Vector2 Delta { get; set; }
 
-        private Vector2 Size
-        {
-            get => new Vector2(SizeX, SizeY);
-            set
-            {
-                SizeX = value.x;
-                SizeY = value.y;
-            }
-        }
-
-        private void Awake()
-        {
-            if (!HasSize)
-                Size = _rect.sizeDelta;
-
-            _rect.sizeDelta = Size;
-        }
+        private void Awake() => RefreshConsoleSize();
 
         void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
         {
             RectTransformUtility.ScreenPointToLocalPointInRectangle(_rect, eventData.position, eventData.pressEventCamera, out var localPosition);
-            Delta = Size - localPosition;
+            Delta = _rect.sizeDelta - localPosition;
         }
 
         void IPointerUpHandler.OnPointerUp(PointerEventData eventData) { }
@@ -100,7 +74,6 @@ namespace ANU.IngameDebug.Console
 
             value.x = Mathf.Clamp(value.x, 800f, localPosition.x);
             value.y = Mathf.Clamp(value.y, 600f, localPosition.y);
-            Size = value;
             _rect.sizeDelta = value;
 
             _rect.GetWorldCorners(_corners);
@@ -109,13 +82,13 @@ namespace ANU.IngameDebug.Console
             SizeYVPort = corner.y / Screen.height;
         }
 
-        [DebugCommand(Name = "refresh-size")]
-        private void RefreshConsoleSize() => ConsoleSize(new Vector2Int(
+        [DebugCommand(Name = "refresh-size", DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
+        public void RefreshConsoleSize() => ConsoleSize(new Vector2Int(
             Mathf.RoundToInt(SizeXVPort * 100f),
             Mathf.RoundToInt(SizeYVPort * 100f)
         ));
 
-        [DebugCommand(Name = "size", Description = "Set console rect size relative to vieport. Values is Vector2Int in range [0, 100]")]
+        [DebugCommand(Name = "size", Description = "Set console rect size relative to viewport. Values is Vector2Int in range [0, 100]")]
         private void ConsoleSize(
             [OptAltNames("v")]
             [OptDesc("in range [10,100]")]

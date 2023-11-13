@@ -1,6 +1,6 @@
 {
   "name": "com.anupackages.debugconsole",
-  "version": "2.0.4",
+  "version": "2.1.0",
   "displayName": "ANU Ingame debug console",
   "description": "Provides easy way to create and invoke debug commands in game console",
   "unity": "2021.3",
@@ -29,5 +29,17 @@
   "bugs": {
     "url": "https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole/issues"
   },
-  "homepage": "https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole#readme"
+  "homepage": "https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole#readme",
+  "samples": [
+    {
+      "displayName": "Scene Setup",
+      "description": "Contains sample scene for setup demonstration",
+      "path": "Samples~/SceneSetUp"
+    },
+    {
+      "displayName": "Command Attributes",
+      "description": "Contains scripts and sample scene for demonstration how to declare custom commands with [DebugCommand] attribute",
+      "path": "Samples~/CommandAttributes"
+    }
+  ]
 }

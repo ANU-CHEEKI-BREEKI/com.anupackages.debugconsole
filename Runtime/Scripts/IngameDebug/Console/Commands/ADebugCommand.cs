@@ -31,43 +31,43 @@ namespace ANU.IngameDebug.Console.Commands
             }
         }
 
-        private void PrintHelp()
+        private void PrintHelp() => Logger.LogInfo(GetHelp());
+
+        public string GetHelp()
         {
-            using (var writer = new StringWriter())
+            using var writer = new StringWriter();
+            writer.WriteLine();
+            writer.WriteLine($"{"Name:",-15} {Name}");
+            writer.WriteLine($"{"Description:",-15} {Description}");
+            writer.WriteLine("Options:");
+            foreach (var opt in Options)
             {
-                writer.WriteLine();
-                writer.WriteLine($"{"Name:",-15} {Name}");
-                writer.WriteLine($"{"Description:",-15} {Description}");
-                writer.WriteLine("Options:");
-                foreach (var opt in Options)
+                writer.Write("    --");
+                writer.Write(string.Join("|", opt.GetNames()));
+
+                var val = "=VALUE";
+                if (InternalValueHints.ContainsKey(opt))
+                    val = "=" + string.Join(", -", InternalValueHints[opt]);
+
+                switch (opt.OptionValueType)
                 {
-                    writer.Write("    --");
-                    writer.Write(string.Join("|", opt.GetNames()));
-
-                    var val = "=VALUE";
-                    if (InternalValueHints.ContainsKey(opt))
-                        val = "=" + string.Join(", -", InternalValueHints[opt]);
-
-                    switch (opt.OptionValueType)
-                    {
-                        case OptionValueType.None:
-                            break;
-                        case OptionValueType.Optional:
-                            writer.Write("[");
-                            writer.Write(val);
-                            writer.Write("]");
-                            break;
-                        case OptionValueType.Required:
-                            writer.Write(val);
-                            break;
-                    }
-
-                    writer.Write("    ");
-                    writer.WriteLine(opt.Description);
+                    case OptionValueType.None:
+                        break;
+                    case OptionValueType.Optional:
+                        writer.Write("[");
+                        writer.Write(val);
+                        writer.Write("]");
+                        break;
+                    case OptionValueType.Required:
+                        writer.Write(val);
+                        break;
                 }
 
-                Logger.LogInfo(writer.ToString());
+                writer.Write("    ");
+                writer.WriteLine(opt.Description);
             }
+
+            return writer.ToString();
         }
 
         public ILogger Logger { get; set; }
@@ -113,6 +113,9 @@ namespace ANU.IngameDebug.Console.Commands
 
         public ExecutionResult Execute(string args = null)
         {
+            if (args == null)
+                args = "";
+
             var options = Options;
 
             //TODO: preprocess command to define if there are any mandatory option leading -- or -
@@ -122,8 +125,8 @@ namespace ANU.IngameDebug.Console.Commands
 
             try
             {
-                var comandOptions = args.SplitCommandLine();
-                var notParsedOptions = options.Parse(comandOptions);
+                var commandOptions = args.SplitCommandLine();
+                var notParsedOptions = options.Parse(commandOptions);
 
                 if (notParsedOptions.Any())
                 {
@@ -204,12 +207,12 @@ namespace ANU.IngameDebug.Console.Commands
             foreach (var item in Values)
                 yield return item;
 
-            foreach (var comand in DynamicValueProviderCommands)
+            foreach (var command in DynamicValueProviderCommands)
             {
                 IEnumerable<string> values = null;
                 try
                 {
-                    var result = DebugConsole.ExecuteCommand(comand, silent: true);
+                    var result = DebugConsole.ExecuteCommand(command, silent: true);
                     values = result.ReturnValues
                         .Select(b => b.ReturnValue as IEnumerable)
                         .Where(b => b != null)

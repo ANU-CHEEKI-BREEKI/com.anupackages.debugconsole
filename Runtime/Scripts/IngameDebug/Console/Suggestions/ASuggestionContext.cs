@@ -58,7 +58,7 @@ namespace ANU.IngameDebug.Console
 
                     return item;
                 })
-                .Where(c => (c.matches.Any() && c.freeInputChars.Length == 0) || c.str.Contains(input))
+                .Where(c => (c.matches.Any() && c.freeInputChars.Length == 0) || c.str.ToLowerInvariant().Contains(input.ToLowerInvariant()))
                 .OrderBy(c => c.matches.Count)
                 .ThenBy(c => c.matches.Sum(s => s.Length))
                 .Select(c => c.item);

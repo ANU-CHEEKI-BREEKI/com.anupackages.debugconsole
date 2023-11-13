@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using TMPro;
 using UnityEngine;
 
 namespace ANU.IngameDebug.Utils
@@ -264,5 +265,58 @@ namespace ANU.IngameDebug.Utils
                 }
             }
         }
+
+        public static void DeleteAllChild(this Component component)
+        {
+            var tr = component.transform;
+            while (tr.childCount > 0)
+            {
+                var c = tr.GetChild(0);
+                c.SetParent(null);
+                GameObject.Destroy(c.gameObject);
+            }
+        }
+
+        public static Coroutine TweenFloat(this MonoBehaviour mono, float from, float to, float duration, Action<float> callback)
+            => mono.StartCoroutine(TweenFloatCoroutine(from, to, duration, callback));
+
+        public static Coroutine TweenAnimation(this MonoBehaviour mono, Action<float> callback)
+            => mono.TweenFloat(0, 1, 0.1f, callback);
+
+        private static IEnumerator TweenFloatCoroutine(float from, float to, float duration, Action<float> callback)
+        {
+            var timer = 0f;
+
+            while (timer < duration)
+            {
+                var t = timer / duration;
+                callback?.Invoke(
+                    Mathf.Lerp(from, to, t)
+                );
+                yield return null;
+                timer += Time.unscaledDeltaTime;
+            }
+
+            callback?.Invoke(to);
+        }
+    
+        public static TMP_InputField.ContentType GetContentType(this object value)
+            => value switch
+            {
+                short => TMP_InputField.ContentType.IntegerNumber,
+                int => TMP_InputField.ContentType.IntegerNumber,
+                long => TMP_InputField.ContentType.IntegerNumber,
+                ushort => TMP_InputField.ContentType.IntegerNumber,
+                uint => TMP_InputField.ContentType.IntegerNumber,
+                ulong => TMP_InputField.ContentType.IntegerNumber,
+                sbyte => TMP_InputField.ContentType.IntegerNumber,
+                byte => TMP_InputField.ContentType.IntegerNumber,
+
+                float => TMP_InputField.ContentType.DecimalNumber,
+                double => TMP_InputField.ContentType.DecimalNumber,
+                decimal => TMP_InputField.ContentType.DecimalNumber,
+
+                _ => TMP_InputField.ContentType.Standard,
+            };
     }
 }

@@ -390,7 +390,7 @@ namespace ANU.IngameDebug.Console
                 _content.GetChild(i).localPosition += Vector3.down * upH;
         }
 
-        [DebugCommand(Name = "fold-in", Description = "Fold in all messages")]
+        [DebugCommand(Name = "fold-in", Description = "Fold in all messages", DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         private void Expand(
             [OptDesc("Set this flag to expand all message instead"), OptAltNames("e")]
             bool expand = false
@@ -400,7 +400,7 @@ namespace ANU.IngameDebug.Console
                 item.IsExpanded = expand;
         }
 
-        [DebugCommand(Name = "filter", Description = "Filter console messages by message type or/and search string")]
+        [DebugCommand(Name = "filter", Description = "Filter console messages by message type or/and search string", DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         private void FilterItems(
             [OptDesc("Substring to search in all console messages"), OptAltNames("s")]
             string search = "",
@@ -429,7 +429,7 @@ namespace ANU.IngameDebug.Console
         }
 
 
-        [DebugCommand(Name = "scroll-auto", Description = "Enable auto scroll to last message in the console")]
+        [DebugCommand(Name = "scroll-auto", Description = "Enable auto scroll to last message in the console", DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         private void AutoScroll(
             [OptDesc("Set this flag to disable auto scroll instead")]
             [OptAltNames("d")]
@@ -442,7 +442,7 @@ namespace ANU.IngameDebug.Console
                 _scrollToEndEnabled = false;
         }
 
-        [DebugCommand(Name = "scroll-to", Description = "Scroll console to provided normalized position")]
+        [DebugCommand(Name = "scroll-to", Description = "Scroll console to provided normalized position", DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         private void ScrollNormalize(
             [OptDesc("Normalized position to scroll the console. in rage [0,1]")]
             [OptAltNames("n")]

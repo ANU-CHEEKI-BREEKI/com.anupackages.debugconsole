@@ -6,19 +6,30 @@ namespace ANU.IngameDebug.Console
     [ExecuteAlways]
     internal abstract class SectionThemeBase : MonoBehaviour
     {
-        [SerializeField] private Graphic[] _background = {};
-        [SerializeField] private Graphic[] _foreground = {};
-        [SerializeField] private Graphic[] _font = {};
-        [SerializeField] private Selectable[] _selectable = {};
-        [SerializeField] private Graphic[] _scrollBarBackgroind = {};
-        [SerializeField] private Graphic[] _scrollBarForeground = {};
+        [SerializeField] private Graphic[] _header = { };
+        [SerializeField] private Graphic[] _background = { };
+        [SerializeField] private Graphic[] _foreground = { };
+        [SerializeField] private Graphic[] _font = { };
+        [SerializeField] private Selectable[] _selectable = { };
+        [SerializeField] private  Graphic[] _selection = { };
+        [SerializeField] private Graphic[] _scrollBarBackgroind = { };
+        [SerializeField] private Graphic[] _scrollBarForeground = { };
+        [SerializeField] private Graphic[] _nonRequired = { };
+        [SerializeField] private Graphic[] _required = { };
+        [SerializeField] private Graphic[] _toggle = { };
 
-        protected Graphic[] Background => _background;
-        protected Graphic[] Foreground => _foreground;
-        protected Graphic[] Font => _font;
+        public Graphic[] Header => _header;
+        public Graphic[] Background => _background;
+        public Graphic[] Foreground => _foreground;
+        public Graphic[] Font => _font;
         public Selectable[] Selectable => _selectable;
         public Graphic[] ScrollBarBackgroind => _scrollBarBackgroind;
         public Graphic[] ScrollBarForeground => _scrollBarForeground;
+        public Graphic[] Selection => _selection;
+
+        public Graphic[] NonRequired => _nonRequired;
+        public Graphic[] Required => _required;
+        public Graphic[] Toggle => _toggle;
 
         private void OnEnable()
         {

@@ -92,7 +92,7 @@ namespace ANU.IngameDebug.Console
             return input;
         }
 
-        [DebugCommand(Name = "#echo", Description = @"Print defined value without evaluation")]
+        [DebugCommand(Name = "#echo", Description = @"Print defined value without evaluation", DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         private string EchoDefine(string name)
         {
             if (Context.Defines.Defines.TryGetValue(name.Trim('#'), out var val))
@@ -101,18 +101,18 @@ namespace ANU.IngameDebug.Console
             throw new Exception($"{name} not defined");
         }
 
-        [DebugCommand(Name = "#define", Description = @"Define custom value by given name")]
+        [DebugCommand(Name = "#define", Description = @"Define custom value by given name", DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         private void Define(string name, string value)
             => Context.Defines.Add(name, value);
 
-        [DebugCommand(Name = "#undefine", Description = "Remove defined value with associated name")]
+        [DebugCommand(Name = "#undefine", Description = "Remove defined value with associated name", DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         private void Undefine(string name)
             => Context.Defines.Remove(name);
 
-        [DebugCommand(Name = "#clear", Description = "Clear all defined values")]
+        [DebugCommand(Name = "#clear", Description = "Clear all defined values", DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         private void DefinesClear() => Context.Defines.Clear();
 
-        [DebugCommand(Name = "#list", Description = "Print all defined values")]
+        [DebugCommand(Name = "#list", Description = "Print all defined values", DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
         private void DefinesList()
         {
             if (!Context.Defines.Defines.Any())

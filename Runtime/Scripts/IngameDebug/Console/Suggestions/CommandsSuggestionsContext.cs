@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ANU.IngameDebug.Console.Commands;
+using ANU.IngameDebug.Console.Commands.Implementations;
 using ANU.IngameDebug.Utils;
 using NDesk.Options;
 
@@ -17,7 +18,12 @@ namespace ANU.IngameDebug.Console
 
         public override string Title => "commands";
 
-        protected override IEnumerable<ADebugCommand> Collection => _commands.Values;
+        protected override IEnumerable<ADebugCommand> Collection => _commands
+            .Values
+            .Where(c => c is not MemberCommand m 
+                || m.DebugCommandAttribute == null 
+                || m.DebugCommandAttribute.DisplayOptions.HasFlag(CommandDisplayOptions.Console)
+            );
 
         protected override string GetDisplayName(ADebugCommand item) => $"{item.Name} {item.OptionsHint}";
         protected override string GetFilteringName(ADebugCommand item) => item.Name;
@@ -27,7 +33,7 @@ namespace ANU.IngameDebug.Console
         {
             input = input.Trim(' ');
 
-            var names = input.SplitCommandLine();
+            var names = input.SplitCommandLine().ToArray();
             if (!names.Any())
                 return base.GetSuggestions(input);
 
@@ -76,7 +82,7 @@ namespace ANU.IngameDebug.Console
             var option = command.Options.FirstOrDefault(o => Array.IndexOf(o.GetNames(), trimOption) > -1);
 
             if (option == null && optionName.Trim().StartsWith("-"))
-                return new ComandParameterNameSuggestionContext(command, input).GetSuggestions(trimOption ?? "");
+                return new CommandParameterNameSuggestionContext(command, input).GetSuggestions(trimOption ?? "");
 
             if (option == null)
             {
@@ -84,25 +90,34 @@ namespace ANU.IngameDebug.Console
 
                 if (!namedParameterGroup.Success)
                 {
-                    var parametersCount = names.Count();
-                    if (command.Options.Count >= parametersCount)
-                        option = command.Options[parametersCount - 1];
+                    // -1 to skip first value - which one is command name
+                    // one more -1 to make index from count
+                    var parametersIndex = names.Count() - 1 - 1;
+                    if (parametersIndex >= 0 && parametersIndex < command.Options.Count)
+                    {
+                        option = command.Options[parametersIndex];
+                        valueName = trimOption;
+                    }
+                    else
+                    {
+                        option = command.Options.FirstOrDefault();
+                    }
                 }
             }
 
             if (option != null)
-                return new ComandParameterValueSuggestionContext(command, option).GetSuggestions(valueName?.Trim(' ') ?? "");
+                return new CommandParameterValueSuggestionContext(command, option).GetSuggestions(valueName?.Trim(' ') ?? "");
 
             return base.GetSuggestions(input);
         }
 
 
-        private class ComandParameterNameSuggestionContext : ASuggestionContext<Option>
+        private class CommandParameterNameSuggestionContext : ASuggestionContext<Option>
         {
             private readonly ADebugCommand _command;
             private readonly string _fullInput;
 
-            public ComandParameterNameSuggestionContext(ADebugCommand command, string fullInput)
+            public CommandParameterNameSuggestionContext(ADebugCommand command, string fullInput)
             {
                 _fullInput = fullInput;
                 _command = command;
@@ -164,7 +179,7 @@ namespace ANU.IngameDebug.Console
                 values = getNamed.SplitCommandLine();
                 if (!doNOtSkip)
                     values = values.Skip(1);
-                    
+
                 var set = values.Where(v => v.Trim().StartsWith("-")).Select(p => p.Trim('-')).ToHashSet();
                 names = names.Concat(
                     _command.Options.Where(o => o.GetNames().Any(n => set.Contains(n)))
@@ -177,12 +192,12 @@ namespace ANU.IngameDebug.Console
             }
         }
 
-        private class ComandParameterValueSuggestionContext : ASuggestionContext<string>
+        private class CommandParameterValueSuggestionContext : ASuggestionContext<string>
         {
             private readonly ADebugCommand _command;
             private readonly Option _option;
 
-            public ComandParameterValueSuggestionContext(ADebugCommand command, Option option)
+            public CommandParameterValueSuggestionContext(ADebugCommand command, Option option)
             {
                 _option = option;
                 _command = command;

@@ -9,10 +9,13 @@ using ANU.IngameDebug.Console.Converters;
 using ANU.IngameDebug.Console.CommandLinePreprocessors;
 using System.Text.RegularExpressions;
 using System.Collections;
+using System.Collections.Concurrent;
 
 namespace ANU.IngameDebug.Console
 {
     [DisallowMultipleComponent]
+    [DebugCommandPrefix("console")]
+    [DefaultExecutionOrder(-10_000)]
     public class DebugConsole : MonoBehaviour
     {
         private const float ColsoleInputHeightPercentage = 0.1f;
@@ -38,9 +41,11 @@ namespace ANU.IngameDebug.Console
         private static HistorySuggestionsContext _historyContext;
         private static DebugConsoleProcessor _processor = new DebugConsoleProcessor();
         private static IConsoleInput _consoleInput;
+        private static ConcurrentQueue<UnityLog> _logs = new();
 
         internal static DebugConsole Instance { get; set; }
         public static bool IsOpened => Instance._content.activeInHierarchy;
+        public static event Action IsOpenedChanged;
 
         private static ISuggestionsContext SuggestionsContext
         {
@@ -63,8 +68,12 @@ namespace ANU.IngameDebug.Console
                     return;
                 Instance._currentTheme = value;
                 ThemeChanged?.Invoke(CurrentTheme);
+
+                LastThemeIndex = Array.IndexOf(Instance._themes, value);
             }
         }
+
+        public static DebugConsoleProcessor Processor => _processor;
 
         public static ICommandsRouter Router { get => _processor.Router; set => _processor.Router = value; }
         public static bool ShowLogs { get => _processor.ShowLogs; set => _processor.ShowLogs = value; }
@@ -78,6 +87,12 @@ namespace ANU.IngameDebug.Console
         private static CommandLineHistory CommandsHistory => _processor.CommandsHistory;
         internal static ILogger InputLogger => _processor.InputLogger;
         internal static LogsContainer Logs { get; } = new();
+
+        private static int LastThemeIndex
+        {
+            get => PlayerPrefs.GetInt("ANU.IngameDebug.Console.LastTheme.Index", 0);
+            set => PlayerPrefs.SetInt("ANU.IngameDebug.Console.LastTheme.Index", value);
+        }
 
         /// <summary>
         /// if void - returns null
@@ -106,6 +121,7 @@ namespace ANU.IngameDebug.Console
         private static void ClearStatic()
         {
             Instance = null;
+            _logs.Clear();
         }
 
         private void Awake()
@@ -122,12 +138,12 @@ namespace ANU.IngameDebug.Console
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            Application.logMessageReceived += LogMessageReceived;
+            Application.logMessageReceivedThreaded += LogMessageReceivedThreaded;
 
             _consoleInput = ConsoleInputFactory.GetInput();
             _commandsContext = new CommandsSuggestionsContext(Commands.Commands);
             _historyContext = new HistorySuggestionsContext(CommandsHistory);
-            _content.SetActive(false);
+            Close();
 
             _processor.Initialize();
 
@@ -143,7 +159,7 @@ namespace ANU.IngameDebug.Console
             _clear.onClick.AddListener(Logs.Clear);
             _close.onClick.AddListener(() =>
             {
-                _content.SetActive(false);
+                Close();
                 _input.text = "";
             });
 
@@ -160,6 +176,10 @@ namespace ANU.IngameDebug.Console
             LoadCommandsHistory(CommandsHistory);
             LoadDefines(Defines);
 
+            var themeIndex = LastThemeIndex;
+            if (themeIndex >= 0 && themeIndex < _themes.Length)
+                CurrentTheme = _themes[themeIndex];
+
             void Submit()
             {
                 var text = _input.text;
@@ -173,9 +193,12 @@ namespace ANU.IngameDebug.Console
             }
         }
 
+        // private void Start() => GetComponentInChildren<UIRectResizer>(includeInactive: true).RefreshConsoleSize();
+        private void Start() => GetComponentInChildren<UICanvasScaler>(includeInactive: true).RefreshConsoleScale();
+
         private void OnDestroy()
         {
-            Application.logMessageReceived -= LogMessageReceived;
+            Application.logMessageReceived -= LogMessageReceivedThreaded;
         }
 
         private void OnApplicationQuit()
@@ -184,11 +207,13 @@ namespace ANU.IngameDebug.Console
             SaveDefines(Defines);
         }
 
-        [DebugCommand(Name = "console.theme", Description = "Set console theme at runtime. Pass index or name of wanted UITheme listed in DebugConsole Themes list")]
-        private void SetConsoleTheme(
+        [DebugCommand(Description = "Set console theme at runtime. Pass index or name of wanted UITheme listed in DebugConsole Themes list")]
+        private void SetTheme(
             [OptAltNames("i")]
+            [OptValDynamic("console.list-theme-indices")]
             int index = -1,
             [OptAltNames("n")]
+            [OptValDynamic("console.list-theme-names")]
             string name = "",
             [OptAltNames("l"), OptDesc("Print all available themes")]
             bool list = false
@@ -206,7 +231,6 @@ namespace ANU.IngameDebug.Console
                 Logger.LogInfo(sb.ToString());
                 return;
             }
-
 
             if (_themes.Length == 0)
             {
@@ -242,11 +266,59 @@ namespace ANU.IngameDebug.Console
             }
         }
 
+        [DebugCommand(DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
+        private IEnumerable<int> ListThemeIndices()
+        {
+            for (int i = 0; i < _themes.Length; i++)
+                yield return i;
+        }
+
+        [DebugCommand(DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
+        private IEnumerable<string> ListThemeNames()
+        {
+            for (int i = 0; i < _themes.Length; i++)
+                yield return _themes[i].name;
+        }
+
         private void Update()
         {
             if (!Application.isPlaying)
                 return;
+            HandleInput();
+            HandleLogs();
+        }
 
+        private void HandleLogs()
+        {
+            while (_logs.TryDequeue(out var log))
+            {
+                if (!ShowLogs)
+                    return;
+
+                if (Instance == null)
+                    return;
+
+                var logType = ConsoleLogType.AppMessage;
+                var match = _receivedMessageTypeRegex.Match(log.condition);
+
+                if (match.Success && match.Index == 0)
+                {
+                    log.condition = log.condition.Substring(match.Length);
+                    if (Enum.TryParse(typeof(ConsoleLogType), match.Groups["type"].Value, true, out var parsed))
+                        logType = (ConsoleLogType)parsed;
+                }
+
+                Logs.Add(new Log(
+                    logType,
+                    log.type,
+                    log.condition,
+                    log.stackTrace
+                ));
+            }
+        }
+
+        private void HandleInput()
+        {
             var control = _consoleInput.GetControl();
             var openPressed = _consoleInput.GetOpen();
             var dotPressed = _consoleInput.GetDot();
@@ -264,7 +336,11 @@ namespace ANU.IngameDebug.Console
             }
             else if (openPressed)
             {
-                _content.SetActive(!_content.activeSelf);
+                if (_content.activeSelf)
+                    Close();
+                else
+                    Open();
+
                 if (_content.activeInHierarchy)
                 {
                     _input.ActivateInputField();
@@ -313,7 +389,6 @@ namespace ANU.IngameDebug.Console
         [DebugCommand(Description = "Clear console logs")]
         private void Clear() => Logs.Clear();
 
-        [DebugCommand(Name = "suggestions-context", Description = "Switch suggestions context")]
         private void SwitchContext()
         {
             if (SuggestionsContext == _historyContext)
@@ -324,11 +399,20 @@ namespace ANU.IngameDebug.Console
             DisplaySuggestions(_input.text, forced: true);
         }
 
-        [DebugCommand("console.open")]
-        public static void Open() => Instance._content.SetActive(true);
+        [DebugCommand(DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
+        public static void Open()
+        {
+            Instance._content.SetActive(true);
+            ExecuteCommand("console.refresh-size", silent: true);
+            IsOpenedChanged?.Invoke();
+        }
 
-        [DebugCommand("console.close")]
-        public static void Close() => Instance._content.SetActive(false);
+        [DebugCommand(DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
+        public static void Close()
+        {
+            Instance._content.SetActive(false);
+            IsOpenedChanged?.Invoke();
+        }
 
         private void DisplaySuggestions(string input, bool forced = false)
         {
@@ -349,31 +433,8 @@ namespace ANU.IngameDebug.Console
                 _suggestions.Hide();
         }
 
-        private static void LogMessageReceived(string condition, string stackTrace, LogType type)
-        {
-            if (!ShowLogs)
-                return;
-
-            if (Instance == null)
-                return;
-
-            var logType = ConsoleLogType.AppMessage;
-            var match = _receivedMessageTypeRegex.Match(condition);
-
-            if (match.Success && match.Index == 0)
-            {
-                condition = condition.Substring(match.Length);
-                if (Enum.TryParse(typeof(ConsoleLogType), match.Groups["type"].Value, true, out var parsed))
-                    logType = (ConsoleLogType)parsed;
-            }
-
-            Logs.Add(new Log(
-                logType,
-                type,
-                condition,
-                stackTrace
-            ));
-        }
+        private static void LogMessageReceivedThreaded(string condition, string stackTrace, LogType type)
+            => _logs.Enqueue(new UnityLog(condition, stackTrace, type));
 
         private void SaveCommandsHistory(CommandLineHistory history)
         {
@@ -442,6 +503,20 @@ namespace ANU.IngameDebug.Console
                 public TKey Key;
                 public TValue Value;
             }
+        }
+    }
+
+    internal struct UnityLog
+    {
+        public string condition;
+        public string stackTrace;
+        public LogType type;
+
+        public UnityLog(string condition, string stackTrace, LogType type)
+        {
+            this.condition = condition;
+            this.stackTrace = stackTrace;
+            this.type = type;
         }
     }
 

@@ -6,7 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.1.0] - 2023-11-13
 ### Added
+- mobile ui support - Dashboard commands view
+    - grouping by command prefix
+    - filtering by command prefix
+    - filtering by command type (method, property, field)
+    - easy accessible zero- and one-argument command presenters
+    - generic command presenters
+- floating button for open console on android
+- saving floating button position
+- saving last opened console tab
+- auto refresh console layout on phone orientation change
+- commands registration on startup
+    - Synchronous
+    - Asynchronous
+- TargetPlatforms for commands registration
+- CommandDisplayOptions for displaying commands on dashboard or/and in command line suggestion
+- samples for setup scene and register commands (with dashboard specific parameters)
+
+### Changed
+- removed console.switch-context command. its unnecessary
+- bug fix of unimplemented OptValDynamicAttribute for Fields and Properties
+- auto refreshing console size when open
+- NullReferenceException bug fix when called command ObjectInfo for object with no parent
+- bug fix of nameless parameters suggestions
+- saving/loading last selected theme
 
 ## [2.0.4] - 2023-10-02
 ### Added

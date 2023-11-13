@@ -9,18 +9,56 @@ using NDesk.Options;
 using UnityEngine;
 using System.Diagnostics;
 using ANU.IngameDebug.Console.Converters;
+using System.Threading.Tasks;
+using System.Threading;
+using ANU.IngameDebug.Console.Dashboard;
 
 namespace ANU.IngameDebug.Console
 {
     public class AttributeCommandsInitializer : MonoBehaviour
     {
-        private void Start()
+        [SerializeField] private CommandRegistrationType _commandRegistrationType = CommandRegistrationType.Asynchronous;
+
+        private CancellationTokenSource _cancellationTokenSource;
+
+        private async void Start()
         {
-            var init = new AttributeCommandsInitializerProcessor(
-                DebugConsole.Logger,
-                DebugConsole.Commands
-            );
-            init.Initialize();
+            if (_commandRegistrationType == CommandRegistrationType.Synchronous)
+            {
+                new AttributeCommandsInitializerProcessor(
+                    DebugConsole.Logger,
+                    DebugConsole.Commands
+                ).Initialize();
+            }
+            else
+            {
+                var logger = new UnityLogger(ConsoleLogType.Output);
+                var commands = new CommandsRegistry(DebugConsole.Processor);
+
+                _cancellationTokenSource = new CancellationTokenSource();
+                var token = _cancellationTokenSource.Token;
+
+                await Task.Run(() =>
+                {
+                    new AttributeCommandsInitializerProcessor(
+                        logger,
+                        commands
+                    ).Initialize();
+                });
+
+                if (token.IsCancellationRequested)
+                    return;
+
+                foreach (var item in commands.Commands.Values)
+                    DebugConsole.Commands.RegisterCommand(item);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
         }
     }
 
@@ -61,6 +99,7 @@ namespace ANU.IngameDebug.Console
                         attribute = method.GetCustomAttribute<DebugCommandAttribute>()
                     })
                     .Where(method => method.attribute != null)
+                    .Where(method => method.attribute.Platforms.HasCurrentPlatform())
                     .Select(method => new
                     {
                         method = method.method,
@@ -101,7 +140,8 @@ namespace ANU.IngameDebug.Console
                         field = field,
                         attribute = field.GetCustomAttribute<DebugCommandAttribute>()
                     })
-                    .Where(field => field.attribute != null)
+                    .Where(method => method.attribute != null)
+                    .Where(method => method.attribute.Platforms.HasCurrentPlatform())
                     .Select(field => new
                     {
                         method = field.field,
@@ -124,7 +164,7 @@ namespace ANU.IngameDebug.Console
 
             Log(timerProperty, "property");
 
-            var timerfield = StartLog("field");
+            var timerField = StartLog("field");
 
             Commands.RegisterCommands(
                 assemblies
@@ -142,7 +182,8 @@ namespace ANU.IngameDebug.Console
                         field = field,
                         attribute = field.GetCustomAttribute<DebugCommandAttribute>()
                     })
-                    .Where(field => field.attribute != null)
+                    .Where(method => method.attribute != null)
+                    .Where(method => method.attribute.Platforms.HasCurrentPlatform())
                     .Select(field => new
                     {
                         method = field.field,
@@ -163,7 +204,7 @@ namespace ANU.IngameDebug.Console
                     .ToArray()
             );
 
-            Log(timerfield, "field");
+            Log(timerField, "field");
 
             Log(timer, null);
             var log = $"Searching commands declared by attributes ended.\nOperation elapsed duration: {timer.Elapsed:ss's.'fff'ms'}, ticks: {timer.ElapsedTicks}";
