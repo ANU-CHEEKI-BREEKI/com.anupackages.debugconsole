@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using NDesk.Options;
 using Unity.Profiling;
 using UnityEngine;
@@ -37,12 +38,17 @@ namespace ANU.IngameDebug.Console.Commands.Implementations
                     : "";
 
                 var name = string.IsNullOrEmpty(attribute?.Name)
-                    ? string.Join("",
+                    ? Regex.Replace(string.Join("",
                         member.Name
                             .Select(c =>
                                 char.IsUpper(c) ? "-" + char.ToLower(c) : c.ToString()
                             )
-                        ).Trim('-')
+                        )
+                        .Replace('_', '-')
+                        .Trim('-'),
+                        "-{2,}",
+                        "-"
+                    )
                     : attribute.Name;
 
                 return prefix + name;

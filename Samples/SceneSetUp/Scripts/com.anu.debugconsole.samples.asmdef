@@ -1,0 +1,16 @@
+{
+    "name": "com.anu.debugconsole.samples",
+    "rootNamespace": "",
+    "references": [
+        "com.anu.debugconsole"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
