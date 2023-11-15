@@ -144,31 +144,14 @@ namespace ANU.IngameDebug.Console
         }
 
         [DebugCommand]
-        private static void LoadScene(
-            [OptAltNames("n")]
-            [OptDesc("Load scene by name")]
-            [OptValDynamic("default.list-scene-names")]
-            string name = "",
-            [OptAltNames("i")]
-            [OptDesc("Load scene by index")]
-            [OptValDynamic("default.list-scene-indices")]
-            int index = -1,
-            [OptAltNames("r")]
-            [OptDesc("Set only this flag to reload current scene")]
-            bool reload = false
-        )
-        {
-            if (!string.IsNullOrEmpty(name))
-                SceneManager.LoadScene(name);
-            else if (index >= 0)
-                SceneManager.LoadScene(index);
-            else if (reload)
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-            else
-                throw new System.Exception("Pass at least one parameter");
-        }
+        private static void SceneLoad([OptAltNames("n")][OptDesc("Load scene by name")][OptValDynamic("default.list-scene-names")] string name)
+            => SceneManager.LoadScene(name);
 
         [DebugCommand]
+        private static void SceneReload()
+            => SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+
+        [DebugCommand(DisplayOptions = CommandDisplayOptions.Console)]
         private static IEnumerable<string> ListSceneNames()
             => ListSceneIndices().Select(i => SceneUtility
                 .GetScenePathByBuildIndex(i)
@@ -178,7 +161,6 @@ namespace ANU.IngameDebug.Console
                 ?.FirstOrDefault()
             );
 
-        [DebugCommand]
         private static IEnumerable<int> ListSceneIndices()
         {
             var cnt = SceneManager.sceneCountInBuildSettings;
