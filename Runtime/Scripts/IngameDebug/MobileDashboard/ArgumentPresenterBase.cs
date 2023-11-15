@@ -1,4 +1,3 @@
-using System;
 using ANU.IngameDebug.Console.Commands.Implementations;
 using TMPro;
 using UnityEngine;

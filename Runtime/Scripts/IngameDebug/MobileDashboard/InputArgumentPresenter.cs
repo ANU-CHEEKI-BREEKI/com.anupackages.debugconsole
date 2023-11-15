@@ -1,7 +1,6 @@
 using ANU.IngameDebug.Utils;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace ANU.IngameDebug.Console.Dashboard
 {

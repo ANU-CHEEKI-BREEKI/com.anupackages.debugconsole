@@ -1,7 +1,5 @@
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using static ANU.IngameDebug.Console.Commands.Implementations.MemberCommand;
 
 namespace ANU.IngameDebug.Console.Dashboard
 {
@@ -20,7 +18,7 @@ namespace ANU.IngameDebug.Console.Dashboard
             {
                 initValue = (bool)Parameter.DefaultValue;
             }
-            finally { }
+            catch { }
             _toggle.SetIsOnWithoutNotify(initValue);
         }
     }

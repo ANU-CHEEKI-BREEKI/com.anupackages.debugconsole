@@ -1,8 +1,6 @@
 using System.Linq;
-using ANU.IngameDebug.Console.Commands.Implementations;
 using TMPro;
 using UnityEngine;
-using static ANU.IngameDebug.Console.Commands.Implementations.MemberCommand;
 
 namespace ANU.IngameDebug.Console.Dashboard
 {

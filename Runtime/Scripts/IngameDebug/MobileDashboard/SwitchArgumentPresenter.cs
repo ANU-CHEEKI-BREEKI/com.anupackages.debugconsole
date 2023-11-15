@@ -3,7 +3,6 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static ANU.IngameDebug.Console.Commands.Implementations.MemberCommand;
 
 namespace ANU.IngameDebug.Console.Dashboard
 {

@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using ANU.IngameDebug.Console.Commands.Implementations;
 using ANU.IngameDebug.Utils;
@@ -35,12 +34,12 @@ namespace ANU.IngameDebug.Console.Dashboard
             }
             else
             {
-                object initValue;
+                object initValue = default;
                 try
                 {
-                    initValue = command.Execute().ReturnValues.First().ReturnValue;
+                    initValue = DebugConsole.ExecuteCommand(command.Name, silent: true).ReturnValues.First().ReturnValue;
                 }
-                finally { }
+                catch { }
 
                 _input.SetTextWithoutNotify(
                     DebugConsole.Converters.ConvertToString(initValue)
@@ -60,7 +59,7 @@ namespace ANU.IngameDebug.Console.Dashboard
             if (_input.contentType == TMP_InputField.ContentType.IntegerNumber
                 || _input.contentType == TMP_InputField.ContentType.DecimalNumber)
             {
-                
+
             }
             else
             {

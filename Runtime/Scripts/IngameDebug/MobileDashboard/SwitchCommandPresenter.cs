@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ANU.IngameDebug.Console.Commands.Implementations;
+using ANU.IngameDebug.Utils;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,6 +15,14 @@ namespace ANU.IngameDebug.Console.Dashboard
 
         private MemberCommand _command;
         private bool _isInitializing;
+        private bool _justEnabled;
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            _justEnabled = true;
+            this.InvokeSkipOneFrame(() => _justEnabled = false);
+        }
 
         public override void Initialize(InitArgs initArgs)
         {
@@ -49,12 +58,12 @@ namespace ANU.IngameDebug.Console.Dashboard
             {
                 _group.allowSwitchOff = false;
 
-                object initValue;
+                object initValue = default;
                 try
                 {
-                    initValue = command.Execute().ReturnValues.First().ReturnValue;
+                    initValue = DebugConsole.ExecuteCommand(command.Name, silent: true).ReturnValues.First().ReturnValue;
                 }
-                finally { }
+                catch { }
 
                 var str = DebugConsole.Converters.ConvertToString(initValue);
 
@@ -74,11 +83,18 @@ namespace ANU.IngameDebug.Console.Dashboard
         {
             DeselectAll();
 
-            _toggles[index].SetIsOnWithoutNotify(true);
+            if (index >= 0 && index < _toggles.Count)
+                _toggles[index].SetIsOnWithoutNotify(true);
         }
 
         private void Toggle(bool isOn)
         {
+            if (_justEnabled)
+            {
+                _justEnabled = false;
+                return;
+            }
+
             if (!isOn || _isInitializing)
                 return;
 

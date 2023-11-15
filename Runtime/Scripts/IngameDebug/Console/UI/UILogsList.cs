@@ -48,8 +48,10 @@ namespace ANU.IngameDebug.Console
                 () => Instantiate(_logPresenterPrefab),
                 actionOnGet: p =>
                 {
-                    p.transform.SetParent(_content);
+                    p.transform.SetParent(_content, false);
                     p.transform.localScale = Vector3.one;
+                    p.transform.localPosition = Vector3.zero;
+                    p.transform.localRotation = Quaternion.identity;
                     p.gameObject.SetActive(true);
                 },
                 actionOnRelease: p =>

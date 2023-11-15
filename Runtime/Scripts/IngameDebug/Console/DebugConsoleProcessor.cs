@@ -24,7 +24,7 @@ namespace ANU.IngameDebug.Console
     {
         public ICommandsRouter Router { get; set; } = null;
         public bool ShowLogs { get; set; } = true;
-        public ILogger Logger { get; }
+        public ILogger Logger => _logger;
 
         public IConverterRegistry Converters { get; }
         public ICommandInputPreprocessorRegistry Preprocessors { get; }
@@ -33,13 +33,13 @@ namespace ANU.IngameDebug.Console
         public IDefinesRegistry Defines { get; } = new DefinesRegistry();
 
         internal CommandLineHistory CommandsHistory { get; } = new CommandLineHistory();
-        internal ILogger InputLogger { get; }
+        internal ILogger InputLogger => _inputLogger;
+
+        internal readonly UnityLogger _logger = new UnityLogger(ConsoleLogType.Output);
+        internal readonly UnityLogger _inputLogger = new UnityLogger(ConsoleLogType.Input);
 
         public DebugConsoleProcessor()
         {
-            InputLogger = new UnityLogger(ConsoleLogType.Input);
-            Logger = new UnityLogger(ConsoleLogType.Output);
-
             Commands = new CommandsRegistry(this);
             Converters = new ConverterRegistry(this);
             Preprocessors = new CommandInputPreprocessorRegistry(this);
@@ -84,6 +84,9 @@ namespace ANU.IngameDebug.Console
         {
             try
             {
+                _inputLogger.SilenceStack.Push(silent);
+                _logger.SilenceStack.Push(silent);
+
                 commandLine = Preprocessors.Preprocess(commandLine);
                 var commandName = ExtractCommandName(commandLine);
 
@@ -118,6 +121,11 @@ namespace ANU.IngameDebug.Console
             {
                 if (!silent)
                     Logger.LogException(ex);
+            }
+            finally
+            {
+                _inputLogger.SilenceStack.TryPop(out _);
+                _logger.SilenceStack.TryPop(out _);
             }
 
             return default;

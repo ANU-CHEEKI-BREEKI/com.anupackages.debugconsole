@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using ANU.IngameDebug.Console.Commands.Implementations;
 using UnityEngine;
@@ -15,7 +14,7 @@ namespace ANU.IngameDebug.Console.Dashboard
         public override void Initialize(InitArgs initArgs)
         {
             base.Initialize(initArgs);
-            
+
             _toggle.onValueChanged.AddListener(Toggle);
         }
 
@@ -28,9 +27,9 @@ namespace ANU.IngameDebug.Console.Dashboard
             var initValue = false;
             try
             {
-                initValue = (bool)command.Execute().ReturnValues.First().ReturnValue;
+                initValue = (bool)DebugConsole.ExecuteCommand(command.Name, silent: true).ReturnValues.First().ReturnValue;
             }
-            finally { }
+            catch { }
             _toggle.SetIsOnWithoutNotify(initValue);
         }
     }

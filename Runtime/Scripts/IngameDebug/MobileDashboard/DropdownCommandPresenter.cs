@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using ANU.IngameDebug.Console.Commands.Implementations;
 using TMPro;
 using UnityEngine;
@@ -38,12 +35,12 @@ namespace ANU.IngameDebug.Console.Dashboard
             }
             else
             {
-                object initValue;
+                object initValue = default;
                 try
                 {
-                    initValue = command.Execute().ReturnValues.First().ReturnValue;
+                    initValue = DebugConsole.ExecuteCommand(command.Name, silent: true).ReturnValues.First().ReturnValue;
                 }
-                finally { }
+                catch { }
 
                 var str = DebugConsole.Converters.ConvertToString(initValue);
                 var index = values.IndexOf(str);

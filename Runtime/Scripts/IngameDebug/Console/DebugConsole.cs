@@ -522,13 +522,20 @@ namespace ANU.IngameDebug.Console
 
     internal class UnityLogger : ILogger
     {
+        public readonly Stack<bool> SilenceStack = new();
+        
         private readonly ConsoleLogType _consoleLogType;
 
         public UnityLogger(ConsoleLogType consoleLogType)
             => _consoleLogType = consoleLogType;
 
+        public bool IsSilenced => SilenceStack.Count > 0 && SilenceStack.Peek();
+
         public void LogReturnValue(object value, UnityEngine.Object context = null)
         {
+            if (IsSilenced)
+                return;
+
             var val = "";
             if (value is string str)
                 val = str;
@@ -541,10 +548,34 @@ namespace ANU.IngameDebug.Console
 
             Debug.Log($"[console:{_consoleLogType}] {val}", context);
         }
-        public void LogInfo(string message, UnityEngine.Object context) => Debug.Log($"[console:{_consoleLogType}] {message}", context);
-        public void LogWarning(string message, UnityEngine.Object context) => Debug.LogWarning($"[console:{_consoleLogType}] {message}", context);
-        public void LogError(string message, UnityEngine.Object context) => Debug.LogError($"[console:{_consoleLogType}] {message}", context);
-        public void LogException(Exception exception, UnityEngine.Object context) => Debug.LogException(new Exception($"[console:{_consoleLogType}] {exception.Message}", exception), context);
+
+        public void LogInfo(string message, UnityEngine.Object context)
+        {
+            if (IsSilenced)
+                return;
+            Debug.Log($"[console:{_consoleLogType}] {message}", context);
+        }
+
+        public void LogWarning(string message, UnityEngine.Object context)
+        {
+            if (IsSilenced)
+                return;
+            Debug.LogWarning($"[console:{_consoleLogType}] {message}", context);
+        }
+
+        public void LogError(string message, UnityEngine.Object context)
+        {
+            if (IsSilenced)
+                return;
+            Debug.LogError($"[console:{_consoleLogType}] {message}", context);
+        }
+
+        public void LogException(Exception exception, UnityEngine.Object context)
+        {
+            if (IsSilenced)
+                return;
+            Debug.LogException(new Exception($"[console:{_consoleLogType}] {exception.Message}", exception), context);
+        }
 
         private IEnumerable<object> AsEnumerable(IEnumerator enumerator)
         {
