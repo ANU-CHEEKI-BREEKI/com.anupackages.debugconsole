@@ -17,6 +17,9 @@ namespace ANU.IngameDebug.Console
         [SerializeField] private Graphic[] _nonRequired = { };
         [SerializeField] private Graphic[] _required = { };
         [SerializeField] private Graphic[] _toggle = { };
+        [SerializeField] private Graphic[] _info = { };
+        [SerializeField] private Graphic[] _warning = { };
+        [SerializeField] private Graphic[] _error = { };
 
         public Graphic[] Header => _header;
         public Graphic[] Background => _background;
@@ -30,6 +33,10 @@ namespace ANU.IngameDebug.Console
         public Graphic[] NonRequired => _nonRequired;
         public Graphic[] Required => _required;
         public Graphic[] Toggle => _toggle;
+        
+        public Graphic[] Info => _info;
+        public Graphic[] Warning => _warning;
+        public Graphic[] Error => _error;
 
         private void OnEnable()
         {

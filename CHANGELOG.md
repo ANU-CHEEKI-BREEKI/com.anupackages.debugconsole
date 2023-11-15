@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2.1.1-pre.1
 
 ### Added
+- console message counters and last log message in bot of the dashboard
 
 ### Changed
 - silenced exceptions during dashboard initialization for non static commands

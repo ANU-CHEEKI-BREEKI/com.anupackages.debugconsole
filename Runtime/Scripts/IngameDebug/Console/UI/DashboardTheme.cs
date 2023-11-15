@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace ANU.IngameDebug.Console
@@ -24,13 +25,14 @@ namespace ANU.IngameDebug.Console
             foreach (var item in ScrollBarForeground)
                 item.color = obj?.Dashboard_ScrollBar_Foreground ?? Color.white;
 
-            // foreach (var item in Selectable)
-            // {
-            //     var c = item.colors;
-            //     c.selectedColor = obj?.Suggestions_FontSelected ?? Color.yellow;
-            //     c.pressedColor = obj?.Suggestions_FontPressed ?? new Color(Color.yellow.r - 0.2f, Color.yellow.g - 0.2f, Color.yellow.b - 0.2f);
-            //     item.colors = c;
-            // }
+            foreach (var item in Info)
+                item.color = obj?.Message_Log ?? Color.white;
+
+            foreach (var item in Warning)
+                item.color = obj?.Message_Warnings ?? Color.white;
+
+            foreach (var item in Error)
+                item.color = obj?.Message_Errors ?? Color.white;
         }
     }
 }
