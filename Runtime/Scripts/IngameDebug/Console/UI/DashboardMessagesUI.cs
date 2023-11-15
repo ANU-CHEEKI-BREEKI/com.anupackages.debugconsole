@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -20,10 +21,19 @@ namespace ANU.IngameDebug.Console
 
         private void Awake()
         {
-            DebugConsole.Logs.Cleared += args => UpdateUI();
-            DebugConsole.Logs.Added += args => UpdateUI();
+            DebugConsole.Logs.Cleared += UpdateUI;
+            DebugConsole.Logs.Added += UpdateUI;
             UpdateUI();
         }
+
+        private void OnDestroy()
+        {
+            DebugConsole.Logs.Cleared -= UpdateUI;
+            DebugConsole.Logs.Added -= UpdateUI;
+        }
+
+        private void UpdateUI(LogsContainer.CollectionChangedArgs args) => UpdateUI();
+        private void UpdateUI(LogsContainer.CollectionClearedArgs args) => UpdateUI();
 
         private void UpdateUI()
         {
