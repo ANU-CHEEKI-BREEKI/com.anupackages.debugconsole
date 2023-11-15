@@ -208,69 +208,19 @@ namespace ANU.IngameDebug.Console
         }
 
         [DebugCommand(Description = "Set console theme at runtime. Pass index or name of wanted UITheme listed in DebugConsole Themes list")]
-        private void SetTheme(
-            [OptAltNames("i")]
-            [OptValDynamic("console.list-theme-indices")]
-            int index = -1,
-            [OptAltNames("n")]
-            [OptValDynamic("console.list-theme-names")]
-            string name = "",
-            [OptAltNames("l"), OptDesc("Print all available themes")]
-            bool list = false
-        )
+        private void SetTheme([OptAltNames("n")][OptValDynamic("console.list-theme-names")] string name)
         {
-            if (list)
-            {
-                var sb = new StringBuilder();
-                sb.AppendLine($"There are {_themes.Length} themes available: ");
-                for (int i = 0; i < _themes.Length; i++)
-                {
-                    var item = _themes[i];
-                    sb.AppendLine($"[{i}]: {item.name}");
-                }
-                Logger.LogInfo(sb.ToString());
-                return;
-            }
-
             if (_themes.Length == 0)
-            {
-                Logger.LogError("Provide at least one item in DebugConsole Themes list");
-            }
-            else if (index >= 0)
-            {
-                if (index < 0)
-                {
-                    Logger.LogError("Index should be greater or equals 0");
-                    return;
-                }
-                else if (index >= _themes.Length)
-                {
-                    Logger.LogError($"Index out of bounds Themes list. There are {_themes.Length} themes available");
-                    return;
-                }
+                throw new InvalidOperationException("Provide at least one item in DebugConsole Themes list");
 
-                var theme = _themes[index];
-                CurrentTheme = theme;
-            }
-            else if (!string.IsNullOrEmpty(name))
-            {
-                var theme = _themes.FirstOrDefault(t => t.name == name);
-                if (theme == null)
-                    Logger.LogError($"Theme \"{name}\" not found. Provide at least one item with name \"{name}\" in DebugConsole Themes list");
-                else
-                    CurrentTheme = theme;
-            }
-            else
-            {
-                Logger.LogError("Provide index or name of wanted UITheme listed in DebugConsole Themes list");
-            }
-        }
+            if (string.IsNullOrEmpty(name))
+                throw new ArgumentException("Provide name of wanted UITheme listed in DebugConsole Themes list");
 
-        [DebugCommand(DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
-        private IEnumerable<int> ListThemeIndices()
-        {
-            for (int i = 0; i < _themes.Length; i++)
-                yield return i;
+            var theme = _themes.FirstOrDefault(t => t.name == name);
+            if (theme == null)
+                throw new ArgumentException($"Theme \"{name}\" not found. Provide at least one item with name \"{name}\" in DebugConsole Themes list");
+
+            CurrentTheme = theme;
         }
 
         [DebugCommand(DisplayOptions = CommandDisplayOptions.All & ~CommandDisplayOptions.Dashboard)]
@@ -523,7 +473,7 @@ namespace ANU.IngameDebug.Console
     internal class UnityLogger : ILogger
     {
         public readonly Stack<bool> SilenceStack = new();
-        
+
         private readonly ConsoleLogType _consoleLogType;
 
         public UnityLogger(ConsoleLogType consoleLogType)

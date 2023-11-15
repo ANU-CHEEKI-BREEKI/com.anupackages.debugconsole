@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - silenced exceptions during dashboard initialization for non static commands
 - fixed "silence" commands execution
-// - removed unnecessary command args from sime commands. auto complete now able to handle argument values selection quickly
+- changed console.set-theme command. removed unnecessary args. auto complete now able to handle argument values selection quickly
 
 ## [2.1.0] - 2023-11-13
 ### Added
