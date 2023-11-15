@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - silenced exceptions during dashboard initialization for non static commands
 - fixed "silence" commands execution
-- changed console.set-theme command. removed unnecessary args. auto complete now able to handle argument values selection quickly
+- console.set-theme command. removed unnecessary args. auto complete now able to handle argument values selection quickly
+- set scale command for dashboard specific
 
 ## [2.1.0] - 2023-11-13
 ### Added

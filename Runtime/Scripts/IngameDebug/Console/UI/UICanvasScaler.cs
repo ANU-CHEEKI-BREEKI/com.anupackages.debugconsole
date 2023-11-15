@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -29,7 +26,6 @@ namespace ANU.IngameDebug.Console
             100
 #endif
             ;
-
 
         private int ScaleStep
         {
@@ -63,7 +59,7 @@ namespace ANU.IngameDebug.Console
         public void RefreshConsoleScale() => ConsoleScale(CurrentScale);
         private void ResetInput() => _exact.text = CurrentScale.ToString() + "%";
 
-        [DebugCommand(Name = "scale", Description = "Set console ui scale.")]
+        [DebugCommand(Name = "scale", Description = "Set console ui scale.", DisplayOptions = CommandDisplayOptions.Console)]
         private void ConsoleScale(
             [OptVal("50", "75", "100", "125", "150", "200")]
             [OptAltNames("v")]
@@ -74,17 +70,18 @@ namespace ANU.IngameDebug.Console
         )
         {
             if (step)
-            {
                 ScaleStep = Mathf.Clamp(value, 1, 50);
-            }
             else
-            {
-                CurrentScale = Mathf.Clamp(value, 50, 200);
-                ResetInput();
-                _scaler.referenceResolution = _initialResolutionReference / (CurrentScale / 100f);
+                SetScale(value);
+        }
 
-                DebugConsole.ExecuteCommand("console.refresh-size", silent: true);
-            }
+        [DebugCommand(Description = "Set console ui scale.", DisplayOptions = CommandDisplayOptions.Dashboard)]
+        private void SetScale([OptVal("100", "125", "150", "200")][OptAltNames("v")] int value)
+        {
+            CurrentScale = Mathf.Clamp(value, 50, 200);
+            ResetInput();
+            _scaler.referenceResolution = _initialResolutionReference / (CurrentScale / 100f);
+            DebugConsole.ExecuteCommand("console.refresh-size", silent: true);
         }
     }
 }
