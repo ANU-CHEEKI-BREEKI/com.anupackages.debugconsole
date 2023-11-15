@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - console.set-theme command. removed unnecessary args. auto complete now able to handle argument values selection quickly
 - set scale command for dashboard specific
 - load scene. removed unnecessary args. separated to 2 commands for load and reload scene
+- dropdown out of screen bug fix
 
 ## [2.1.0] - 2023-11-13
 ### Added
