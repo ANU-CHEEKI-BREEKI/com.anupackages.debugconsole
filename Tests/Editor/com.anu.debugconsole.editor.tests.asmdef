@@ -19,12 +19,6 @@
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
     ],
-    "versionDefines": [
-        {
-            "name": "com.anupackages.ncalc",
-            "expression": "0",
-            "define": "USE_NCALC"
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }

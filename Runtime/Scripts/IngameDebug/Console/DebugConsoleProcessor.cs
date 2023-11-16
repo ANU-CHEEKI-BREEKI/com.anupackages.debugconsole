@@ -152,11 +152,8 @@ namespace ANU.IngameDebug.Console
             Preprocessors.Add(new NamedParametersPreprocessor());
             Preprocessors.Add(new DefinesPreprocessor());
             Preprocessors.Add(new NestedCommandsPreprocessor());
-#if USE_NCALC
-            Preprocessors.Add(new ExpressionEvaluatorPreprocessor());
-#endif
         }
-
+        
         private void SetUpConverters()
         {
             Converters.Register(new BaseConverter());

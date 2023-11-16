@@ -4,7 +4,6 @@
     "references": [
         "Unity.TextMeshPro",
         "NDesk.Options",
-        "NCalc",
         "Unity.InputSystem"
     ],
     "includePlatforms": [],
@@ -14,12 +13,6 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [
-        {
-            "name": "com.anupackages.ncalc",
-            "expression": "0",
-            "define": "USE_NCALC"
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }

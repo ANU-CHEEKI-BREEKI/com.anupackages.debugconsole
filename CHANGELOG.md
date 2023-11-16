@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [2.1.2] - 2023-11-16
+### Added
+
+### Changed
+- Expression Evaluation bugfixes
+    - removed dependencies on com.anupackages.ncalc
+    - moved Expression Evaluation preprocessor to com.anupackages.debugconsole.expressions
+    - removed USE_NCALC directives
+
 ## [2.1.1] - 2023-11-15
 ### Added
 - console message counters and last log message in bot of the dashboard
