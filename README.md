@@ -24,6 +24,7 @@ If you install this asset as package by Unity Package Manager, than packcage com
 
 Optional dependency:
 - if you want to use Expression Evaluation, you need to install following packages. Whis are also redistribution for Unity Package Manager usage. See more in [How to Install](#How-to-Install)
+  - [com.anupackages.debugconsole.expressions](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole.expressions) - enables  Expression Evaluation
   - [NCalc](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.ncalc)
   - [ANTLR v4](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.antlr4)
 
@@ -89,6 +90,7 @@ User interface is created with uGUI and packed in a single SpriteAtlas.
   ```
     optional:
   ```
+    "com.anupackages.debugconsole.expressions": "https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole.expressions.git"
     "com.anupackages.ncalc": "https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.ncalc.git",
     "com.anupackages.antlr4": "https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.antlr4.git",
   ```
@@ -467,7 +469,7 @@ command 123 -f -h -p=12
 
 ## Expression evaluation
 
-***`ATTENTION:`*** to use ExpressionEvaluation install [NCalc package](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.ncalc).
+***`ATTENTION:`*** to use ExpressionEvaluation install [com.anupackages.debugconsole.expressions](https://github.com/ANU-CHEEKI-BREEKI/com.anupackages.debugconsole.expressions).
 
 When ExpressionEvaluation installed, you can evaluate expressions directly in console command line. The syntax is similar to [Unity ExpressionEvaluator.Evaluate](https://docs.unity3d.com/ScriptReference/ExpressionEvaluator.Evaluate.html) which is used to evaluate expressions directly in inspector numeric fields. So if you have used this at least one time, you should be already familiar with this.
 
