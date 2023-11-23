@@ -39,9 +39,9 @@ namespace ANU.IngameDebug.Console
         private static ISuggestionsContext _suggestionsContext;
         private static CommandsSuggestionsContext _commandsContext;
         private static HistorySuggestionsContext _historyContext;
-        private static DebugConsoleProcessor _processor = new DebugConsoleProcessor();
+        private static DebugConsoleProcessor _processor;
         private static IConsoleInput _consoleInput;
-        private static ConcurrentQueue<UnityLog> _logs = new();
+        private static ConcurrentQueue<UnityLog> _logs;
 
         internal static DebugConsole Instance { get; set; }
         public static bool IsOpened => Instance._content.activeInHierarchy;
@@ -86,7 +86,7 @@ namespace ANU.IngameDebug.Console
 
         private static CommandLineHistory CommandsHistory => _processor.CommandsHistory;
         internal static ILogger InputLogger => _processor.InputLogger;
-        internal static LogsContainer Logs { get; } = new();
+        internal static LogsContainer Logs { get; private set; }
 
         private static int LastThemeIndex
         {
@@ -121,7 +121,12 @@ namespace ANU.IngameDebug.Console
         private static void ClearStatic()
         {
             Instance = null;
-            _logs.Clear();
+            IsOpenedChanged = null;
+            ThemeChanged = null;
+            _processor = new DebugConsoleProcessor();
+            _logs = new ConcurrentQueue<UnityLog>();
+            Logs = new LogsContainer();
+            Application.logMessageReceivedThreaded -= LogMessageReceivedThreaded;
         }
 
         private void Awake()
@@ -193,13 +198,8 @@ namespace ANU.IngameDebug.Console
             }
         }
 
-        // private void Start() => GetComponentInChildren<UIRectResizer>(includeInactive: true).RefreshConsoleSize();
         private void Start() => GetComponentInChildren<UICanvasScaler>(includeInactive: true).RefreshConsoleScale();
-
-        private void OnDestroy()
-        {
-            Application.logMessageReceived -= LogMessageReceivedThreaded;
-        }
+        private void OnDestroy() => Application.logMessageReceived -= LogMessageReceivedThreaded;
 
         private void OnApplicationQuit()
         {

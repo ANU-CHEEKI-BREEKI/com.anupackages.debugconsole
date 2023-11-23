@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using ANU.IngameDebug.Utils;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Pool;
 using UnityEngine.UI;
-using static ANU.IngameDebug.Console.LogsContainer;
 
 namespace ANU.IngameDebug.Console
 {
@@ -39,7 +37,7 @@ namespace ANU.IngameDebug.Console
 
         private bool _scrollToEndEnabled = true;
 
-        private void Awake()
+        private void Start()
         {
             if (!Application.isPlaying)
                 return;

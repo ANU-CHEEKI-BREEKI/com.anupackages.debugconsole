@@ -11,11 +11,11 @@ namespace ANU.IngameDebug.Utils
 {
     public static class Extensions
     {
-        private static readonly Regex RegexFromcommandToFirstNamedParameter = new Regex(@"^(?<command>\s*[\.\w_\d\-]*).*?(?<named_parameter>\s+-{1,2}[\.\w_\d]*).*$");
+        private static readonly Regex RegexFromCommandToFirstNamedParameter = new Regex(@"^(?<command>\s*[\.\w_\d\-]*).*?(?<named_parameter>\s+-{1,2}[\.\w_\d]*).*$");
 
         public static Group GetFirstNamedParameter(this string commandLine)
         {
-            var match = RegexFromcommandToFirstNamedParameter.Match(commandLine);
+            var match = RegexFromCommandToFirstNamedParameter.Match(commandLine);
             return match.Groups["named_parameter"];
         }
 
