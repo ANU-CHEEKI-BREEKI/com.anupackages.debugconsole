@@ -13,10 +13,10 @@ namespace ANU.IngameDebug.Console.Dashboard
             platforms |= TargetPlatforms.Mobile;
 #endif
 #if UNITY_IOS
-            platforms |= ConsolePlatform.Mobile;
+            platforms |= TargetPlatforms.Mobile;
 #endif
 #if UNITY_STANDALONE
-                platforms |= ConsolePlatform.PC;
+                platforms |= TargetPlatforms.PC;
 #endif
 
             return platforms;

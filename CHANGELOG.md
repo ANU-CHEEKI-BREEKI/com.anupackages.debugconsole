@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - bug fix of Editor Enter Play Mode Settings support
+- compilation fix for non Android target platforms
 
 ## [2.1.3] - 2023-11-16
 ## [2.1.2]
