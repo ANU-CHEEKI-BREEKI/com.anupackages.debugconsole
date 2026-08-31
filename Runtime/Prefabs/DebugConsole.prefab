@@ -3270,7 +3270,7 @@ MonoBehaviour:
   m_ContentType: 2
   m_InputType: 0
   m_AsteriskChar: 42
-  m_KeyboardType: 4
+  m_KeyboardType: 2
   m_LineType: 0
   m_HideMobileInput: 0
   m_HideSoftKeyboard: 0
@@ -6915,7 +6915,7 @@ MonoBehaviour:
   _floatingOpenButton: {fileID: 2718149386125828396}
   _closeConsole: {fileID: 6187082459320307512}
   _infoPanel: {fileID: 8123389787112891824}
-  _showFloatingButtonOn: 1
+  _showFloatingButtonOn: 4
 --- !u!1 &6414169174141003170
 GameObject:
   m_ObjectHideFlags: 0
