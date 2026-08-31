@@ -10,6 +10,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+
+## [2.2.0] - 2026-08-31
+
+### Added
+- WebGL target platform flag
+- strict device-platform check: the floating button hidden in the editor unless the Editor flag is set (prefab default is now Mobile)
+- suggestion search ignores case and matches typed terms in any order
+- editor tests for suggestions, platform checks; command line parser fixes covered by the SupportedTypes suite
+
+### Changed
+- applying a value suggestion replaces the partially typed value instead of appending after it; values with spaces are quoted
+- command line supports single-quoted arguments; a bare "-" and negative numbers parse as values, not option names
+- nested collection values like ((0.2, 5) (35.4, 29)) parse correctly
+- dropped the com.unity.textmeshpro dependency for Unity 6 compatibility; on Unity 2022 and older install TextMeshPro manually
+- fixed infinite recursion in InstancesTargetRegistry.Unregister
+- OnDestroy unsubscribes the log handler that was actually subscribed and clears the singleton
+- Task.Run is skipped at runtime on WebGL (no thread pool there)
+- BREAKING: DeleteAllChild extension renamed to DestroyAllChild; Color.ToHexString extension removed
 - bug fix of Editor Enter Play Mode Settings support
 - compilation fix for non Android target platforms
 

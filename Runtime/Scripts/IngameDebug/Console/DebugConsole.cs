@@ -141,7 +141,9 @@ namespace ANU.IngameDebug.Console
             }
 
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            
+            if (transform.parent == null)
+                DontDestroyOnLoad(gameObject);
 
             Application.logMessageReceivedThreaded += LogMessageReceivedThreaded;
 
@@ -199,7 +201,15 @@ namespace ANU.IngameDebug.Console
         }
 
         private void Start() => GetComponentInChildren<UICanvasScaler>(includeInactive: true).RefreshConsoleScale();
-        private void OnDestroy() => Application.logMessageReceived -= LogMessageReceivedThreaded;
+        private void OnDestroy()
+        {
+            // the duplicate destroyed by Awake must not tear down the live instance
+            if (Instance != this)
+                return;
+
+            Instance = null;
+            Application.logMessageReceivedThreaded -= LogMessageReceivedThreaded;
+        }
 
         private void OnApplicationQuit()
         {

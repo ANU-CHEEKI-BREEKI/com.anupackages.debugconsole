@@ -11,7 +11,9 @@ namespace ANU.IngameDebug.Utils
 {
     public static class Extensions
     {
-        private static readonly Regex RegexFromCommandToFirstNamedParameter = new Regex(@"^(?<command>\s*[\.\w_\d\-]*).*?(?<named_parameter>\s+-{1,2}[\.\w_\d]*).*$");
+        // the parameter name must start with a letter: a bare "-" or a negative
+        // number like -5 is a value, not the beginning of a named parameter
+        private static readonly Regex RegexFromCommandToFirstNamedParameter = new Regex(@"^(?<command>\s*[\.\w_\d\-]*).*?(?<named_parameter>\s+-{1,2}[\._a-zA-Z][\.\w_\d]*).*$");
 
         public static Group GetFirstNamedParameter(this string commandLine)
         {
@@ -21,16 +23,18 @@ namespace ANU.IngameDebug.Utils
 
         public static IEnumerable<string> SplitCommandLine(this string commandLine)
         {
-            var inQuotes = false;
+            var quote = '\0';
 
             return commandLine
                 .Split(c =>
                 {
-                    if (c == '\"')
-                        inQuotes = !inQuotes;
-                    return !inQuotes && c == ' ';
+                    if (quote == '\0' && (c == '\"' || c == '\''))
+                        quote = c;
+                    else if (quote == c)
+                        quote = '\0';
+                    return quote == '\0' && c == ' ';
                 })
-                .Select(arg => arg.Trim().TrimMatchingQuotes('\"'))
+                .Select(arg => arg.Trim().TrimMatchingQuotes('\"').TrimMatchingQuotes('\''))
                 .Where(arg => !string.IsNullOrEmpty(arg));
         }
 
@@ -132,8 +136,6 @@ namespace ANU.IngameDebug.Utils
             return intersection.width < epsilon
                 && intersection.height < epsilon;
         }
-
-        public static string ToHexString(this Color color) => ColorUtility.ToHtmlStringRGBA(color);
 
         public static Coroutine InvokeSkipOneFrame(this MonoBehaviour monoBehaviour, Action method)
             => InvokeSkipFrames(monoBehaviour, method, 1);
@@ -266,14 +268,17 @@ namespace ANU.IngameDebug.Utils
             }
         }
 
-        public static void DeleteAllChild(this Component component)
+        public static void DestroyAllChild(this Component component, Func<Transform, bool> filter = null)
         {
-            var tr = component.transform;
-            while (tr.childCount > 0)
+            for (int i = 0; i < component.transform.childCount; i++)
             {
-                var c = tr.GetChild(0);
-                c.SetParent(null);
-                GameObject.Destroy(c.gameObject);
+                var child = component.transform.GetChild(i);
+                if (filter is not null && !filter.Invoke(child))
+                    continue;
+
+                child.SetParent(null);
+                GameObject.Destroy(child.gameObject);
+                i--;
             }
         }
 
@@ -299,7 +304,7 @@ namespace ANU.IngameDebug.Utils
 
             callback?.Invoke(to);
         }
-    
+
         public static TMP_InputField.ContentType GetContentType(this object value)
             => value switch
             {

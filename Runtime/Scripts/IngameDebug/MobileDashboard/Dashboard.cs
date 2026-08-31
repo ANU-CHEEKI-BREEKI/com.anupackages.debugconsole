@@ -49,7 +49,7 @@ namespace ANU.IngameDebug.Console.Dashboard
             }
         }
 
-        private bool ShowFloatingButton => _showFloatingButtonOn.HasCurrentPlatform();
+        private bool ShowFloatingButton => _showFloatingButtonOn.HasCurrentDevicePlatform();
 
         private void Awake()
         {
@@ -69,8 +69,8 @@ namespace ANU.IngameDebug.Console.Dashboard
 
         private IEnumerator Start()
         {
-            _content.DeleteAllChild();
-            _categoriesFilterContent.DeleteAllChild();
+            _content.DestroyAllChild();
+            _categoriesFilterContent.DestroyAllChild();
 
             yield return new WaitForSeconds(1f);
 
@@ -91,8 +91,8 @@ namespace ANU.IngameDebug.Console.Dashboard
 
         private void CreateGroups()
         {
-            _content.DeleteAllChild();
-            _categoriesFilterContent.DeleteAllChild();
+            _content.DestroyAllChild();
+            _categoriesFilterContent.DestroyAllChild();
 
             var commands = DebugConsole
                 .Commands
@@ -122,7 +122,7 @@ namespace ANU.IngameDebug.Console.Dashboard
                     if (!isOn)
                         return;
 
-                    _content.DeleteAllChild();
+                    _content.DestroyAllChild();
                     var groupContent = Instantiate(_groupPrefab, _content);
                     groupContent.Initialize(group.Key, group.Select(g => g.Command), false);
                     groupContent.InfoRequested += OpenInfo;
@@ -137,7 +137,7 @@ namespace ANU.IngameDebug.Console.Dashboard
                 if (!isOn)
                     return;
 
-                _content.DeleteAllChild();
+                _content.DestroyAllChild();
                 foreach (var group in commands)
                 {
                     var groupContent = Instantiate(_groupPrefab, _content);

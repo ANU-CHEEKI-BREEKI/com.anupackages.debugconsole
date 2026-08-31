@@ -38,7 +38,7 @@ namespace ANU.IngameDebug.Console
                 _cancellationTokenSource = new CancellationTokenSource();
                 var token = _cancellationTokenSource.Token;
 
-                await Task.Run(() =>
+                await ConsoleTaskWrapper.Run(() =>
                 {
                     new AttributeCommandsInitializerProcessor(
                         logger,
@@ -240,6 +240,21 @@ namespace ANU.IngameDebug.Console
                 Logger.LogWarning(log);
             else
                 Logger.LogError(log);
+        }
+    }
+
+    public static class ConsoleTaskWrapper
+    {
+        public static Task Run(Action action)
+        {
+            // no thread pool on WebGL - run synchronously
+            if (Application.platform == RuntimePlatform.WebGLPlayer)
+            {
+                action.Invoke();
+                return Task.CompletedTask;
+            }
+
+            return Task.Run(action);
         }
     }
 }

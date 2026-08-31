@@ -58,6 +58,9 @@ User interface is created with uGUI and packed in a single SpriteAtlas.
 
 # How to Install
 
+> **Unity 2022 and older**: also install the `com.unity.textmeshpro` package (on most projects it is already there).
+> It is not listed as a dependency because the package no longer exists on Unity 2023.2+ — TextMeshPro ships inside `com.unity.ugui` there.
+
 - through Unity Package Manager as ***npm package*** (*preffered method*): add following to your Scoped Registries
   ```
     "scopedRegistries": [

@@ -48,14 +48,13 @@ namespace ANU.IngameDebug.Console.Converters
             //     throw new System.Exception("Use [ ] or ( ) to wrap vector components. For Example [1, 2] or (3 4) or [] for zero or [n] for all components set to n."
             //         + "You can use ',' or just whitespace as components delimiters");
 
-            if (option.StartsWith("[") && option.EndsWith("]"))
-                option = option.Trim('[', ']');
-            else if (option.StartsWith("(") && option.EndsWith(")"))
-                option = option.Trim('(', ')');
+            // strip exactly one wrapping pair: Trim used to eat every leading and
+            // trailing bracket, so nested items like ((0.2, 5) (35.4, 29)) broke
+            if (IsWrapped(option, '[', ']') || IsWrapped(option, '(', ')'))
+                option = option.Substring(1, option.Length - 2);
 
-            var components = option
+            var components = SplitTopLevel(option)
                 //TODO: prevent splitting array of string values
-                .Split(new char[] { ' ', ',' }, System.StringSplitOptions.RemoveEmptyEntries)
                 .Select(c => Converters.ConvertFromString(type, c));
 
             if (count == null)
@@ -84,6 +83,60 @@ namespace ANU.IngameDebug.Console.Converters
             if (type.IsValueType)
                 return Activator.CreateInstance(type);
             return null;
+        }
+
+        private static bool IsWrapped(string option, char open, char close)
+        {
+            if (option.Length < 2 || option[0] != open || option[option.Length - 1] != close)
+                return false;
+
+            var depth = 0;
+            for (int i = 0; i < option.Length; i++)
+            {
+                if (option[i] == open)
+                {
+                    depth++;
+                }
+                else if (option[i] == close)
+                {
+                    depth--;
+                    // the opening bracket must close exactly at the last char
+                    if (depth == 0)
+                        return i == option.Length - 1;
+                }
+            }
+
+            return false;
+        }
+
+        // split on space/comma only outside brackets, so nested vectors stay whole
+        private static IEnumerable<string> SplitTopLevel(string option)
+        {
+            var depth = 0;
+            var start = 0;
+
+            for (int i = 0; i < option.Length; i++)
+            {
+                var c = option[i];
+
+                if (c == '(' || c == '[')
+                {
+                    depth++;
+                }
+                else if (c == ')' || c == ']')
+                {
+                    depth--;
+                }
+                else if (depth == 0 && (c == ' ' || c == ','))
+                {
+                    if (i > start)
+                        yield return option.Substring(start, i - start);
+                    start = i + 1;
+                }
+            }
+
+            if (start < option.Length)
+                yield return option.Substring(start);
         }
     }
 

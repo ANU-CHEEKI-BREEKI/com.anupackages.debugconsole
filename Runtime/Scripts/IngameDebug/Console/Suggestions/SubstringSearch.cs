@@ -8,79 +8,70 @@ namespace ANU.IngameDebug.Utils
 {
     public static class SubstringSearch
     {
+        // greedy: repeatedly takes the longest common run (2+ chars) between the
+        // still-unused parts of both strings, so search terms match in any order.
+        // case-sensitive on purpose: FilterItems pre-lowers both strings once,
+        // per-char ToLowerInvariant here multiplies over the O(n*m) loops
         public static List<Match> FindMatches(this string input, string search)
         {
-            Match lastMatch = default;
             var matches = new List<Match>();
+            if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(search))
+                return matches;
 
-            do
+            var inputUsed = new bool[input.Length];
+            var searchUsed = new bool[search.Length];
+
+            while (true)
             {
-                var match = Find(input, search, lastMatch);
+                var best = FindLongestCommonRun(input, inputUsed, search, searchUsed);
+                if (best.Length < 2)
+                    break;
 
-                if (match.Success && match.Length > 1)
-                    matches.Add(match);
+                matches.Add(best);
 
-                if (match.Length == 1)
-                    match.SearchIndex--;
-
-                lastMatch = match;
+                for (int index = 0; index < best.Length; index++)
+                {
+                    inputUsed[best.InputIndex + index] = true;
+                    searchUsed[best.SearchIndex + index] = true;
+                }
             }
-            while (lastMatch.Success);
 
             return matches;
         }
 
-        private static Match Find(string input, string search, Match lastMatch)
+        private static Match FindLongestCommonRun(string input, bool[] inputUsed, string search, bool[] searchUsed)
         {
-            var match = new Match(input, search);
+            var best = new Match(input, search);
 
-            for (int s = lastMatch.SearchEnd; s < search.Length; s++)
+            for (int s = 0; s < search.Length; s++)
             {
-                var b = search[s];
+                if (searchUsed[s])
+                    continue;
 
-                for (int i = lastMatch.InputEnd; i < input.Length; i++)
+                for (int i = 0; i < input.Length; i++)
                 {
-                    var a = input[i];
+                    if (inputUsed[i] || input[i] != search[s])
+                        continue;
 
-                    if (a == b)
+                    var length = 1;
+                    while (s + length < search.Length
+                        && i + length < input.Length
+                        && !searchUsed[s + length]
+                        && !inputUsed[i + length]
+                        && input[i + length] == search[s + length])
+                        length++;
+
+                    if (length > best.Length)
                     {
-                        match.Success = true;
-                        match.InputIndex = i;
-                        match.SearchIndex = s;
-                        break;
+                        best.Success = true;
+                        best.InputIndex = i;
+                        best.SearchIndex = s;
+                        best.Length = length;
                     }
                 }
-
-                if (match.Success)
-                    break;
             }
 
-            if (!match.Success)
-                return match;
-
-            var iStart = match.InputIndex;
-            var sStart = match.SearchIndex;
-
-            var len = Mathf.Min(
-                input.Length - iStart,
-                search.Length - sStart
-            );
-
-            for (int index = 0; index < len; index++)
-            {
-                var i = index + iStart;
-                var s = index + sStart;
-
-                var a = input[i];
-                var b = search[s];
-
-                if (a != b)
-                    break;
-                else
-                    match.Length++;
-            }
-
-            return match;
+            return best;
         }
 
         [IngameDebug.Console.DebugCommand]

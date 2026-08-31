@@ -1,6 +1,6 @@
 {
   "name": "com.anupackages.debugconsole",
-  "version": "2.1.4-pre.1",
+  "version": "2.2.0",
   "displayName": "ANU Ingame debug console",
   "description": "Provides easy way to create and invoke debug commands in game console",
   "unity": "2021.3",
@@ -11,8 +11,7 @@
     "debug"
   ],
   "dependencies": {
-    "com.unity.textmeshpro": "3.0.0",
-    "com.anupackages.ndesk-options": "1.0.2"
+    "com.anupackages.ndesk-options": "1.0.3"
   },
   "author": {
     "name": "ANU CHEEKI BREEKI",
