@@ -83,6 +83,24 @@ namespace ANU.IngameDebug.Console.Editor.Tests
             );
 
         [Test]
+        public void ParameterValue_TermsMatchInAnyOrder()
+            => Assert.That(
+                ValueSources("suggestions-test-drop bronfalca"),
+                Is.EquivalentTo(new[] { nameof(Blade.FalcataBronze) })
+            );
+
+        [Test]
+        public void CommandName_TermsMatchInAnyOrder()
+        {
+            var suggestions = _suggestions.GetSuggestions("dropsugtest");
+
+            Assert.That(
+                suggestions.Select(s => (s.Source as ADebugCommand)?.Name),
+                Does.Contain("suggestions-test-drop")
+            );
+        }
+
+        [Test]
         public void Apply_ReplacesPartialPositionalValue()
             => Assert.That(
                 ApplyFirst("suggestions-test-drop falcairon"),
