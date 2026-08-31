@@ -8,6 +8,7 @@ namespace ANU.IngameDebug.Console
         Any = 1 << 0,
         PC = 1 << 1,
         Mobile = 1 << 2,
-        Editor = 1 << 3
+        Editor = 1 << 3,
+        WebGL = 1 << 4
     }
 }

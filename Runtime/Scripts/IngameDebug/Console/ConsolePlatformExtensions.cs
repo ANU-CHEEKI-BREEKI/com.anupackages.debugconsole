@@ -2,51 +2,49 @@ namespace ANU.IngameDebug.Console.Dashboard
 {
     public static class ConsolePlatformExtensions
     {
+        // permissive: in the editor both Editor and the active build target match,
+        // so platform-filtered commands stay testable in the editor
         public static TargetPlatforms GetCurrentPlatform()
         {
-            var platforms = (TargetPlatforms)0;
+            var platforms = GetBuildTargetPlatform();
 
 #if UNITY_EDITOR
             platforms |= TargetPlatforms.Editor;
-#endif
-#if UNITY_ANDROID
-            platforms |= TargetPlatforms.Mobile;
-#endif
-#if UNITY_IOS
-            platforms |= TargetPlatforms.Mobile;
-#endif
-#if UNITY_STANDALONE
-                platforms |= TargetPlatforms.PC;
 #endif
 
             return platforms;
         }
 
         public static bool HasCurrentPlatform(this TargetPlatforms platforms)
-        {
-            var current = GetCurrentPlatform();
-            return platforms.HasFlag(TargetPlatforms.Any)
-                || (current & platforms) != 0;
-        }
+            => platforms.HasFlag(TargetPlatforms.Any)
+            || (GetCurrentPlatform() & platforms) != 0;
 
-        // unlike GetCurrentPlatform, the editor here is only the editor:
-        // build-target defines like UNITY_ANDROID are also set in the editor,
-        // so the permissive check can never hide anything from it
+        // strict: the editor is only the editor - build-target defines like
+        // UNITY_ANDROID are also set there and must not leak into device checks
         public static TargetPlatforms GetCurrentDevicePlatform()
         {
 #if UNITY_EDITOR
             return TargetPlatforms.Editor;
-#elif UNITY_ANDROID || UNITY_IOS
-            return TargetPlatforms.Mobile;
-#elif UNITY_STANDALONE
-            return TargetPlatforms.PC;
 #else
-            return (TargetPlatforms)0;
+            return GetBuildTargetPlatform();
 #endif
         }
 
         public static bool HasCurrentDevicePlatform(this TargetPlatforms platforms)
             => platforms.HasFlag(TargetPlatforms.Any)
             || (GetCurrentDevicePlatform() & platforms) != 0;
+
+        private static TargetPlatforms GetBuildTargetPlatform()
+        {
+#if UNITY_ANDROID || UNITY_IOS
+            return TargetPlatforms.Mobile;
+#elif UNITY_WEBGL
+            return TargetPlatforms.WebGL;
+#elif UNITY_STANDALONE
+            return TargetPlatforms.PC;
+#else
+            return (TargetPlatforms)0;
+#endif
+        }
     }
 }
