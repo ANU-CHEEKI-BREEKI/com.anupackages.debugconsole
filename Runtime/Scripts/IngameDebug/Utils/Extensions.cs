@@ -11,7 +11,9 @@ namespace ANU.IngameDebug.Utils
 {
     public static class Extensions
     {
-        private static readonly Regex RegexFromCommandToFirstNamedParameter = new Regex(@"^(?<command>\s*[\.\w_\d\-]*).*?(?<named_parameter>\s+-{1,2}[\.\w_\d]*).*$");
+        // the parameter name must start with a letter: a bare "-" or a negative
+        // number like -5 is a value, not the beginning of a named parameter
+        private static readonly Regex RegexFromCommandToFirstNamedParameter = new Regex(@"^(?<command>\s*[\.\w_\d\-]*).*?(?<named_parameter>\s+-{1,2}[\._a-zA-Z][\.\w_\d]*).*$");
 
         public static Group GetFirstNamedParameter(this string commandLine)
         {
@@ -21,16 +23,18 @@ namespace ANU.IngameDebug.Utils
 
         public static IEnumerable<string> SplitCommandLine(this string commandLine)
         {
-            var inQuotes = false;
+            var quote = '\0';
 
             return commandLine
                 .Split(c =>
                 {
-                    if (c == '\"')
-                        inQuotes = !inQuotes;
-                    return !inQuotes && c == ' ';
+                    if (quote == '\0' && (c == '\"' || c == '\''))
+                        quote = c;
+                    else if (quote == c)
+                        quote = '\0';
+                    return quote == '\0' && c == ' ';
                 })
-                .Select(arg => arg.Trim().TrimMatchingQuotes('\"'))
+                .Select(arg => arg.Trim().TrimMatchingQuotes('\"').TrimMatchingQuotes('\''))
                 .Where(arg => !string.IsNullOrEmpty(arg));
         }
 
