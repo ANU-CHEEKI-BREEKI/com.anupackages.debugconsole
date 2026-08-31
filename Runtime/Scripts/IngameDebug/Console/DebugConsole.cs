@@ -141,7 +141,9 @@ namespace ANU.IngameDebug.Console
             }
 
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            
+            if (transform.parent == null)
+                DontDestroyOnLoad(gameObject);
 
             Application.logMessageReceivedThreaded += LogMessageReceivedThreaded;
 
