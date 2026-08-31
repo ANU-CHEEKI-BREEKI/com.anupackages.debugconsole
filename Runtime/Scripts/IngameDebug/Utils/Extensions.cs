@@ -133,8 +133,6 @@ namespace ANU.IngameDebug.Utils
                 && intersection.height < epsilon;
         }
 
-        public static string ToHexString(this Color color) => ColorUtility.ToHtmlStringRGBA(color);
-
         public static Coroutine InvokeSkipOneFrame(this MonoBehaviour monoBehaviour, Action method)
             => InvokeSkipFrames(monoBehaviour, method, 1);
 
@@ -266,14 +264,17 @@ namespace ANU.IngameDebug.Utils
             }
         }
 
-        public static void DeleteAllChild(this Component component)
+        public static void DeleteAllChild(this Component component, Func<Transform, bool> filter = null)
         {
-            var tr = component.transform;
-            while (tr.childCount > 0)
+            for (int i = 0; i < component.transform.childCount; i++)
             {
-                var c = tr.GetChild(0);
-                c.SetParent(null);
-                GameObject.Destroy(c.gameObject);
+                var child = component.transform.GetChild(i);
+                if (filter is not null && !filter.Invoke(child))
+                    continue;
+
+                child.SetParent(null);
+                GameObject.Destroy(child.gameObject);
+                i--;
             }
         }
 
@@ -299,7 +300,7 @@ namespace ANU.IngameDebug.Utils
 
             callback?.Invoke(to);
         }
-    
+
         public static TMP_InputField.ContentType GetContentType(this object value)
             => value switch
             {
