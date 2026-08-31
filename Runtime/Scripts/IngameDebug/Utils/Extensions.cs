@@ -264,19 +264,17 @@ namespace ANU.IngameDebug.Utils
             }
         }
 
-        public static void DeleteAllChild(this Component component, Func<Transform, bool> filter = null)
+        public static void DestroyAllChild(this Component component, Func<Transform, bool> filter = null)
         {
-            var tr = component.transform;
-
-            // backwards: removal shifts the indexes of the children after the removed one
-            for (var i = tr.childCount - 1; i >= 0; i--)
+            for (int i = 0; i < component.transform.childCount; i++)
             {
-                var child = tr.GetChild(i);
+                var child = component.transform.GetChild(i);
                 if (filter is not null && !filter.Invoke(child))
                     continue;
 
                 child.SetParent(null);
                 GameObject.Destroy(child.gameObject);
+                i--;
             }
         }
 

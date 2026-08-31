@@ -159,7 +159,7 @@ namespace ANU.IngameDebug.Console.Dashboard
         private void CreateArgumentPresenters()
         {
             _presenters.Clear();
-            _argumentsContent.DeleteAllChild();
+            _argumentsContent.DestroyAllChild();
             foreach (var item in _command.ParametersCache)
             {
                 var prefab = _input as ArgumentPresenterBase;
