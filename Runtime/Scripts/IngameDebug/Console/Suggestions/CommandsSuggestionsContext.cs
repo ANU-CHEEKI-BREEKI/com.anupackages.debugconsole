@@ -224,15 +224,21 @@ namespace ANU.IngameDebug.Console
                 var paramStr = "=";
                 var last = fullInput.LastIndexOf(paramStr);
                 if (last > -1)
-                    fullInput = fullInput.Substring(0, last);
+                    return $"{fullInput.Substring(0, last)}{paramStr}{item.Source} ";
 
                 fullInput = fullInput.Trim();
 
-                var lastOption = fullInput.Split(' ', StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
-                if (lastOption == null || !lastOption.StartsWith("-"))
-                    paramStr = " ";
+                var lastSpace = fullInput.LastIndexOf(' ');
+                var lastToken = lastSpace > -1 ? fullInput.Substring(lastSpace + 1) : fullInput;
 
-                return $"{fullInput}{paramStr}{item.Source} ";
+                if (lastToken.StartsWith("-"))
+                    return $"{fullInput}{paramStr}{item.Source} ";
+
+                // the last token is the partial value the suggestions were filtered by - replace it
+                if (lastSpace > -1)
+                    fullInput = fullInput.Substring(0, lastSpace);
+
+                return $"{fullInput} {item.Source} ";
             }
         }
     }
