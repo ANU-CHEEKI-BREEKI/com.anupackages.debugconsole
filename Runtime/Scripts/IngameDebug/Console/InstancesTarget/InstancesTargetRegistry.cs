@@ -48,7 +48,7 @@ namespace ANU.IngameDebug.Console
         }
 
         public void Unregister<T>(params T[] targets)
-            => Unregister(targets.AsEnumerable());
+            => UnRegister(targets.AsEnumerable());
 
         public void UnRegister<T>(IEnumerable<T> targets)
         {
