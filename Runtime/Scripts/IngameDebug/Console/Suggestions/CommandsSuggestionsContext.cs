@@ -221,24 +221,35 @@ namespace ANU.IngameDebug.Console
 
             protected override string GetFullSuggestedText(Suggestion item, string fullInput)
             {
-                var paramStr = "=";
-                var last = fullInput.LastIndexOf(paramStr);
-                if (last > -1)
-                    return $"{fullInput.Substring(0, last)}{paramStr}{item.Source} ";
+                fullInput = fullInput.TrimEnd();
 
-                fullInput = fullInput.Trim();
+                var tokenStart = fullInput.LastIndexOf(' ') + 1;
 
-                var lastSpace = fullInput.LastIndexOf(' ');
-                var lastToken = lastSpace > -1 ? fullInput.Substring(lastSpace + 1) : fullInput;
+                // an unclosed quote starts the partial token, spaces inside it included
+                var quoteIndex = fullInput.LastIndexOf('"');
+                if (quoteIndex > -1 && fullInput.Count(ch => ch == '"') % 2 == 1)
+                    tokenStart = quoteIndex;
+
+                var lastToken = fullInput.Substring(tokenStart);
+
+                var value = item.Source.ToString();
+                if (value.Contains(' '))
+                    value = $"\"{value}\"";
+
+                // keep the "--opt=" prefix of the token, replace only the partial value.
+                // only the last token is inspected: an "=" inside earlier arguments must not move the cut
+                var equalsIndex = lastToken.IndexOf('=');
+                if (equalsIndex > -1)
+                    return $"{fullInput.Substring(0, tokenStart + equalsIndex + 1)}{value} ";
 
                 if (lastToken.StartsWith("-"))
-                    return $"{fullInput}{paramStr}{item.Source} ";
+                    return $"{fullInput}={value} ";
 
                 // the last token is the partial value the suggestions were filtered by - replace it
-                if (lastSpace > -1)
-                    fullInput = fullInput.Substring(0, lastSpace);
+                if (tokenStart > 0)
+                    fullInput = fullInput.Substring(0, tokenStart).TrimEnd();
 
-                return $"{fullInput} {item.Source} ";
+                return $"{fullInput} {value} ";
             }
         }
     }
