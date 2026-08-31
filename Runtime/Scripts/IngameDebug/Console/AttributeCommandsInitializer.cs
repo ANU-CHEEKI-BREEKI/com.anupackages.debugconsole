@@ -245,19 +245,15 @@ namespace ANU.IngameDebug.Console
 
     public static class ConsoleTaskWrapper
     {
-        public static Task<T> Run<T>(Func<T> func)
-        {
-#if UNITY_WEBGL
-            return Task.FromResult(func.Invoke());
-#endif
-            return Task.Run(func);
-        }
         public static Task Run(Action action)
         {
-#if UNITY_WEBGL
-            action.Invoke();
-            return Task.CompletedTask;
-#endif
+            // no thread pool on WebGL - run synchronously
+            if (Application.platform == RuntimePlatform.WebGLPlayer)
+            {
+                action.Invoke();
+                return Task.CompletedTask;
+            }
+
             return Task.Run(action);
         }
     }
