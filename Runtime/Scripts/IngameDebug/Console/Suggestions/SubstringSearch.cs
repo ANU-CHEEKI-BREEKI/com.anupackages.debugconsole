@@ -42,7 +42,9 @@ namespace ANU.IngameDebug.Utils
                 {
                     var a = input[i];
 
-                    if (char.ToLowerInvariant(a) == char.ToLowerInvariant(b))
+                    // case-sensitive on purpose: FilterItems pre-lowers both strings once,
+                    // per-char ToLowerInvariant here multiplies over the O(n*m) loops
+                    if (a == b)
                     {
                         match.Success = true;
                         match.InputIndex = i;
@@ -74,7 +76,7 @@ namespace ANU.IngameDebug.Utils
                 var a = input[i];
                 var b = search[s];
 
-                if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
+                if (a != b)
                     break;
                 else
                     match.Length++;

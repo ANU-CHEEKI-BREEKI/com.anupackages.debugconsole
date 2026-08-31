@@ -31,39 +31,33 @@ namespace ANU.IngameDebug.Console
 
         private protected virtual IEnumerable<T> FilterItems(IEnumerable<T> items, string input, Func<T, string> filteredStringGetter)
         {
+            // both sides lowered once - the match loops compare raw chars
+            var search = input.ToLowerInvariant();
+
             return items
                 .Select(c => new
                 {
                     item = c,
-                    str = filteredStringGetter.Invoke(c)
+                    str = filteredStringGetter.Invoke(c).ToLowerInvariant()
                 })
                 .Select(c => new
                 {
-                    item = c.item,
-                    matches = c.str.FindMatches(input),
-                    str = c.str
+                    c.item,
+                    matches = c.str.FindMatches(search),
+                    c.str
                 })
-                .Select(c =>
+                .Select(c => new
                 {
-                    // cut matched parts out by their positions in the search string:
-                    // the matched text comes from the item and may differ in case
-                    var freeInput = string.Concat(
-                        input.Where((_, i) => !c.matches.Any(m => i >= m.SearchIndex && i < m.SearchEnd))
-                    );
-
-                    var item = new
-                    {
-                        item = c.item,
-                        matches = c.matches,
-                        str = c.str,
-                        freeInputChars = freeInput
-                    };
-
-                    return item;
+                    c.item,
+                    c.matches,
+                    c.str,
+                    // matches are sequential and non-overlapping, so the search string
+                    // is fully covered exactly when the matched lengths sum up to it
+                    covered = c.matches.Sum(m => m.Length)
                 })
-                .Where(c => (c.matches.Any() && c.freeInputChars.Length == 0) || c.str.ToLowerInvariant().Contains(input.ToLowerInvariant()))
+                .Where(c => (c.matches.Any() && c.covered == search.Length) || c.str.Contains(search))
                 .OrderBy(c => c.matches.Count)
-                .ThenBy(c => c.matches.Sum(s => s.Length))
+                .ThenBy(c => c.covered)
                 .Select(c => c.item);
         }
     }
