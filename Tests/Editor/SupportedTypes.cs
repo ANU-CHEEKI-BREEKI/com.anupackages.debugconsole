@@ -38,8 +38,11 @@ namespace ANU.IngameDebug.Console.Editor.Tests
             var e = string.IsNullOrEmpty(echo)
                 ? "echo"
                 : $"echo-{echo}";
-            var result = Context.ExecuteCommand($"{e} {str}");
-            Assert.AreEqual(expected, result.ReturnValues.FirstOrDefault().ReturnValue);
+            var commandLine = $"{e} {str}";
+            var result = Context.ExecuteCommand(commandLine);
+
+            Assert.That(result.ReturnValues, Is.Not.Null.And.Not.Empty, $"\"{commandLine}\" failed to execute - the exception went to the console logger");
+            Assert.AreEqual(expected, result.ReturnValues.First().ReturnValue);
         }
 
         [Test] public void Echo_String_DoubleQuotes() => Echo("Hello! And welcome to the los pollos hermanos", "", "\"Hello! And welcome to the los pollos hermanos\"");
