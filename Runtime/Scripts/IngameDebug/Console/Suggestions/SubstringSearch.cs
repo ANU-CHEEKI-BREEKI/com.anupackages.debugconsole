@@ -42,7 +42,7 @@ namespace ANU.IngameDebug.Utils
                 {
                     var a = input[i];
 
-                    if (a == b)
+                    if (char.ToLowerInvariant(a) == char.ToLowerInvariant(b))
                     {
                         match.Success = true;
                         match.InputIndex = i;
@@ -74,7 +74,7 @@ namespace ANU.IngameDebug.Utils
                 var a = input[i];
                 var b = search[s];
 
-                if (a != b)
+                if (char.ToLowerInvariant(a) != char.ToLowerInvariant(b))
                     break;
                 else
                     match.Length++;

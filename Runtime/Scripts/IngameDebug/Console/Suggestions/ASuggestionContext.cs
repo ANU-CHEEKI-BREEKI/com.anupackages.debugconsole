@@ -45,8 +45,11 @@ namespace ANU.IngameDebug.Console
                 })
                 .Select(c =>
                 {
-                    var freeInput = input;
-                    c.matches.ForEach(m => freeInput = freeInput.Replace(m.Value, ""));
+                    // cut matched parts out by their positions in the search string:
+                    // the matched text comes from the item and may differ in case
+                    var freeInput = string.Concat(
+                        input.Where((_, i) => !c.matches.Any(m => i >= m.SearchIndex && i < m.SearchEnd))
+                    );
 
                     var item = new
                     {
