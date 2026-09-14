@@ -87,7 +87,11 @@ namespace ANU.IngameDebug.Console
                 y += lastMinY + _spacing;
                 x = padding.left;
             }
+#if UNITY_6000_6_OR_NEWER
+            SetLayoutInputForAxis(y, LayoutUtility.DefaultMaxSize, y, 0, 1);
+#else
             SetLayoutInputForAxis(y, y, 0, 1);
+#endif
         }
 
         public override void CalculateLayoutInputVertical() { }

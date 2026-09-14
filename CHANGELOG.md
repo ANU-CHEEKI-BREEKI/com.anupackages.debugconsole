@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [2.2.1] - 2026-09-14
+
+### Changed
+- Unity 6.4+ support: `ObjectInfo` prints `GetEntityId()` instead of the obsolete `GetInstanceID()`; older Unity versions keep `GetInstanceID()`
+- Unity 6.6 support: `DashboardLayout` passes the maximum size required by the new `LayoutGroup.SetLayoutInputForAxis` (com.unity.ugui 2.6.0); older Unity versions keep the old call
+- sprite metas reserialized by Unity 6.6
+
 ## [2.2.0] - 2026-08-31
 
 ### Added
