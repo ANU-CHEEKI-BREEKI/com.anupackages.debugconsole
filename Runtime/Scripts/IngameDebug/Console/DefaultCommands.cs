@@ -89,7 +89,11 @@ namespace ANU.IngameDebug.Console
             {
                 sb.Append(item.name);
                 sb.Append("[");
+#if UNITY_6000_4_OR_NEWER
+                sb.Append(item.GetEntityId().ToString());
+#else
                 sb.Append(item.GetInstanceID());
+#endif
                 sb.AppendLine("]:");
 
                 sb.Append("|--parent: ");
