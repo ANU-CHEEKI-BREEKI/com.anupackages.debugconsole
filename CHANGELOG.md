@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [2.2.2] - 2026-11-17
+
+### Fixed
+- `[OptValDynamic]` value suggestions work for commands registered with `ICommandsRegistry.RegisterCommand` by delegate, `MethodInfo` or method name: the dynamic value provider commands are kept and asked each time, not run once at registration
+- the `metaDataCustomize` callback of those overloads gets only the static values in `AvailableValues`
+
 ## [2.2.1] - 2026-09-14
 
 ### Changed
