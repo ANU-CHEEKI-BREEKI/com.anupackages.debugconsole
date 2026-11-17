@@ -188,7 +188,7 @@ namespace ANU.IngameDebug.Console.Converters
                     Key = v,
                     Names = v.GetNames().ToHashSet(),
                     Description = v.Description,
-                    AvailableValues = (methodCommand.ValueHints.TryGetValue(v, out var av) ? av : new AvailableValuesHint()).ToHashSet()
+                    AvailableValues = (methodCommand.ValueHints.TryGetValue(v, out var av) ? av.StaticValues : Enumerable.Empty<string>()).ToHashSet()
                 }).ToArray()
             };
 
@@ -220,7 +220,11 @@ namespace ANU.IngameDebug.Console.Converters
 
                 // methodCommand.ValueHints.Remove(optionMetaData.Key);
 
-                methodCommand.ValueHints[optionMetaData.Key] = new AvailableValuesHint(optionMetaData.AvailableValues);
+                var dynamicValueProviders = methodCommand.ValueHints.TryGetValue(optionMetaData.Key, out var oldHint)
+                    ? oldHint.DynamicValueProviderCommands
+                    : null;
+
+                methodCommand.ValueHints[optionMetaData.Key] = new AvailableValuesHint(optionMetaData.AvailableValues, dynamicValueProviders);
             }
 
             RegisterCommand(methodCommand);

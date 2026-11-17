@@ -4,7 +4,8 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "com.anu.debugconsole"
+        "com.anu.debugconsole",
+        "NDesk.Options"
     ],
     "includePlatforms": [
         "Editor"
