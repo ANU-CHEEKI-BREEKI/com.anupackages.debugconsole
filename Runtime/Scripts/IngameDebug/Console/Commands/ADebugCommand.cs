@@ -200,6 +200,7 @@ namespace ANU.IngameDebug.Console.Commands
 
         private List<string> Values { get; } = new();
         public List<string> DynamicValueProviderCommands { get; } = new();
+        internal IReadOnlyList<string> StaticValues => Values;
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         public IEnumerator<string> GetEnumerator()
