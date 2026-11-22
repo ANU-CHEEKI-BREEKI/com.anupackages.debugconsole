@@ -5,6 +5,7 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "com.anu.debugconsole",
+        "com.anu.debugconsole.editor",
         "NDesk.Options"
     ],
     "includePlatforms": [

@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [2.3.0] - 2026-11-22
+
+### Added
+- the `[DebugCommand]` member list is made in the editor at build time: `CommandListBuildStep` scans the assemblies the player gets (no editor and no test assemblies) that reference the console, writes the members into a Resources text file for the build only, fails the build if the list reads back to other commands, and keeps the listed members from the linker with a generated link.xml. The player resolves only the listed members by name, without scanning any assembly (on an IL2CPP Android phone the scan took about 4 minutes, the list takes milliseconds)
+- Project Settings > ANU Debug Console: which builds get the list (Development Builds by default, builds with given define symbols, all builds, never)
+- `CommandMembers`: the scan, the list format and the command creation as a public API
+
+### Changed
+- without the list (the editor, or a build without it) commands are searched only in the console assembly and the assemblies that reference it, skipping members inherited from other assemblies, instead of every member of every loaded assembly; the commands found are the same
+- `AttributeCommandsInitializerProcessor.Initialize` logs one line with the command count, the source and the time instead of the per-kind timings; `Initialize(string buildList)` registers from a list
+- console commands nothing calls (`#define`, `echo`, `time-scale`, ...) are no longer stripped from IL2CPP builds that have the list
+
 ## [2.2.2] - 2026-11-17
 
 ### Fixed

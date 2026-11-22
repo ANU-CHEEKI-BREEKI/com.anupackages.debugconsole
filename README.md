@@ -12,6 +12,7 @@
 - [Roadmap](#Roadmap)
 - [How to use](#How-to-use)
   - [Attributes](#Attributes)
+  - [Command list made at build time](#Command-list-made-at-build-time)
   - [Direct registration](#Direct-registration)
 - [License](#License)
 
@@ -238,6 +239,42 @@ There are a lot more [attributes available]().\ You can
     </details>
   
 
+
+### Command list made at build time
+
+Finding `[DebugCommand]` members by reflection is slow in a player, above all on IL2CPP: every member every
+`MonoBehaviour` inherits from `UnityEngine` gets a reflection object and an attribute check. In a big game on a weak
+Android phone it took minutes. So the console finds them in the editor, while the player is built:
+
+- before the build it scans only the assemblies the player gets (no editor and no test assemblies) that reference
+  the console, writes the found members to `Assets/DebugConsoleCommandList/Resources/DebugConsoleCommandMembers.txt`,
+  fails the build if that list reads back to other commands than the scan, and deletes the folder after the build;
+- it hands the linker a generated `link.xml` that keeps exactly the listed members, so commands nothing calls are not
+  stripped;
+- the player reads the list and resolves each member by name: no assembly is scanned at start.
+
+A player without the list, and the editor, find the commands by reflection in the console assembly and the assemblies
+that reference it. `AttributeCommandsInitializer` logs where the commands came from, e.g.
+`Commands declared by attributes: 248 from the build list (248 members) in 0.012 s`.
+
+Which builds get the list is set in **Project Settings > ANU Debug Console** (saved in
+`ProjectSettings/ANUDebugConsoleSettings.asset`):
+
+| Command list in builds | |
+|---|---|
+| Development Builds | default: builds with *Development Build* on |
+| Builds With Define Symbols | builds that have any of the listed scripting define symbols, e.g. `DEBUG_BUILD` |
+| All Builds | every player build |
+| Never | the player always scans |
+
+Notes:
+- the list is the editor's view of the code. Build with the target platform and build profile active, so the editor
+  scripts are compiled with the same define symbols. If the build has define symbols the editor scripts were compiled
+  without, the list is not written (with a warning) and the player scans;
+- a command declared only for players (inside `#if DEVELOPMENT_BUILD` without `|| UNITY_EDITOR`) is not in the editor
+  assemblies, so it is not found. Keep `[DebugCommand]` members visible to the editor too;
+- add `/Assets/DebugConsoleCommandList/` and `/Assets/DebugConsoleCommandList.meta` to `.gitignore`: a failed build
+  leaves the folder until the editor reloads or the next build starts.
 
 ### Direct registration
 
