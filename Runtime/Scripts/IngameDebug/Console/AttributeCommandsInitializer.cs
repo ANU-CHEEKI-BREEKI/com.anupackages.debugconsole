@@ -23,12 +23,14 @@ namespace ANU.IngameDebug.Console
 
         private async void Start()
         {
+            var buildList = CommandMembers.LoadBuildList();
+
             if (_commandRegistrationType == CommandRegistrationType.Synchronous)
             {
                 new AttributeCommandsInitializerProcessor(
                     DebugConsole.Logger,
                     DebugConsole.Commands
-                ).Initialize();
+                ).Initialize(buildList);
             }
             else
             {
@@ -43,7 +45,7 @@ namespace ANU.IngameDebug.Console
                     new AttributeCommandsInitializerProcessor(
                         logger,
                         commands
-                    ).Initialize();
+                    ).Initialize(buildList);
                 });
 
                 if (token.IsCancellationRequested)
@@ -73,173 +75,34 @@ namespace ANU.IngameDebug.Console
             Logger = logger;
         }
 
-        public void Initialize()
+        public void Initialize() => Initialize(null);
+
+        public void Initialize(string buildList)
         {
-            Logger.LogInfo($"Start searching commands declared by attributes...");
-            var timer = StartLog(null);
+            var timer = Stopwatch.StartNew();
+            IReadOnlyList<MemberInfo> members;
+            string source;
 
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            if (buildList != null)
+            {
+                var (listed, missing) = CommandMembers.Read(buildList);
+                members = listed;
+                source = $"the build list ({listed.Count} members)";
 
-            var timerMethods = StartLog("method");
-
-            Commands.RegisterCommands(
-                assemblies
-                    .SelectMany(asm => asm.GetTypes())
-                    .Where(t => typeof(UnityEngine.MonoBehaviour).IsAssignableFrom(t))
-                    .Concat(assemblies
-                        .SelectMany(asm => asm.GetCustomAttributes<RegisterDebugCommandTypesAttribute>())
-                        .Where(atr => atr != null)
-                        .SelectMany(atr => atr.DeclaredTypes)
-                    )
-                    .Distinct()
-                    .SelectMany(type => type.GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
-                    .Select(method => new
-                    {
-                        method = method,
-                        attribute = method.GetCustomAttribute<DebugCommandAttribute>()
-                    })
-                    .Where(method => method.attribute != null)
-                    .Where(method => method.attribute.Platforms.HasCurrentPlatform())
-                    .Select(method => new
-                    {
-                        method = method.method,
-                        name = method.method.GenerateCommandName(),
-                    })
-                    .GroupBy(method => method.name)
-                    .SelectMany(group =>
-                    {
-                        // if count greater than 1
-                        // add command name prefix as DeclaringType
-                        var addPrefix = group.Skip(1).Any();
-                        return group.Select(method => new MethodCommand(
-                            method: method.method,
-                            instance: null,
-                            addPrefix ? method.method.DeclaringType.Name : ""
-                        ));
-                    })
-                    .ToArray()
-            );
-
-            Log(timerMethods, "method");
-
-            var timerProperty = StartLog("property");
-
-            Commands.RegisterCommands(
-                assemblies
-                    .SelectMany(asm => asm.GetTypes())
-                    .Where(t => typeof(UnityEngine.MonoBehaviour).IsAssignableFrom(t))
-                    .Concat(assemblies
-                        .SelectMany(asm => asm.GetCustomAttributes<RegisterDebugCommandTypesAttribute>())
-                        .Where(atr => atr != null)
-                        .SelectMany(atr => atr.DeclaredTypes)
-                    )
-                    .Distinct()
-                    .SelectMany(type => type.GetProperties(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
-                    .Select(field => new
-                    {
-                        field = field,
-                        attribute = field.GetCustomAttribute<DebugCommandAttribute>()
-                    })
-                    .Where(method => method.attribute != null)
-                    .Where(method => method.attribute.Platforms.HasCurrentPlatform())
-                    .Select(field => new
-                    {
-                        method = field.field,
-                        name = field.field.GenerateCommandName()
-                    })
-                    .GroupBy(field => field.name)
-                    .SelectMany(group =>
-                    {
-                        // if count greater than 1
-                        // add command name prefix as DeclaringType
-                        var addPrefix = group.Skip(1).Any();
-                        return group.Select(method => new PropertyCommand(
-                            property: method.method,
-                            instance: null,
-                            addPrefix ? method.method.DeclaringType.Name : ""
-                        ));
-                    })
-                    .ToArray()
-            );
-
-            Log(timerProperty, "property");
-
-            var timerField = StartLog("field");
-
-            Commands.RegisterCommands(
-                assemblies
-                    .SelectMany(asm => asm.GetTypes())
-                    .Where(t => typeof(UnityEngine.MonoBehaviour).IsAssignableFrom(t))
-                    .Concat(assemblies
-                        .SelectMany(asm => asm.GetCustomAttributes<RegisterDebugCommandTypesAttribute>())
-                        .Where(atr => atr != null)
-                        .SelectMany(atr => atr.DeclaredTypes)
-                    )
-                    .Distinct()
-                    .SelectMany(type => type.GetFields(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
-                    .Select(field => new
-                    {
-                        field = field,
-                        attribute = field.GetCustomAttribute<DebugCommandAttribute>()
-                    })
-                    .Where(method => method.attribute != null)
-                    .Where(method => method.attribute.Platforms.HasCurrentPlatform())
-                    .Select(field => new
-                    {
-                        method = field.field,
-                        name = field.field.GenerateCommandName()
-                    })
-                    .GroupBy(field => field.name)
-                    .SelectMany(group =>
-                    {
-                        // if count greater than 1
-                        // add command name prefix as DeclaringType
-                        var addPrefix = group.Skip(1).Any();
-                        return group.Select(method => new FieldCommand(
-                            field: method.method,
-                            instance: null,
-                            addPrefix ? method.method.DeclaringType.Name : ""
-                        ));
-                    })
-                    .ToArray()
-            );
-
-            Log(timerField, "field");
-
-            Log(timer, null);
-            var log = $"Searching commands declared by attributes ended.\nOperation elapsed duration: {timer.Elapsed:ss's.'fff'ms'}, ticks: {timer.ElapsedTicks}";
-            if (timer.Elapsed.Seconds < 1)
-                Logger.LogInfo(log);
-            else if (timer.Elapsed.Seconds < 2)
-                Logger.LogWarning(log);
+                if (missing.Count > 0)
+                    Logger.LogWarning($"{missing.Count} members of the build command list are not in this build: {string.Join("; ", missing.Take(10))}");
+            }
             else
-                Logger.LogError(log);
-        }
+            {
+                var assemblies = CommandMembers.CommandAssemblies(AppDomain.CurrentDomain.GetAssemblies());
+                members = CommandMembers.Scan(assemblies);
+                source = $"{assemblies.Length} assemblies";
+            }
 
-        private Stopwatch StartLog(string name)
-        {
-            if (name != null)
-                Logger.LogInfo($"Start searching {name}...");
+            var commands = CommandMembers.Create(members);
+            Commands.RegisterCommands(commands.ToArray());
 
-            var timer = new System.Diagnostics.Stopwatch();
-            timer.Start();
-            return timer;
-        }
-
-        private void Log(Stopwatch timer, string name)
-        {
-            timer.Stop();
-
-            if (name == null)
-                return;
-
-            var log = $"Searching {name} ended. Operation elapsed duration: {timer.Elapsed:ss's.'fff'ms'}, ticks: {timer.ElapsedTicks}";
-            if (timer.Elapsed.Seconds < 3)
-                Logger.LogInfo(log);
-            else if (timer.Elapsed.Seconds < 5)
-                Logger.LogWarning(log);
-            else
-                Logger.LogError(log);
+            Logger.LogInfo($"Commands declared by attributes: {commands.Count} from {source} in {timer.Elapsed.TotalSeconds:0.000} s");
         }
     }
 
